@@ -1,14 +1,14 @@
-name: CI
+name: CD — Production
 
 on:
   push:
-    branches-ignore:
-      - main
-      - staging
-  pull_request:
     branches:
       - main
-      - staging
+
+# Impede deploys concorrentes em produção
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -35,7 +35,7 @@ jobs:
       - run: dotnet test --no-restore --collect:"XPlat Code Coverage" --results-directory coverage
       - uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-production
           path: coverage
 
   security:
@@ -54,3 +54,26 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-production:
+    name: Deploy → Railway Production
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    environment:
+      name: production
+      url: ${{ vars.RAILWAY_PRODUCTION_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: curl -fsSL https://railway.app/install.sh | sh
+
+      - name: Deploy API (production)
+        run: railway up --service api --environment production --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy Web (production)
+        run: railway up --service web --environment production --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

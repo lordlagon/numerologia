@@ -133,15 +133,47 @@ dotnet list package --vulnerable
 
 ## CI/CD — GitHub Actions
 
-Branch protection on `main`:
-- All status checks must pass (build, test, security scan).
-- At least one approval required.
-- Stale reviews dismissed on new commits.
+### Fluxo de branches
 
-Key jobs in the workflow:
-1. `build` — `dotnet build`
-2. `test` — `dotnet test` with coverage collection
-3. `security` — `dotnet list package --vulnerable` + GitLeaks
+```
+feature/* ──PR──► staging ──PR──► main
+              CD→ Railway Staging    CD→ Railway Production
+```
+
+| Branch | Workflow | O que faz |
+|--------|----------|-----------|
+| `feature/*` | `ci.yml` | build + test + security (validação de PR) |
+| `staging` | `cd-staging.yml` | build + test + security + **deploy Railway Staging** |
+| `main` | `cd-production.yml` | build + test + security + **deploy Railway Production** |
+
+### Workflows
+
+- **`ci.yml`** — dispara em push de feature branches e em PRs abertos contra `staging` ou `main`.
+- **`cd-staging.yml`** — dispara em push para `staging`; inclui CI completo + deploy. Deploy só ocorre se todos os checks passarem.
+- **`cd-production.yml`** — dispara em push para `main`; inclui CI completo + deploy. Concorrência bloqueada (`cancel-in-progress: false`) para nunca abortar um deploy de produção.
+
+### Branch protection
+
+**`staging`:**
+- PR obrigatório (direto push bloqueado).
+- CI (`ci.yml`) deve passar.
+
+**`main`:**
+- PR obrigatório (direto push bloqueado).
+- CI (`ci.yml`) deve passar.
+- Pelo menos 1 aprovação.
+- Stale reviews descartados em novos commits.
+
+### Segredos e variáveis necessários no GitHub
+
+| Nome | Tipo | Onde configurar |
+|------|------|----------------|
+| `RAILWAY_TOKEN` | Secret | Settings → Secrets → Actions |
+| `RAILWAY_STAGING_URL` | Variable | Settings → Variables → Actions (env: staging) |
+| `RAILWAY_PRODUCTION_URL` | Variable | Settings → Variables → Actions (env: production) |
+
+> O `RAILWAY_TOKEN` é gerado em: Railway Dashboard → Account Settings → Tokens.
+> Os nomes de serviço (`api`, `web`) devem corresponder aos nomes configurados no projeto Railway.
 
 ---
 
