@@ -2,6 +2,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS web-build
 WORKDIR /src
 
+# wasm-tools é necessário para o publish do Blazor WASM em Linux
+RUN dotnet workload install wasm-tools
+
 COPY src/Numerologia.Core/Numerologia.Core.csproj             src/Numerologia.Core/
 COPY src/Numerologia.Web/Numerologia.Web.csproj               src/Numerologia.Web/
 RUN dotnet restore src/Numerologia.Web/Numerologia.Web.csproj
@@ -10,6 +13,9 @@ COPY src/Numerologia.Core/   src/Numerologia.Core/
 COPY src/Numerologia.Web/    src/Numerologia.Web/
 RUN dotnet publish src/Numerologia.Web/Numerologia.Web.csproj \
     -c Release -o /web-out --no-restore
+
+# Verifica que os arquivos _framework foram gerados (visível nos build logs)
+RUN echo "=== Blazor WASM output ===" && find /web-out/wwwroot/_framework -name "*.dat"
 
 # ─── Stage 2: build API ────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS api-build
@@ -20,9 +26,9 @@ COPY src/Numerologia.Infrastructure/Numerologia.Infrastructure.csproj   src/Nume
 COPY src/Numerologia.Api/Numerologia.Api.csproj                         src/Numerologia.Api/
 RUN dotnet restore src/Numerologia.Api/Numerologia.Api.csproj
 
-COPY src/Numerologia.Core/          src/Numerologia.Core/
+COPY src/Numerologia.Core/           src/Numerologia.Core/
 COPY src/Numerologia.Infrastructure/ src/Numerologia.Infrastructure/
-COPY src/Numerologia.Api/           src/Numerologia.Api/
+COPY src/Numerologia.Api/            src/Numerologia.Api/
 RUN dotnet publish src/Numerologia.Api/Numerologia.Api.csproj \
     -c Release -o /api-out --no-restore
 
@@ -31,7 +37,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 COPY --from=api-build /api-out .
-# Blazor WASM é servido como static files pela API
+# Blazor WASM servido como static files pela API
 COPY --from=web-build /web-out/wwwroot ./wwwroot
 
 ENV ASPNETCORE_URLS=http://+:8080
