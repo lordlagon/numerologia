@@ -1,0 +1,14 @@
+**/.git
+**/.vs
+**/.idea
+**/bin
+**/obj
+**/node_modules
+**/.DS_Store
+Numerologia-Java/
+tests/
+docs/
+.github/
+*.md
+.gitignore
+.ai-jail

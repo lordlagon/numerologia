@@ -1,0 +1,80 @@
+name: CD — Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+# Cancela deploys anteriores ainda em andamento para a mesma branch
+concurrency:
+  group: cd-staging
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+      - run: dotnet restore
+      - run: dotnet build --no-restore --configuration Release
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+      - run: dotnet restore
+      - run: dotnet test --no-restore --collect:"XPlat Code Coverage" --results-directory coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-staging
+          path: coverage
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+      - run: dotnet restore
+      - name: Check vulnerable packages
+        run: dotnet list package --vulnerable --include-transitive
+      - name: GitLeaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-staging:
+    name: Deploy → Railway Staging
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    environment:
+      name: "staging"
+      url: ${{ vars.RAILWAY_STAGING_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: curl -fsSL https://railway.app/install.sh | sh
+
+      - name: Deploy (staging)
+        run: railway up --service ${{ vars.RAILWAY_SERVICE }} --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

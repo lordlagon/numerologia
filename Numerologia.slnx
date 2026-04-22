@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Numerologia.Api/Numerologia.Api.csproj" />
+    <Project Path="src/Numerologia.Core/Numerologia.Core.csproj" />
+    <Project Path="src/Numerologia.Infrastructure/Numerologia.Infrastructure.csproj" />
+    <Project Path="src/Numerologia.Web/Numerologia.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Numerologia.IntegrationTests/Numerologia.IntegrationTests.csproj" />
+    <Project Path="tests/Numerologia.UnitTests/Numerologia.UnitTests.csproj" />
+  </Folder>
+</Solution>

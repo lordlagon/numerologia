@@ -1,0 +1,6 @@
+@Numerologia.Api_HostAddress = http://localhost:5258
+
+GET {{Numerologia.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -11,7 +11,7 @@
 
 <p align="center">
   <img alt="Build" src="https://github.com/lordlagon/numerologia/actions/workflows/ci.yml/badge.svg" />
-  <img alt=".NET" src="https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet" />
+  <img alt=".NET" src="https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet" />
   <img alt="Blazor" src="https://img.shields.io/badge/Blazor-WASM-512BD4?logo=blazor" />
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white" />
   <img alt="Railway" src="https://img.shields.io/badge/Deploy-Railway-0B0D0E?logo=railway" />
@@ -35,8 +35,8 @@
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Backend | ASP.NET Core Web API (.NET 8) |
-| Frontend | Blazor WebAssembly |
+| Backend | ASP.NET Core Web API (.NET 10) |
+| Frontend | Blazor WebAssembly (.NET 10) |
 | Banco de Dados | PostgreSQL 16 (EF Core + Migrations) |
 | Autenticação | Google OAuth 2.0 |
 | Deploy | Railway |
@@ -50,14 +50,17 @@
 ```
 /
 ├── src/
-│   ├── Numerologia.Api/            # ASP.NET Core Web API
+│   ├── Numerologia.Api/            # ASP.NET Core Web API (serve o Blazor WASM em produção)
 │   ├── Numerologia.Web/            # Blazor WebAssembly
 │   ├── Numerologia.Core/           # Domínio, entidades, DTOs
 │   └── Numerologia.Infrastructure/ # EF Core, repositórios
 ├── tests/
 │   ├── Numerologia.UnitTests/      # Testes unitários (xUnit)
 │   └── Numerologia.IntegrationTests/ # Testes de integração (WebApplicationFactory)
-└── docs/                           # Documentação e imagens de referência
+├── docs/                           # Documentação e imagens de referência
+├── Dockerfile                      # Multi-stage: Blazor WASM + API → runtime
+├── docker-compose.yml              # Dev local: API + PostgreSQL
+└── railway.toml                    # Configuração de deploy no Railway
 ```
 
 ---
@@ -66,33 +69,41 @@
 
 ### Pré-requisitos
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [PostgreSQL 16](https://www.postgresql.org/)
-- Conta Google (para OAuth)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (para subir com Docker Compose)
 
-### Configuração
+### Com Docker Compose (recomendado)
 
 ```bash
 # 1. Clone o repositório
 git clone https://github.com/lordlagon/numerologia.git
 cd numerologia
 
-# 2. Restaurar dependências
+# 2. Sobe API + PostgreSQL
+docker compose up
+```
+
+API disponível em `http://localhost:8080`.
+
+### Sem Docker (apenas .NET)
+
+```bash
+# 1. Restaurar dependências
 dotnet restore
 
-# 3. Configurar variáveis de ambiente
-#    Crie um appsettings.Development.json em src/Numerologia.Api/
-#    com ConnectionStrings, Google:ClientId e Google:ClientSecret
+# 2. Configurar variáveis de ambiente
+#    Crie src/Numerologia.Api/appsettings.Development.json com:
+#    ConnectionStrings, Google:ClientId e Google:ClientSecret
 
-# 4. Aplicar migrations
+# 3. Aplicar migrations
 dotnet ef database update \
   --project src/Numerologia.Infrastructure \
   --startup-project src/Numerologia.Api
 
-# 5. Rodar a API
+# 4. Rodar a API
 dotnet run --project src/Numerologia.Api
 
-# 6. Rodar o frontend (outro terminal)
+# 5. Rodar o frontend (outro terminal)
 dotnet run --project src/Numerologia.Web
 ```
 
@@ -127,15 +138,18 @@ dotnet test --collect:"XPlat Code Coverage"
 
 ## CI/CD
 
-O GitHub Actions roda automaticamente em todo push e PR:
+```
+feature/* ──PR──► staging ──PR──► main
+              CD→ Railway Staging    CD→ Railway Production
+```
 
-1. `build` — `dotnet build`
-2. `test` — `dotnet test` com coleta de cobertura
-3. `security` — `dotnet list package --vulnerable` + GitLeaks
+| Branch | O que dispara |
+|--------|--------------|
+| `feature/*` | CI: build + test + security (validação de PR) |
+| `staging` | CI completo + deploy no Railway Staging |
+| `main` | CI completo + deploy no Railway Production |
 
-Branch `main` protegida: todos os checks devem passar + aprovação obrigatória.
-
-Todo merge na `main` aciona deploy automático no **Railway**.
+Branch `staging` e `main` protegidas: PR obrigatório, CI deve passar, aprovação necessária para `main`.
 
 ---
 
@@ -152,13 +166,63 @@ Toda a lógica de cálculo fica em `Numerologia.Core/Calculos/`:
 
 ---
 
+## Metodologia — Extreme Programming (XP)
+
+Este projeto segue as práticas de **Extreme Programming**. Não usamos Scrum (sem sprints, sem velocity, sem burndowns).
+
+### Práticas adotadas
+
+| Prática | Como se aplica |
+|---------|---------------|
+| **TDD** | Escreva o teste que falha primeiro, depois o código mínimo para passar, depois refatore |
+| **Integração Contínua** | Todo push em feature branch executa build + testes + segurança via GitHub Actions |
+| **Small Releases** | Branches vivem no máximo 1–2 dias; cada PR entrega uma fatia vertical funcionando |
+| **Design Simples** | YAGNI — sem abstrações especulativas, sem código para o futuro |
+| **Refatoração Contínua** | Após cada teste verde, melhore o design; os testes são a rede de segurança |
+| **Propriedade Coletiva** | Qualquer área do código pode ser alterada por qualquer pessoa, desde que os testes passem |
+| **Ritmo Sustentável** | Não acumule dívida técnica para ir mais rápido a curto prazo |
+
+### Ciclo TDD
+
+```
+Vermelho → escreva um teste que falha descrevendo o comportamento desejado
+Verde    → escreva o mínimo de código de produção para o teste passar
+Azul     → refatore teste e código de produção sem quebrar os testes
+```
+
+Nunca pule o passo **Vermelho**. Sem teste falhando, não há feature.
+
+---
+
 ## Contribuindo
 
-1. Fork o projeto
-2. Crie uma branch: `git checkout -b feat/minha-feature`
-3. Commit suas mudanças: `git commit -m 'feat: adiciona minha feature'`
-4. Push para a branch: `git push origin feat/minha-feature`
-5. Abra um Pull Request
+> **Pushes diretos para `main` estão bloqueados.** Toda mudança — por menor que seja — precisa de um Pull Request.
+
+1. Crie uma branch a partir da `main`:
+   ```bash
+   git checkout -b feat/minha-feature
+   ```
+2. Escreva os testes antes do código (TDD)
+3. Faça commits pequenos e frequentes:
+   ```bash
+   git commit -m 'feat: adiciona minha feature'
+   ```
+4. Push e abra o PR:
+   ```bash
+   git push origin feat/minha-feature
+   ```
+5. Aguarde o CI passar e a aprovação do PR
+6. Após aprovação, merge para `staging` → deploy automático no Railway Staging
+7. Após validação em staging, abra PR de `staging` → `main` → deploy em produção
+
+### Convenção de branches
+
+| Prefixo | Quando usar |
+|---------|-------------|
+| `feat/` | Nova funcionalidade |
+| `fix/` | Correção de bug |
+| `refactor/` | Melhoria de design sem mudar comportamento |
+| `chore/` | Configuração, CI, dependências |
 
 ---
 
