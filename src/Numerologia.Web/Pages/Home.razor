@@ -1,7 +1,40 @@
-﻿@page "/"
+@page "/"
+@inject IAuthService AuthService
+@inject NavigationManager Nav
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Numerologia Cabalística</PageTitle>
 
-<h1>Hello, world!</h1>
+@if (_loading)
+{
+    <p>Carregando...</p>
+}
+else if (_usuario is null)
+{
+    <h1>Numerologia Cabalística</h1>
+    <p>Faça login para acessar seu mapa numerológico.</p>
+    <a href="/auth/login" class="btn btn-primary">Entrar com Google</a>
+}
+else
+{
+    <h1>Bem-vindo, @_usuario.Nome!</h1>
+    <p>@_usuario.Email</p>
+    <button id="btn-logout" class="btn btn-secondary" @onclick="Logout">Sair</button>
+}
 
-Welcome to your new app.
+@code {
+    private UsuarioInfo? _usuario;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _usuario = await AuthService.GetCurrentUserAsync();
+        _loading = false;
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        _usuario = null;
+        Nav.NavigateTo("/", forceLoad: true);
+    }
+}

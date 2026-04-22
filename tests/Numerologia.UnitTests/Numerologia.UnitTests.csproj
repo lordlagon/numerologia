@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.*" />
+    <PackageReference Include="bunit" Version="1.*" />
     <PackageReference Include="coverlet.collector" Version="10.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -16,6 +17,7 @@
     <PackageReference Include="FluentAssertions" Version="7.*" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="NSubstitute" Version="5.*" />
+    <PackageReference Include="RichardSzalay.MockHttp" Version="7.*" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
@@ -26,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Numerologia.Core\Numerologia.Core.csproj" />
+    <ProjectReference Include="..\..\src\Numerologia.Web\Numerologia.Web.csproj" />
   </ItemGroup>
 
 </Project>
