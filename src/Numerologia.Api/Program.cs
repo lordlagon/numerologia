@@ -26,10 +26,11 @@ app.MapGet("/debug/wwwroot", (IWebHostEnvironment env) =>
     var root = env.WebRootPath ?? "(null)";
     var frameworkPath = Path.Combine(root, "_framework");
     var exists = Directory.Exists(frameworkPath);
-    var files = exists
-        ? Directory.GetFiles(frameworkPath).Select(Path.GetFileName).Take(20)
+    var total = exists ? Directory.GetFiles(frameworkPath).Length : 0;
+    var datFiles = exists
+        ? Directory.GetFiles(frameworkPath, "*icu*").Select(Path.GetFileName)
         : Enumerable.Empty<string>();
-    return Results.Ok(new { webRootPath = root, frameworkExists = exists, files });
+    return Results.Ok(new { webRootPath = root, frameworkExists = exists, total, datFiles });
 });
 
 // Fallback para o roteamento client-side do Blazor
