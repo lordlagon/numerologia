@@ -75,7 +75,8 @@ jobs:
         run: curl -fsSL https://railway.app/install.sh | sh
 
       - name: Deploy (staging)
-        # "numerologia" é o nome do serviço no Railway (visível no dashboard)
-        run: railway up --service numerologia --environment staging --detach
+        # RAILWAY_SERVICE e RAILWAY_ENVIRONMENT são variáveis configuradas em:
+        # GitHub → Settings → Environments → staging → Variables
+        run: railway up --service ${{ vars.RAILWAY_SERVICE }} --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
