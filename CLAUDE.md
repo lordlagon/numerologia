@@ -191,12 +191,15 @@ feature/* ──PR──► staging ──PR──► main
 
 | Nome | Tipo | Onde configurar |
 |------|------|----------------|
-| `RAILWAY_TOKEN` | Secret | Settings → Secrets → Actions |
-| `RAILWAY_STAGING_URL` | Variable | Settings → Variables → Actions (env: staging) |
-| `RAILWAY_PRODUCTION_URL` | Variable | Settings → Variables → Actions (env: production) |
+| `RAILWAY_TOKEN` | Secret | Settings → Secrets → Actions (repository-level) |
+| `RAILWAY_SERVICE` | Variable | Settings → Environments → `staging` (e `production`) → Variables |
+| `RAILWAY_ENVIRONMENT` | Variable | Settings → Environments → `staging` (e `production`) → Variables |
+| `RAILWAY_STAGING_URL` | Variable | Settings → Environments → `staging` → Variables |
+| `RAILWAY_PRODUCTION_URL` | Variable | Settings → Environments → `production` → Variables |
 
+> **Importante:** `RAILWAY_SERVICE` e `RAILWAY_ENVIRONMENT` devem ser configuradas dentro do **GitHub Environment** (staging/production), não como variáveis de repositório.
+> O Railway cria environments com nomes como "Numerologia / staging" — **ignore-os**. Crie environments próprios chamados `staging` e `production` no GitHub.
 > O `RAILWAY_TOKEN` é gerado em: Railway Dashboard → Account Settings → Tokens.
-> Os nomes de serviço (`api`, `web`) devem corresponder aos nomes configurados no projeto Railway.
 
 ---
 
@@ -224,9 +227,21 @@ The Java implementation in `Numerologia-Java/` is the reference for porting logi
 
 ## Railway Deployment
 
-- Each `push` to `main` triggers an automatic deploy on Railway.
-- Environment variables (DB connection string, Google OAuth, JWT secret) are set in Railway's dashboard — not in `appsettings.json`.
-- `appsettings.Production.json` should contain no sensitive values.
+- Deploy é acionado pelo CD do GitHub Actions (não pelo auto-deploy nativo do Railway).
+- Environment variables (DB connection string, Google OAuth, JWT secret) são definidas no Railway dashboard — nunca em `appsettings.json`.
+- `appsettings.Production.json` não deve conter valores sensíveis.
+- O plugin PostgreSQL do Railway injeta `DATABASE_URL` automaticamente.
+
+### Gotchas descobertos em produção
+
+| Problema | Causa | Solução |
+|----------|-------|---------|
+| Blazor travado em 100% com 404 em `_framework/*.dat` | `UseStaticFiles` não serve extensões desconhecidas por padrão | `ServeUnknownFileTypes = true` + mapear `.dat`, `.blat`, `.wasm` no `FileExtensionContentTypeProvider` |
+| Redirect loop no Railway | `UseHttpsRedirection` conflita com o proxy TLS do Railway | **Não usar** `UseHttpsRedirection` — Railway termina HTTPS externamente |
+| Build Docker falha com "unable to find python in PATH" | `wasm-tools` workload requer Python + Emscripten | **Não instalar** `wasm-tools` na imagem Docker — publish sem ele funciona em modo interpretado |
+| GitLeaks falha com 403 em PRs | Token `GITHUB_TOKEN` sem permissão de leitura de PRs | Adicionar `permissions: pull-requests: read` no workflow |
+| GitLeaks falha com "ambiguous argument" | Checkout shallow (depth 1) sem histórico completo | Adicionar `fetch-depth: 0` no step de checkout do job security |
+| Variáveis Railway não encontradas no CD | Variáveis configuradas como Repository Variables em vez de Environment Variables | Configurar `RAILWAY_SERVICE` e `RAILWAY_ENVIRONMENT` dentro do **GitHub Environment** `staging`/`production` |
 
 ---
 

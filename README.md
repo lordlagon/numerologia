@@ -11,7 +11,7 @@
 
 <p align="center">
   <img alt="Build" src="https://github.com/lordlagon/numerologia/actions/workflows/ci.yml/badge.svg" />
-  <img alt=".NET" src="https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet" />
+  <img alt=".NET" src="https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet" />
   <img alt="Blazor" src="https://img.shields.io/badge/Blazor-WASM-512BD4?logo=blazor" />
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white" />
   <img alt="Railway" src="https://img.shields.io/badge/Deploy-Railway-0B0D0E?logo=railway" />
@@ -35,8 +35,8 @@
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Backend | ASP.NET Core Web API (.NET 8) |
-| Frontend | Blazor WebAssembly |
+| Backend | ASP.NET Core Web API (.NET 10) |
+| Frontend | Blazor WebAssembly (.NET 10) |
 | Banco de Dados | PostgreSQL 16 (EF Core + Migrations) |
 | Autenticação | Google OAuth 2.0 |
 | Deploy | Railway |
@@ -50,14 +50,17 @@
 ```
 /
 ├── src/
-│   ├── Numerologia.Api/            # ASP.NET Core Web API
+│   ├── Numerologia.Api/            # ASP.NET Core Web API (serve o Blazor WASM em produção)
 │   ├── Numerologia.Web/            # Blazor WebAssembly
 │   ├── Numerologia.Core/           # Domínio, entidades, DTOs
 │   └── Numerologia.Infrastructure/ # EF Core, repositórios
 ├── tests/
 │   ├── Numerologia.UnitTests/      # Testes unitários (xUnit)
 │   └── Numerologia.IntegrationTests/ # Testes de integração (WebApplicationFactory)
-└── docs/                           # Documentação e imagens de referência
+├── docs/                           # Documentação e imagens de referência
+├── Dockerfile                      # Multi-stage: Blazor WASM + API → runtime
+├── docker-compose.yml              # Dev local: API + PostgreSQL
+└── railway.toml                    # Configuração de deploy no Railway
 ```
 
 ---
@@ -66,33 +69,41 @@
 
 ### Pré-requisitos
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [PostgreSQL 16](https://www.postgresql.org/)
-- Conta Google (para OAuth)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (para subir com Docker Compose)
 
-### Configuração
+### Com Docker Compose (recomendado)
 
 ```bash
 # 1. Clone o repositório
 git clone https://github.com/lordlagon/numerologia.git
 cd numerologia
 
-# 2. Restaurar dependências
+# 2. Sobe API + PostgreSQL
+docker compose up
+```
+
+API disponível em `http://localhost:8080`.
+
+### Sem Docker (apenas .NET)
+
+```bash
+# 1. Restaurar dependências
 dotnet restore
 
-# 3. Configurar variáveis de ambiente
-#    Crie um appsettings.Development.json em src/Numerologia.Api/
-#    com ConnectionStrings, Google:ClientId e Google:ClientSecret
+# 2. Configurar variáveis de ambiente
+#    Crie src/Numerologia.Api/appsettings.Development.json com:
+#    ConnectionStrings, Google:ClientId e Google:ClientSecret
 
-# 4. Aplicar migrations
+# 3. Aplicar migrations
 dotnet ef database update \
   --project src/Numerologia.Infrastructure \
   --startup-project src/Numerologia.Api
 
-# 5. Rodar a API
+# 4. Rodar a API
 dotnet run --project src/Numerologia.Api
 
-# 6. Rodar o frontend (outro terminal)
+# 5. Rodar o frontend (outro terminal)
 dotnet run --project src/Numerologia.Web
 ```
 
@@ -127,15 +138,18 @@ dotnet test --collect:"XPlat Code Coverage"
 
 ## CI/CD
 
-O GitHub Actions roda automaticamente em todo push e PR:
+```
+feature/* ──PR──► staging ──PR──► main
+              CD→ Railway Staging    CD→ Railway Production
+```
 
-1. `build` — `dotnet build`
-2. `test` — `dotnet test` com coleta de cobertura
-3. `security` — `dotnet list package --vulnerable` + GitLeaks
+| Branch | O que dispara |
+|--------|--------------|
+| `feature/*` | CI: build + test + security (validação de PR) |
+| `staging` | CI completo + deploy no Railway Staging |
+| `main` | CI completo + deploy no Railway Production |
 
-Branch `main` protegida: todos os checks devem passar + aprovação obrigatória.
-
-Todo merge na `main` aciona deploy automático no **Railway**.
+Branch `staging` e `main` protegidas: PR obrigatório, CI deve passar, aprovação necessária para `main`.
 
 ---
 
@@ -198,7 +212,8 @@ Nunca pule o passo **Vermelho**. Sem teste falhando, não há feature.
    git push origin feat/minha-feature
    ```
 5. Aguarde o CI passar e a aprovação do PR
-6. Merge para `main` → deploy automático no Railway
+6. Após aprovação, merge para `staging` → deploy automático no Railway Staging
+7. Após validação em staging, abra PR de `staging` → `main` → deploy em produção
 
 ### Convenção de branches
 
