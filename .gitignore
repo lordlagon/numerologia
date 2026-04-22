@@ -1,0 +1,43 @@
+# Java project (reference only, not part of this repo)
+Numerologia-Java/
+
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+
+# Environment & secrets
+.env
+*.env
+appsettings.Development.json
+appsettings.Local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Rider / VS Code
+.idea/
+.vscode/
+*.DotSettings.user
+
+# NuGet
+packages/
+*.nupkg
+project.lock.json
+
+# Test results & coverage
+TestResults/
+coverage/
+*.trx
+*.coveragexml
+
+# EF Core migrations backup
+*.bak
+
+# Logs
+*.log
+logs/
