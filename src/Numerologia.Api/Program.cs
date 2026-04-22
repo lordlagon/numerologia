@@ -18,8 +18,19 @@ app.UseStaticFiles(new StaticFileOptions
     ContentTypeProvider = contentTypeProvider
 });
 
-// Sanity check — remover quando a API real for implementada
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
+
+// Diagnóstico temporário — remover após confirmar o deploy
+app.MapGet("/debug/wwwroot", (IWebHostEnvironment env) =>
+{
+    var root = env.WebRootPath ?? "(null)";
+    var frameworkPath = Path.Combine(root, "_framework");
+    var exists = Directory.Exists(frameworkPath);
+    var files = exists
+        ? Directory.GetFiles(frameworkPath).Select(Path.GetFileName).Take(20)
+        : Enumerable.Empty<string>();
+    return Results.Ok(new { webRootPath = root, frameworkExists = exists, files });
+});
 
 // Fallback para o roteamento client-side do Blazor
 app.MapFallbackToFile("index.html");
