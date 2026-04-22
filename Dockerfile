@@ -2,9 +2,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS web-build
 WORKDIR /src
 
-# wasm-tools é necessário para o publish do Blazor WASM em Linux
-RUN dotnet workload install wasm-tools
-
 COPY src/Numerologia.Core/Numerologia.Core.csproj             src/Numerologia.Core/
 COPY src/Numerologia.Web/Numerologia.Web.csproj               src/Numerologia.Web/
 RUN dotnet restore src/Numerologia.Web/Numerologia.Web.csproj
@@ -13,9 +10,6 @@ COPY src/Numerologia.Core/   src/Numerologia.Core/
 COPY src/Numerologia.Web/    src/Numerologia.Web/
 RUN dotnet publish src/Numerologia.Web/Numerologia.Web.csproj \
     -c Release -o /web-out --no-restore
-
-# Verifica que os arquivos _framework foram gerados (visível nos build logs)
-RUN echo "=== Blazor WASM output ===" && find /web-out/wwwroot/_framework -name "*.dat"
 
 # ─── Stage 2: build API ────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS api-build
