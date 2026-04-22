@@ -41,3 +41,7 @@ coverage/
 # Logs
 *.log
 logs/
+
+# AI Jail
+.ai-jail
+
