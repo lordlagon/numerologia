@@ -18,8 +18,8 @@ Authentication via Google OAuth. **No code merges to `main` without a Pull Reque
 
 | Layer | Technology |
 |---|---|
-| Backend | ASP.NET Core Web API (.NET 8) |
-| Frontend | Blazor WebAssembly |
+| Backend | ASP.NET Core Web API (.NET 10) |
+| Frontend | Blazor WebAssembly (.NET 10) |
 | Database | PostgreSQL (EF Core + Migrations) |
 | Auth | Google OAuth (`Microsoft.AspNetCore.Authentication.Google`) |
 | Deploy | Railway |
@@ -32,14 +32,37 @@ Authentication via Google OAuth. **No code merges to `main` without a Pull Reque
 ```
 /
 ├── src/
-│   ├── Numerologia.Api/          # ASP.NET Core Web API
-│   ├── Numerologia.Web/          # Blazor WebAssembly
-│   ├── Numerologia.Core/         # Domain logic, entities, DTOs (shared)
+│   ├── Numerologia.Api/            # ASP.NET Core Web API
+│   ├── Numerologia.Web/            # Blazor WebAssembly (servido pela API em produção)
+│   ├── Numerologia.Core/           # Domain logic, entities, DTOs (shared)
 │   └── Numerologia.Infrastructure/ # EF Core, repositories, external integrations
-└── tests/
-    ├── Numerologia.UnitTests/    # xUnit unit tests
-    └── Numerologia.IntegrationTests/ # WebApplicationFactory tests
+├── tests/
+│   ├── Numerologia.UnitTests/      # xUnit unit tests
+│   └── Numerologia.IntegrationTests/ # WebApplicationFactory tests
+├── Dockerfile                      # Multi-stage: web-build → api-build → runtime
+├── docker-compose.yml              # Dev local: API + PostgreSQL
+└── railway.toml                    # Config de deploy no Railway
 ```
+
+## Containers
+
+### Produção / Staging (Railway)
+
+```
+Railway
+├── Serviço: numerologia   ← Dockerfile (API + Blazor WASM no wwwroot)
+└── Serviço: PostgreSQL    ← plugin nativo do Railway
+```
+
+A variável `DATABASE_URL` é injetada automaticamente pelo Railway ao adicionar o plugin PostgreSQL.
+
+### Desenvolvimento local
+
+```bash
+docker compose up
+```
+
+Sobe a API em `http://localhost:8080` e o PostgreSQL em `localhost:5432`.
 
 ---
 
