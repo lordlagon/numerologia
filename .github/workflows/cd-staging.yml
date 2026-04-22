@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, security]
     environment:
-      name: "Numerologia / staging"
+      name: "staging"
       url: ${{ vars.RAILWAY_STAGING_URL }}
     steps:
       - uses: actions/checkout@v4
@@ -75,8 +75,6 @@ jobs:
         run: curl -fsSL https://railway.app/install.sh | sh
 
       - name: Deploy (staging)
-        # RAILWAY_SERVICE e RAILWAY_ENVIRONMENT são variáveis configuradas em:
-        # GitHub → Settings → Environments → staging → Variables
         run: railway up --service ${{ vars.RAILWAY_SERVICE }} --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
