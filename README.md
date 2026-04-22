@@ -152,13 +152,62 @@ Toda a lógica de cálculo fica em `Numerologia.Core/Calculos/`:
 
 ---
 
+## Metodologia — Extreme Programming (XP)
+
+Este projeto segue as práticas de **Extreme Programming**. Não usamos Scrum (sem sprints, sem velocity, sem burndowns).
+
+### Práticas adotadas
+
+| Prática | Como se aplica |
+|---------|---------------|
+| **TDD** | Escreva o teste que falha primeiro, depois o código mínimo para passar, depois refatore |
+| **Integração Contínua** | Todo push em feature branch executa build + testes + segurança via GitHub Actions |
+| **Small Releases** | Branches vivem no máximo 1–2 dias; cada PR entrega uma fatia vertical funcionando |
+| **Design Simples** | YAGNI — sem abstrações especulativas, sem código para o futuro |
+| **Refatoração Contínua** | Após cada teste verde, melhore o design; os testes são a rede de segurança |
+| **Propriedade Coletiva** | Qualquer área do código pode ser alterada por qualquer pessoa, desde que os testes passem |
+| **Ritmo Sustentável** | Não acumule dívida técnica para ir mais rápido a curto prazo |
+
+### Ciclo TDD
+
+```
+Vermelho → escreva um teste que falha descrevendo o comportamento desejado
+Verde    → escreva o mínimo de código de produção para o teste passar
+Azul     → refatore teste e código de produção sem quebrar os testes
+```
+
+Nunca pule o passo **Vermelho**. Sem teste falhando, não há feature.
+
+---
+
 ## Contribuindo
 
-1. Fork o projeto
-2. Crie uma branch: `git checkout -b feat/minha-feature`
-3. Commit suas mudanças: `git commit -m 'feat: adiciona minha feature'`
-4. Push para a branch: `git push origin feat/minha-feature`
-5. Abra um Pull Request
+> **Pushes diretos para `main` estão bloqueados.** Toda mudança — por menor que seja — precisa de um Pull Request.
+
+1. Crie uma branch a partir da `main`:
+   ```bash
+   git checkout -b feat/minha-feature
+   ```
+2. Escreva os testes antes do código (TDD)
+3. Faça commits pequenos e frequentes:
+   ```bash
+   git commit -m 'feat: adiciona minha feature'
+   ```
+4. Push e abra o PR:
+   ```bash
+   git push origin feat/minha-feature
+   ```
+5. Aguarde o CI passar e a aprovação do PR
+6. Merge para `main` → deploy automático no Railway
+
+### Convenção de branches
+
+| Prefixo | Quando usar |
+|---------|-------------|
+| `feat/` | Nova funcionalidade |
+| `fix/` | Correção de bug |
+| `refactor/` | Melhoria de design sem mudar comportamento |
+| `chore/` | Configuração, CI, dependências |
 
 ---
 
