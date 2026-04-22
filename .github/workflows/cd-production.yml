@@ -68,12 +68,8 @@ jobs:
       - name: Install Railway CLI
         run: curl -fsSL https://railway.app/install.sh | sh
 
-      - name: Deploy API (production)
-        run: railway up --service api --environment production --detach
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Deploy Web (production)
-        run: railway up --service web --environment production --detach
+      - name: Deploy (production)
+        # "numerologia" é o nome do serviço no Railway (visível no dashboard)
+        run: railway up --service numerologia --environment production --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
