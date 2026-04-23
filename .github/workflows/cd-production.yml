@@ -75,8 +75,7 @@ jobs:
         run: curl -fsSL https://railway.app/install.sh | sh
 
       - name: Deploy (production)
-        # RAILWAY_SERVICE e RAILWAY_ENVIRONMENT são variáveis configuradas em:
-        # GitHub → Settings → Environments → production → Variables
-        run: railway up --service ${{ vars.RAILWAY_SERVICE }} --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
+        
+        run: railway up --service Numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
