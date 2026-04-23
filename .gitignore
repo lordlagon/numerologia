@@ -1,6 +1,9 @@
 # Java project (reference only, not part of this repo)
 Numerologia-Java/
 
+# Docs (livro, imagens de referência — não versionar)
+docs/
+
 # .NET build artifacts
 bin/
 obj/

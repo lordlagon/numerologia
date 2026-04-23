@@ -75,6 +75,6 @@ jobs:
         run: curl -fsSL https://railway.app/install.sh | sh
 
       - name: Deploy (staging)
-        run: railway up --service Numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
+        run: railway up --service numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
