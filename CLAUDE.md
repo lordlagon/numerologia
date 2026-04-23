@@ -260,6 +260,9 @@ The Java implementation in `Numerologia-Java/` is the reference for porting logi
 | GitLeaks falha com 403 em PRs | Token `GITHUB_TOKEN` sem permissão de leitura de PRs | Adicionar `permissions: pull-requests: read` no workflow |
 | GitLeaks falha com "ambiguous argument" | Checkout shallow (depth 1) sem histórico completo | Adicionar `fetch-depth: 0` no step de checkout do job security |
 | Variáveis Railway não encontradas no CD | Variáveis configuradas como Repository Variables em vez de Environment Variables | Configurar `RAILWAY_SERVICE` e `RAILWAY_ENVIRONMENT` dentro do **GitHub Environment** `staging`/`production` |
+| `Format of the initialization string` no startup | `DATABASE_URL` do Railway está no formato URI (`postgres://...`), mas Npgsql espera key-value | Converter com `ToNpgsqlConnectionString()` em `Program.cs` antes de passar para `UseNpgsql()` |
+| OAuth não redireciona após login | `ForwardedHeaders` ausente → correlation cookie criado sem flag `Secure`, descartado pelo browser | Adicionar `UseForwardedHeaders` (com `XForwardedFor` + `XForwardedProto`) antes de `UseAuthentication` |
+| Migrations não aplicadas no primeiro deploy | Railway não executa `dotnet ef database update` automaticamente | `Database.Migrate()` no startup, com guard `IsNpgsql()` para não rodar em testes (SQLite + `EnsureCreated`) |
 
 ---
 

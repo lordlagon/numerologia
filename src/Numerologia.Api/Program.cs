@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Numerologia.Core.Interfaces;
 using Numerologia.Core.Services;
 using Numerologia.Infrastructure.Data;
@@ -12,13 +13,36 @@ using Numerologia.Infrastructure.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 // EF Core + PostgreSQL
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+// Railway injeta DATABASE_URL no formato URI (postgres://user:pass@host:port/db).
+// Npgsql espera key-value — converte quando necessário.
+var rawConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+
+var connectionString = ToNpgsqlConnectionString(rawConnectionString);
 
 if (!string.IsNullOrEmpty(connectionString))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(connectionString));
+}
+
+static string? ToNpgsqlConnectionString(string? value)
+{
+    if (string.IsNullOrEmpty(value)) return null;
+    if (!value.StartsWith("postgres://") && !value.StartsWith("postgresql://")) return value;
+
+    var uri = new Uri(value);
+    var userInfo = uri.UserInfo.Split(':', 2);
+    return new NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.Port > 0 ? uri.Port : 5432,
+        Database = uri.AbsolutePath.TrimStart('/'),
+        Username = Uri.UnescapeDataString(userInfo[0]),
+        Password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "",
+        SslMode = SslMode.Require,
+        TrustServerCertificate = true,
+    }.ConnectionString;
 }
 
 // DI
