@@ -272,6 +272,18 @@ This project follows **Extreme Programming** practices. Scrum artifacts (sprints
 - PR must have at least one approval.
 - Keep PRs small: one user story or one bug fix per PR.
 
+### Vertical Slice Rule
+
+**A feature branch must not be sent to staging unless it is complete end-to-end:**
+
+| Layer | Requirement |
+|---|---|
+| **DB** | Migration created and applied; schema reflects the feature |
+| **Backend (API)** | Endpoints implemented, tested (unit + integration) |
+| **Frontend (Blazor)** | Components implemented, tested with bUnit |
+
+No partial slices. A PR that touches only the API without the corresponding Blazor UI (or vice-versa) must not be opened against `staging`.
+
 ### TDD Cycle
 
 ```
