@@ -53,10 +53,12 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Aplica migrations pendentes automaticamente ao iniciar (Railway não tem step de migrate no deploy)
+// Ignorado em testes de integração que usam SQLite + EnsureCreated()
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetService<AppDbContext>();
-    db?.Database.Migrate();
+    if (db?.Database.IsNpgsql() == true)
+        db.Database.Migrate();
 }
 
 // Railway termina TLS no proxy — informa o scheme real ao ASP.NET Core

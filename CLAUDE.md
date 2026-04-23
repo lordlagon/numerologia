@@ -104,6 +104,24 @@ dotnet list package --vulnerable
 
 ---
 
+## Pre-commit Checklist
+
+**Obrigatório antes de qualquer commit:**
+
+```bash
+# 1. Rodar todos os testes — unidade + integração
+dotnet test
+
+# 2. Verificar pacotes vulneráveis
+dotnet list package --vulnerable
+```
+
+Se `dotnet test` falhar, **não commitar**. Corrigir o teste ou o código antes.
+
+> Atenção com conflitos de versão de pacotes NuGet: todos os projetos devem usar a mesma major version do EF Core e Npgsql (atualmente `10.*`). Mismatch entre projetos causa `MissingMethodException` em runtime nos testes de integração.
+
+---
+
 ## Testing — Required Tools & Rules
 
 **No code may be merged to `main` without passing tests.**
