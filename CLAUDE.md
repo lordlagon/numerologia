@@ -104,6 +104,24 @@ dotnet list package --vulnerable
 
 ---
 
+## Pre-commit Checklist
+
+**Obrigatório antes de qualquer commit:**
+
+```bash
+# 1. Rodar todos os testes — unidade + integração
+dotnet test
+
+# 2. Verificar pacotes vulneráveis
+dotnet list package --vulnerable
+```
+
+Se `dotnet test` falhar, **não commitar**. Corrigir o teste ou o código antes.
+
+> Atenção com conflitos de versão de pacotes NuGet: todos os projetos devem usar a mesma major version do EF Core e Npgsql (atualmente `10.*`). Mismatch entre projetos causa `MissingMethodException` em runtime nos testes de integração.
+
+---
+
 ## Testing — Required Tools & Rules
 
 **No code may be merged to `main` without passing tests.**
@@ -242,6 +260,9 @@ The Java implementation in `Numerologia-Java/` is the reference for porting logi
 | GitLeaks falha com 403 em PRs | Token `GITHUB_TOKEN` sem permissão de leitura de PRs | Adicionar `permissions: pull-requests: read` no workflow |
 | GitLeaks falha com "ambiguous argument" | Checkout shallow (depth 1) sem histórico completo | Adicionar `fetch-depth: 0` no step de checkout do job security |
 | Variáveis Railway não encontradas no CD | Variáveis configuradas como Repository Variables em vez de Environment Variables | Configurar `RAILWAY_SERVICE` e `RAILWAY_ENVIRONMENT` dentro do **GitHub Environment** `staging`/`production` |
+| `Format of the initialization string` no startup | `DATABASE_URL` do Railway está no formato URI (`postgres://...`), mas Npgsql espera key-value | Converter com `ToNpgsqlConnectionString()` em `Program.cs` antes de passar para `UseNpgsql()` |
+| OAuth não redireciona após login | `ForwardedHeaders` ausente → correlation cookie criado sem flag `Secure`, descartado pelo browser | Adicionar `UseForwardedHeaders` (com `XForwardedFor` + `XForwardedProto`) antes de `UseAuthentication` |
+| Migrations não aplicadas no primeiro deploy | Railway não executa `dotnet ef database update` automaticamente | `Database.Migrate()` no startup, com guard `IsNpgsql()` para não rodar em testes (SQLite + `EnsureCreated`) |
 
 ---
 
@@ -271,6 +292,18 @@ This project follows **Extreme Programming** practices. Scrum artifacts (sprints
 - CI must be green before merging.
 - PR must have at least one approval.
 - Keep PRs small: one user story or one bug fix per PR.
+
+### Vertical Slice Rule
+
+**A feature branch must not be sent to staging unless it is complete end-to-end:**
+
+| Layer | Requirement |
+|---|---|
+| **DB** | Migration created and applied; schema reflects the feature |
+| **Backend (API)** | Endpoints implemented, tested (unit + integration) |
+| **Frontend (Blazor)** | Components implemented, tested with bUnit |
+
+No partial slices. A PR that touches only the API without the corresponding Blazor UI (or vice-versa) must not be opened against `staging`.
 
 ### TDD Cycle
 
