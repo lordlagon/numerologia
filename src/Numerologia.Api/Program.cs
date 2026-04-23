@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Numerologia.Core.Interfaces;
 using Numerologia.Core.Services;
@@ -50,6 +51,19 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Aplica migrations pendentes automaticamente ao iniciar (Railway não tem step de migrate no deploy)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetService<AppDbContext>();
+    db?.Database.Migrate();
+}
+
+// Railway termina TLS no proxy — informa o scheme real ao ASP.NET Core
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 // Railway termina HTTPS no proxy — não redirecionar internamente
 // app.UseHttpsRedirection();
