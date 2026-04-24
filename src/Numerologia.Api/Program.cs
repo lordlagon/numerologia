@@ -10,6 +10,7 @@ using Numerologia.Core.Interfaces;
 using Numerologia.Core.Services;
 using Numerologia.Infrastructure.Data;
 using Numerologia.Infrastructure.Repositories;
+using MapasRepository = Numerologia.Infrastructure.Repositories.MapasRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +50,9 @@ static string? ToNpgsqlConnectionString(string? value)
 // DI
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IConsulentesRepository, ConsulentesRepository>();
+builder.Services.AddScoped<IMapasRepository, MapasRepository>();
 builder.Services.AddScoped<UsuarioService>();
+builder.Services.AddScoped<GeradorMapa>();
 
 // Autenticação
 builder.Services.AddAuthentication(options =>
@@ -203,6 +206,51 @@ app.MapDelete("/consulentes/{id:int}", async (int id, HttpContext ctx,
     return Results.NoContent();
 }).RequireAuthorization();
 
+// ── Mapas ─────────────────────────────────────────────────────────────────────
+
+app.MapPost("/consulentes/{consulenteId:int}/mapas",
+    async (int consulenteId, CriarMapaRequest req, HttpContext ctx,
+        IConsulentesRepository consultesRepo, IMapasRepository mapaRepo,
+        GeradorMapa gerador, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var consulente = await consultesRepo.ObterPorIdAsync(consulenteId, usuario.Id);
+        if (consulente is null) return Results.NotFound();
+
+        var mapa = gerador.Gerar(consulente.Id, req.NomeUtilizado, consulente.DataNascimento);
+        await mapaRepo.AdicionarAsync(mapa);
+        await mapaRepo.SalvarAlteracoesAsync();
+
+        return Results.Created($"/consulentes/{consulenteId}/mapas/{mapa.Id}",
+            ToResumoResponse(mapa));
+    }).RequireAuthorization();
+
+app.MapGet("/consulentes/{consulenteId:int}/mapas",
+    async (int consulenteId, HttpContext ctx,
+        IMapasRepository repo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var lista = await repo.ObterTodosAsync(consulenteId, usuario.Id);
+        if (lista is null) return Results.NotFound();
+
+        return Results.Ok(lista.Select(ToResumoResponse));
+    }).RequireAuthorization();
+
+app.MapGet("/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
+    async (int consulenteId, int mapaId, HttpContext ctx,
+        IMapasRepository repo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        return mapa is null ? Results.NotFound() : Results.Ok(ToDetalheResponse(mapa));
+    }).RequireAuthorization();
+
 // Fallback para o roteamento client-side do Blazor
 app.MapFallbackToFile("index.html");
 
@@ -220,6 +268,26 @@ static async Task<Numerologia.Core.Entities.Usuario?> ResolverUsuario(
 static ConsulenteResponse ToResponse(Consulente c) =>
     new(c.Id, c.NomeCompleto, c.DataNascimento, c.Email, c.Telefone, c.CriadoEm);
 
+static MapaResumoResponse ToResumoResponse(Numerologia.Core.Entities.MapaNumerologico m) =>
+    new(m.Id, m.NomeUtilizado, m.DataNascimento, m.NumeroExpressao, m.NumeroDestino, m.CriadoEm);
+
+static MapaDetalheResponse ToDetalheResponse(Numerologia.Core.Entities.MapaNumerologico m) =>
+    new(m.Id, m.NomeUtilizado, m.DataNascimento, m.CriadoEm,
+        m.NumeroMotivacao, m.NumeroImpressao, m.NumeroExpressao,
+        m.DividasCarmicas, m.FiguraA,
+        m.LicoesCarmicas, m.TendenciasOcultas, m.RespostaSubconsciente,
+        m.MesNascimentoReduzido, m.DiaNascimentoReduzido, m.AnoNascimentoReduzido,
+        m.NumeroDestino, m.Missao,
+        m.CicloVida1, m.CicloVida2, m.CicloVida3,
+        m.FimCiclo1Idade, m.FimCiclo2Idade,
+        m.Desafio1, m.Desafio2, m.DesafioPrincipal,
+        m.MomentoDecisivo1, m.MomentoDecisivo2, m.MomentoDecisivo3, m.MomentoDecisivo4,
+        m.DiasMesFavoraveis, m.NumerosHarmonicos,
+        m.RelacaoIntervalores,
+        m.HarmoniaVibraCom, m.HarmoniaAtrai, m.HarmoniaEOpostoA,
+        m.HarmoniaProfundamenteOpostoA, m.HarmoniaEPassivoEm,
+        m.CoresFavoraveis);
+
 // ── Declarações de tipo ───────────────────────────────────────────────────────
 
 // Necessário para WebApplicationFactory nos testes de integração
@@ -233,3 +301,25 @@ record AtualizarConsulenteRequest(string NomeCompleto, string DataNascimento,
 
 record ConsulenteResponse(int Id, string NomeCompleto, DateOnly DataNascimento,
     string? Email, string? Telefone, DateTime CriadoEm);
+
+record CriarMapaRequest(string NomeUtilizado);
+
+record MapaResumoResponse(int Id, string NomeUtilizado, DateOnly DataNascimento,
+    int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);
+
+record MapaDetalheResponse(
+    int Id, string NomeUtilizado, DateOnly DataNascimento, DateTime CriadoEm,
+    int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao,
+    int[] DividasCarmicas, Dictionary<int, int> FiguraA,
+    int[] LicoesCarmicas, int[] TendenciasOcultas, int RespostaSubconsciente,
+    int MesNascimentoReduzido, int DiaNascimentoReduzido, int AnoNascimentoReduzido,
+    int NumeroDestino, int Missao,
+    int CicloVida1, int CicloVida2, int CicloVida3,
+    int FimCiclo1Idade, int FimCiclo2Idade,
+    int Desafio1, int Desafio2, int DesafioPrincipal,
+    int MomentoDecisivo1, int MomentoDecisivo2, int MomentoDecisivo3, int MomentoDecisivo4,
+    int[] DiasMesFavoraveis, int[] NumerosHarmonicos,
+    int RelacaoIntervalores,
+    int HarmoniaVibraCom, int[] HarmoniaAtrai, int[] HarmoniaEOpostoA,
+    int[] HarmoniaProfundamenteOpostoA, int[] HarmoniaEPassivoEm,
+    string[] CoresFavoraveis);

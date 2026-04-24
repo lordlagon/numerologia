@@ -14,13 +14,14 @@ CRM para numerólogos cabalísticos. A numeróloga cadastra consulentes (cliente
 
 ## Reference Documents
 
-| Documento | Conteúdo |
-|-----------|----------|
-| `docs/stack.md` | Stack técnica, estrutura do repo, comandos, testes, CI/CD, Railway, gotchas |
-| `docs/planning.md` | Roadmap de features, modelo de dados, ordem de desenvolvimento |
-| `docs/numerologia.md` | Domínio do livro: todas as fórmulas de cálculo do mapa numerológico |
+| Documento | Versionado | Conteúdo |
+|-----------|:----------:|----------|
+| `docs/stack.md` | ✅ | Stack técnica, estrutura do repo, comandos, testes, CI/CD, Railway, gotchas |
+| `docs/planning.md` | ✅ | Roadmap de features, modelo de dados, ordem de desenvolvimento |
+| `docs/privado/numerologia.md` | ❌ | Domínio do livro: todas as fórmulas de cálculo do mapa numerológico |
+| `docs/privado/` | ❌ | PDF do livro, imagens de referência, segredos OAuth — ficam apenas localmente |
 
-> `docs/` está no `.gitignore` — os arquivos acima ficam apenas localmente.
+> `docs/privado/` está no `.gitignore`. Os demais documentos em `docs/` são versionados normalmente.
 
 ---
 
@@ -53,6 +54,7 @@ Toda a lógica de cálculo fica em `Numerologia.Core/Calculos/`. As regras compl
 - `CalculoMapa` — converte letras para valores cabalísticos; calcula Motivação (vogais), Impressão (consoantes), Expressão (total), Fig. A, Lições Cármicas, Tendências Ocultas, Resposta Subconsciente, Dívidas Cármicas.
 - `CalculoDestino` — data de nascimento → Destino, Missão, Ciclos de Vida, Desafios, Momentos Decisivos.
 - `CalculosPessoais` — Ano/Mês/Dia Pessoal (dinâmicos, não persistidos).
+- `GeradorMapa` (em `Core/Services/`) — orquestra `CalculoMapa` + `CalculoDestino` + tabelas fixas → cria entidade `MapaNumerologico` (snapshot persistido).
 - **Tabelas fixas** — constantes do domínio, hardcoded em C# (não no banco):
   - `TabelaHarmoniaConjugal` — relação entre números (VibraCom, Atrai, EOpostoA, ProfundamenteOpostoA, EPassivoEm); keyed por número 1–9.
   - `TabelaCoresFavoraveis` — cores favoráveis por número de Expressão 1–9.
