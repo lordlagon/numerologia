@@ -86,6 +86,8 @@ Blue  → refatorar sem quebrar os testes
 - **`main` é sempre deployável.** Push direto bloqueado.
 - Todo código vai por **Pull Request**, sem exceção.
 - Convenção: `feat/<slug>`, `fix/<slug>`, `refactor/<slug>`, `chore/<slug>`.
+- **PRs de branches de trabalho → `staging` (não `main`).**
+- `staging` → `main` é feito separadamente após validação em staging.
 - CI deve estar verde antes do merge.
 - PR deve ter pelo menos 1 aprovação.
 - PRs pequenos: uma user story ou um bug fix por PR.
