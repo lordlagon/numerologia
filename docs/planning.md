@@ -137,14 +137,13 @@ Numeróloga (usuária autenticada via Google OAuth)
   - `DataProtection` persistido no banco via `IDataProtectionKeyContext` — sobrevive a redeploys no Railway
   - Migration `AddDataProtectionKeys` criada
 
-- [ ] **F1.6** — Hardening de segurança
-  - **Security Headers** (crítico): ativar `NetEscapades.AspNetCore.SecurityHeaders` — já instalado, nunca configurado
-    - `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `HSTS`
-  - **Exception Handler global** (crítico): `app.UseExceptionHandler()` — impede stack traces em produção
-  - **DateOnly.Parse seguro** (crítico): substituir `DateOnly.Parse()` por `DateOnly.TryParse()` com retorno `400 BadRequest`
-  - **Rate Limiting** (alto): `Microsoft.AspNetCore.RateLimiting` (built-in .NET 7+) — proteger especialmente `POST /api/consulentes/{id}/mapas`
-  - **Cookie flags explícitas** (alto): `Secure`, `HttpOnly`, `SameSite=Strict` no `AddCookie()`
-  - **Validação de input nos DTOs** (médio): `[MaxLength]` nos records de request
+- [x] **F1.6** — Hardening de segurança ✅
+  - **Security Headers**: `NetEscapades.AspNetCore.SecurityHeaders` ativado — CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+  - **Exception Handler global**: `app.UseExceptionHandler()` — retorna JSON genérico, nunca stack trace em produção
+  - **DateOnly.Parse seguro**: `DateOnly.TryParse()` com `400 BadRequest` nos endpoints POST/PUT e range check em `/api/calculos/pessoal`
+  - **Rate Limiting**: 60 req/min geral por usuário; 10 req/min no `POST /api/consulentes/{id}/mapas`
+  - **Cookie flags**: `HttpOnly=true`, `SameSite=Lax`, `SecurePolicy=SameAsRequest`
+  - **Validação de input**: `[MaxLength]` nos records de request
 
 ---
 
