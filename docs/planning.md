@@ -170,6 +170,11 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Buscar consulente por nome
   - Filtrar mapas por data
 
+- [x] **F2.4** — Botão "Pirâmides" na lista de mapas ✅
+  - Botão ao lado de "Ver Mapa" em cada linha da `ListaMapas`
+  - Inicialmente desabilitado (`disabled`) — telas das Pirâmides da Vida ainda não desenvolvidas
+  - Será habilitado quando a funcionalidade de Pirâmides estiver pronta
+
 ---
 
 ### Fase 3 — PDF

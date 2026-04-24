@@ -70,4 +70,23 @@ public class ListaMapasTests : TestContext
         cut.WaitForAssertion(() =>
             cut.Markup.Should().Contain("CARLOS ROSA"));
     }
+
+    [Fact]
+    public void Render_ComMapas_ExibeBotaoPiramidesDesabilitado()
+    {
+        var mapas = new List<MapaResumoDto>
+        {
+            new(1, "JOSE DA SILVA", new DateOnly(1985, 3, 10), 7, 9, DateTime.UtcNow),
+        };
+        _mapasService.ListarAsync(1).Returns(mapas);
+
+        var cut = RenderComponent<ListaMapas>(p => p.Add(c => c.ConsulenteId, 1));
+
+        cut.WaitForAssertion(() =>
+        {
+            var btn = cut.FindAll("button")
+                .First(b => b.TextContent.Contains("Pirâmides"));
+            btn.HasAttribute("disabled").Should().BeTrue();
+        });
+    }
 }
