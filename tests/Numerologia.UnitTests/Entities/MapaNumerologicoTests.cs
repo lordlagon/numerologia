@@ -13,6 +13,7 @@ public class MapaNumerologicoTests
     // Data: 15/08/1990 → dia=15→6, mês=8, ano=1990→1+9+9+0=19→10→1
     // Destino: 6+8+1=15→6
     private static readonly ResultadoMapa _mapa = new(
+        GradeLetras:          [new('A', TipoLetra.Vogal, 1), new('N', TipoLetra.Consoante, 5), new('A', TipoLetra.Vogal, 1)],
         NumeroMotivacao:      2,
         NumeroImpressao:      5,
         NumeroExpressao:      7,

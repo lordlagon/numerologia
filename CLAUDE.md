@@ -55,6 +55,7 @@ Toda a lógica de cálculo fica em `Numerologia.Core/Calculos/`. As regras compl
 - `CalculoDestino` — data de nascimento → Destino, Missão, Ciclos de Vida, Desafios, Momentos Decisivos.
 - `CalculosPessoais` — Ano/Mês/Dia Pessoal (dinâmicos, não persistidos).
 - `GeradorMapa` (em `Core/Services/`) — orquestra `CalculoMapa` + `CalculoDestino` + tabelas fixas → cria entidade `MapaNumerologico` (snapshot persistido).
+- `EntradaLetra` / `TipoLetra` — grade de letras do nome (Vogal, Consoante, Espaco) com valor cabalístico por posição; incluída em `ResultadoMapa` e persistida no `MapaNumerologico`.
 - **Tabelas fixas** — constantes do domínio, hardcoded em C# (não no banco):
   - `TabelaHarmoniaConjugal` — relação entre números (VibraCom, Atrai, EOpostoA, ProfundamenteOpostoA, EPassivoEm); keyed por número 1–9.
   - `TabelaCoresFavoraveis` — cores favoráveis por número de Expressão 1–9.

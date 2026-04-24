@@ -11,6 +11,7 @@ public class MapaNumerologico
     public DateTime CriadoEm       { get; private set; }
 
     // Do nome
+    public EntradaLetra[]       GradeLetras          { get; private set; }
     public int                  NumeroMotivacao      { get; private set; }
     public int                  NumeroImpressao      { get; private set; }
     public int                  NumeroExpressao      { get; private set; }
@@ -54,6 +55,7 @@ public class MapaNumerologico
     {
         // EF Core
         NomeUtilizado              = null!;
+        GradeLetras                = [];
         DividasCarmicas            = [];
         FiguraA                    = [];
         LicoesCarmicas             = [];
@@ -85,6 +87,7 @@ public class MapaNumerologico
             DataNascimento = dataNascimento,
             CriadoEm      = DateTime.UtcNow,
 
+            GradeLetras           = [.. mapa.GradeLetras],
             NumeroMotivacao       = mapa.NumeroMotivacao,
             NumeroImpressao       = mapa.NumeroImpressao,
             NumeroExpressao       = mapa.NumeroExpressao,

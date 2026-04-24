@@ -6,20 +6,20 @@ public class CalculoMapa
 
     public ResultadoMapa Calcular(string nome)
     {
-        var letras = nome
-            .ToLowerInvariant()
-            .Where(char.IsLetter)
-            .ToList();
+        var grade = ConstruirGrade(nome);
 
-        var somaVogais     = letras.Where(TabelaCabalistica.EhVogal).Sum(TabelaCabalistica.ObterValor);
-        var somaConsoantes = letras.Where(c => !TabelaCabalistica.EhVogal(c)).Sum(TabelaCabalistica.ObterValor);
+        var letrasEfetivas = grade.Where(e => e.Tipo != TipoLetra.Espaco).ToList();
+
+        var somaVogais     = letrasEfetivas.Where(e => e.Tipo == TipoLetra.Vogal).Sum(e => e.ValorCabalistico);
+        var somaConsoantes = letrasEfetivas.Where(e => e.Tipo == TipoLetra.Consoante).Sum(e => e.ValorCabalistico);
         var somaTotal      = somaVogais + somaConsoantes;
 
-        var figuraA            = CalcularFiguraA(letras);
-        var licoesCarmicas     = CalcularLicoes(figuraA);
-        var tendenciasOcultas  = CalcularTendencias(figuraA);
+        var figuraA           = CalcularFiguraA(letrasEfetivas);
+        var licoesCarmicas    = CalcularLicoes(figuraA);
+        var tendenciasOcultas = CalcularTendencias(figuraA);
 
         return new ResultadoMapa(
+            GradeLetras:          grade,
             NumeroMotivacao:      ReducaoNumerologica.Reduzir(somaVogais),
             NumeroImpressao:      ReducaoNumerologica.Reduzir(somaConsoantes),
             NumeroExpressao:      ReducaoNumerologica.Reduzir(somaTotal),
@@ -31,13 +31,37 @@ public class CalculoMapa
         );
     }
 
-    private static IReadOnlyDictionary<int, int> CalcularFiguraA(List<char> letras)
+    private static IReadOnlyList<EntradaLetra> ConstruirGrade(string nome)
+    {
+        var grade = new List<EntradaLetra>();
+
+        foreach (var ch in nome.ToUpperInvariant())
+        {
+            if (ch == ' ')
+            {
+                grade.Add(new EntradaLetra(' ', TipoLetra.Espaco, 0));
+                continue;
+            }
+
+            if (!char.IsLetter(ch)) continue;
+
+            var lower = char.ToLowerInvariant(ch);
+            var valor = TabelaCabalistica.ObterValor(lower);
+            var tipo  = TabelaCabalistica.EhVogal(lower) ? TipoLetra.Vogal : TipoLetra.Consoante;
+
+            grade.Add(new EntradaLetra(ch, tipo, valor));
+        }
+
+        return grade;
+    }
+
+    private static IReadOnlyDictionary<int, int> CalcularFiguraA(List<EntradaLetra> letras)
     {
         var contagem = Enumerable.Range(1, 9).ToDictionary(n => n, _ => 0);
 
-        foreach (var letra in letras)
+        foreach (var entrada in letras)
         {
-            var valor = TabelaCabalistica.ObterValor(letra);
+            var valor = entrada.ValorCabalistico;
             if (valor >= 1 && valor <= 9)
                 contagem[valor]++;
         }
@@ -57,12 +81,10 @@ public class CalculoMapa
 
     private static IReadOnlyList<int> DetectarDividas(int somaVogais, int somaConsoantes, int somaTotal)
     {
-        var dividas = new[] { somaVogais, somaConsoantes, somaTotal }
+        return new[] { somaVogais, somaConsoantes, somaTotal }
             .Where(s => _numerosComDivida.Contains(s))
             .Distinct()
             .Order()
             .ToList();
-
-        return dividas;
     }
 }

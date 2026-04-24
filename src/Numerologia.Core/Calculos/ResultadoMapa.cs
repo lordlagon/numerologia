@@ -1,6 +1,7 @@
 namespace Numerologia.Core.Calculos;
 
 public record ResultadoMapa(
+    IReadOnlyList<EntradaLetra> GradeLetras,
     int NumeroMotivacao,
     int NumeroImpressao,
     int NumeroExpressao,

@@ -1,0 +1,423 @@
+@page "/consulentes/{ConsulenteId:int}/mapas/{MapaId:int}"
+@inject IMapasService MapasService
+@inject ICalculosPessoaisService PessoaisService
+@inject NavigationManager Nav
+
+<PageTitle>Gráfico Numerológico</PageTitle>
+
+@if (_carregando)
+{
+    <p>Carregando...</p>
+}
+else if (_erro is not null)
+{
+    <div class="alert alert-danger">@_erro</div>
+}
+else if (_mapa is not null)
+{
+    <div class="grafico-numerologico">
+
+        <h2 class="text-center fw-bold mb-3">GRÁFICO NUMEROLÓGICO</h2>
+        <p class="text-center text-muted mb-4">@_mapa.NomeUtilizado — @_mapa.DataNascimento.ToString("dd/MM/yyyy")</p>
+
+        <!-- ── GRADE DE LETRAS ─────────────────────────────────────────── -->
+        <div class="card mb-3">
+            <div class="card-body p-2">
+                <div class="grade-letras overflow-auto">
+                    <table class="table table-bordered table-sm text-center mb-0 grade-table">
+                        <tbody>
+                            <tr>
+                                <td class="grade-label">Vogais</td>
+                                @foreach (var e in _mapa.GradeLetras)
+                                {
+                                    <td class="grade-cell @(e.Tipo == TipoLetraDto.Espaco ? "grade-espaco" : "")">
+                                        @if (e.Tipo == TipoLetraDto.Vogal)
+                                        { <span class="fw-bold">@e.ValorCabalistico</span> }
+                                    </td>
+                                }
+                                <td class="grade-resultado fw-bold" data-testid="motivacao">@_mapa.NumeroMotivacao</td>
+                                <td class="grade-label-right">Nº de Motivação</td>
+                            </tr>
+                            <tr>
+                                <td class="grade-label">Nome</td>
+                                @foreach (var e in _mapa.GradeLetras)
+                                {
+                                    <td class="grade-cell" data-testid="celula-letra">
+                                        @if (e.Tipo != TipoLetraDto.Espaco)
+                                        { <span>@e.Letra</span> }
+                                    </td>
+                                }
+                                <td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td class="grade-label">Consoante</td>
+                                @foreach (var e in _mapa.GradeLetras)
+                                {
+                                    <td class="grade-cell">
+                                        @if (e.Tipo == TipoLetraDto.Consoante)
+                                        { <span>@e.ValorCabalistico</span> }
+                                    </td>
+                                }
+                                <td class="grade-resultado fw-bold" data-testid="impressao">@_mapa.NumeroImpressao</td>
+                                <td class="grade-label-right">Nº de Impressão</td>
+                            </tr>
+                            <tr>
+                                <td class="grade-label">TOTAL</td>
+                                @foreach (var e in _mapa.GradeLetras)
+                                {
+                                    <td class="grade-cell">
+                                        @if (e.Tipo != TipoLetraDto.Espaco)
+                                        { <span>@e.ValorCabalistico</span> }
+                                    </td>
+                                }
+                                <td class="grade-resultado fw-bold" data-testid="expressao">@_mapa.NumeroExpressao</td>
+                                <td class="grade-label-right">Nº de Expressão</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+
+            <!-- ── COLUNA ESQUERDA: Fig. A ─────────────────────────────── -->
+            <div class="col-auto">
+                <div class="card h-100">
+                    <div class="card-body p-2">
+                        <div class="text-center fw-bold mb-1">Fig. "A"</div>
+                        <table class="table table-bordered table-sm text-center mb-0">
+                            <tbody>
+                                @foreach (var kv in _mapa.FiguraA.OrderBy(x => int.Parse(x.Key)))
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@kv.Key</td>
+                                        <td>@(kv.Value > 0 ? kv.Value.ToString() : "")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <div class="text-center" style="font-size:0.7rem">Total de Letras<br/>em Cada Número</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── COLUNA CENTRAL ─────────────────────────────────────── -->
+            <div class="col">
+                <div class="row g-2">
+
+                    <!-- Fig. B — Lições Cármicas -->
+                    <div class="col-auto">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <div class="fw-bold text-center mb-1">Fig. B</div>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    @foreach (var n in _mapa.LicoesCarmicas)
+                                    {
+                                        <span class="badge bg-warning text-dark">@n</span>
+                                    }
+                                    @if (!_mapa.LicoesCarmicas.Any())
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </div>
+                                <div class="text-center mt-1" style="font-size:0.7rem">Lições Cármicas</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fig. C — Tendências Ocultas -->
+                    <div class="col-auto">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <div class="fw-bold text-center mb-1">Fig. C</div>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    @foreach (var n in _mapa.TendenciasOcultas)
+                                    {
+                                        <span class="badge bg-info text-dark">@n</span>
+                                    }
+                                </div>
+                                <div class="text-center mt-1" style="font-size:0.7rem">Tendências Ocultas</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fig. D -->
+                    <div class="col-auto">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <div class="fw-bold text-center mb-1">Fig. D</div>
+                                <table class="table table-bordered table-sm text-center mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td>Resp. Subconsciente</td>
+                                            <td class="fw-bold">@_mapa.RespostaSubconsciente</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Mês</td>
+                                            <td class="fw-bold">@_mapa.MesNascimentoReduzido</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Dia</td>
+                                            <td class="fw-bold">@_mapa.DiaNascimentoReduzido</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ano do Nascimento</td>
+                                            <td class="fw-bold">@_mapa.AnoNascimentoReduzido</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fig. E -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <div class="fw-bold text-center mb-1">Fig. E</div>
+                                <div class="d-flex gap-3 flex-wrap align-items-start">
+                                    <div class="text-center">
+                                        <div style="font-size:0.7rem">Dívidas Cármicas</div>
+                                        <div class="d-flex gap-1">
+                                            @foreach (var n in _mapa.DividasCarmicas)
+                                            {
+                                                <span class="badge bg-danger">@n</span>
+                                            }
+                                            @if (!_mapa.DividasCarmicas.Any())
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div style="font-size:0.7rem">Nº de Destino</div>
+                                        <div class="fw-bold fs-5" data-testid="destino">@_mapa.NumeroDestino</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div style="font-size:0.7rem">Missão</div>
+                                        <div class="fw-bold fs-5">@_mapa.Missao</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div style="font-size:0.7rem">Ano Pessoal</div>
+                                        <div class="fw-bold fs-5" data-testid="ano-pessoal">@(_pessoal?.AnoPessoal.ToString() ?? "—")</div>
+                                    </div>
+                                    @if (_pessoal is not null)
+                                    {
+                                        <div class="text-center">
+                                            <div style="font-size:0.7rem">Mês Pessoal</div>
+                                            <div class="fw-bold fs-5">@_pessoal.MesPessoal</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div style="font-size:0.7rem">Dia Pessoal</div>
+                                            <div class="fw-bold fs-5">@_pessoal.DiaPessoal</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dias do Mês Favoráveis -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <div class="d-flex gap-1 flex-wrap align-items-center">
+                                    <span style="font-size:0.8rem" class="me-2">Dias do Mês Favoráveis</span>
+                                    @foreach (var n in _mapa.DiasMesFavoraveis)
+                                    {
+                                        <span class="badge bg-success">@n</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Números Harmônicos + Relação Intervalores -->
+                    <div class="col-auto">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <div style="font-size:0.7rem" class="mb-1">Números Harmônicos</div>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    @foreach (var n in _mapa.NumerosHarmonicos)
+                                    {
+                                        <span class="badge bg-primary">@n</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card">
+                            <div class="card-body p-2 text-center">
+                                <div style="font-size:0.7rem">Relação Intervalores</div>
+                                <div class="fw-bold fs-5">@_mapa.RelacaoIntervalores</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cores Favoráveis -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <div style="font-size:0.7rem" class="mb-1">Cores Favoráveis</div>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    @foreach (var cor in _mapa.CoresFavoraveis)
+                                    {
+                                        <span class="badge bg-secondary">@cor</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ── COLUNA DIREITA: Fig. F, G, H + Harmonia ───────────── -->
+            <div class="col-auto">
+                <div class="d-flex flex-column gap-2">
+
+                    <!-- Fig. F — Ciclos de Vida -->
+                    <div class="card">
+                        <div class="card-body p-2">
+                            <div class="fw-bold text-center mb-1">Fig. F — Ciclos de Vida</div>
+                            <table class="table table-bordered table-sm text-center mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td>1º Ciclo</td>
+                                        <td class="fw-bold" data-testid="ciclo1">@_mapa.CicloVida1</td>
+                                        <td style="font-size:0.7rem">até @_mapa.FimCiclo1Idade anos</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2º Ciclo</td>
+                                        <td class="fw-bold" data-testid="ciclo2">@_mapa.CicloVida2</td>
+                                        <td style="font-size:0.7rem">até @_mapa.FimCiclo2Idade anos</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3º Ciclo</td>
+                                        <td class="fw-bold" data-testid="ciclo3">@_mapa.CicloVida3</td>
+                                        <td style="font-size:0.7rem">em diante</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Fig. H — Desafios -->
+                    <div class="card">
+                        <div class="card-body p-2">
+                            <div class="fw-bold text-center mb-1">Fig. H — Desafios</div>
+                            <table class="table table-bordered table-sm text-center mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td>Primeiro</td>
+                                        <td class="fw-bold" data-testid="desafio1">@_mapa.Desafio1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Segundo</td>
+                                        <td class="fw-bold" data-testid="desafio2">@_mapa.Desafio2</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Principal</td>
+                                        <td class="fw-bold" data-testid="desafio-principal">@_mapa.DesafioPrincipal</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Fig. G — Momentos Decisivos -->
+                    <div class="card">
+                        <div class="card-body p-2">
+                            <div class="fw-bold text-center mb-1">Fig. G — Momentos Decisivos</div>
+                            <table class="table table-bordered table-sm text-center mb-0">
+                                <tbody>
+                                    <tr><td>1º</td><td class="fw-bold">@_mapa.MomentoDecisivo1</td></tr>
+                                    <tr><td>2º</td><td class="fw-bold">@_mapa.MomentoDecisivo2</td></tr>
+                                    <tr><td>3º</td><td class="fw-bold">@_mapa.MomentoDecisivo3</td></tr>
+                                    <tr><td>4º</td><td class="fw-bold">@_mapa.MomentoDecisivo4</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Harmonia Conjugal -->
+                    <div class="card">
+                        <div class="card-body p-2">
+                            <div class="fw-bold text-center mb-1">Harmonia Conjugal</div>
+                            <table class="table table-bordered table-sm mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td>Vibra com</td>
+                                        <td class="fw-bold text-center" data-testid="harmonia-vibra-com">@_mapa.HarmoniaVibraCom</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Atrai</td>
+                                        <td>@string.Join(", ", _mapa.HarmoniaAtrai)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>É oposto a</td>
+                                        <td>@string.Join(", ", _mapa.HarmoniaEOpostoA)
+                                            @if (_mapa.HarmoniaProfundamenteOpostoA.Any())
+                                            {
+                                                <span class="text-danger"> (@string.Join(", ", _mapa.HarmoniaProfundamenteOpostoA) prof.)</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>É passivo</td>
+                                        <td>@string.Join(", ", _mapa.HarmoniaEPassivoEm)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div><!-- /row -->
+
+    </div><!-- /grafico-numerologico -->
+
+    <div class="mt-3">
+        <a href="/consulentes/@ConsulenteId/mapas" class="btn btn-secondary">Voltar</a>
+    </div>
+}
+
+@code {
+    [Parameter] public int ConsulenteId { get; set; }
+    [Parameter] public int MapaId { get; set; }
+
+    private MapaDetalheDto? _mapa;
+    private ResultadoPessoalDto? _pessoal;
+    private bool _carregando = true;
+    private string? _erro;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _carregando = true;
+        try
+        {
+            _mapa = await MapasService.ObterAsync(ConsulenteId, MapaId);
+            if (_mapa is null)
+            {
+                _erro = "Mapa não encontrado.";
+                return;
+            }
+
+            _pessoal = await PessoaisService.ObterAsync(
+                _mapa.DataNascimento.Day,
+                _mapa.DataNascimento.Month);
+        }
+        catch
+        {
+            _erro = "Erro ao carregar o gráfico.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+}
