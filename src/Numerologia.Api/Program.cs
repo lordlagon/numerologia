@@ -84,14 +84,6 @@ builder.Services.AddAuthentication(options =>
     options.ExpireTimeSpan    = TimeSpan.FromDays(30);
     options.SlidingExpiration = true; // renova o prazo a cada request
 })
-.AddCookie(options =>
-{
-    // HttpOnly impede acesso via JavaScript; SameSite=Lax permite o redirect OAuth cross-origin
-    // SecurePolicy=SameAsRequest funciona no Railway onde TLS é terminado no proxy (request interno é HTTP)
-    options.Cookie.HttpOnly     = true;
-    options.Cookie.SameSite     = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-})
 .AddGoogle(options =>
 {
     options.ClientId = builder.Configuration["Google:ClientId"] ?? "";
