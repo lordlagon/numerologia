@@ -7,6 +7,17 @@ public interface IMapasService
     Task<MapaResumoDto> CriarAsync(int consulenteId, string nomeUtilizado);
 }
 
+public interface ICalculosPessoaisService
+{
+    Task<ResultadoPessoalDto> ObterAsync(int diaNascimento, int mesNascimento);
+}
+
+public record ResultadoPessoalDto(int AnoPessoal, int MesPessoal, int DiaPessoal);
+
+public enum TipoLetraDto { Vogal, Consoante, Espaco }
+
+public record EntradaLetraDto(string Letra, TipoLetraDto Tipo, int ValorCabalistico);
+
 public record MapaResumoDto(
     int Id,
     string NomeUtilizado,
@@ -20,6 +31,7 @@ public record MapaDetalheDto(
     string NomeUtilizado,
     DateOnly DataNascimento,
     DateTime CriadoEm,
+    List<EntradaLetraDto> GradeLetras,
     int NumeroMotivacao,
     int NumeroImpressao,
     int NumeroExpressao,

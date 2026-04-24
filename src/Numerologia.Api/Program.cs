@@ -206,6 +206,17 @@ app.MapDelete("/consulentes/{id:int}", async (int id, HttpContext ctx,
     return Results.NoContent();
 }).RequireAuthorization();
 
+// ── Cálculos dinâmicos ────────────────────────────────────────────────────────
+
+app.MapGet("/calculos/pessoal", (int dia, int mes) =>
+{
+    var calc = new Numerologia.Core.Calculos.CalculosPessoais();
+    var nascimento = new DateOnly(2000, mes, dia); // só dia e mês importam
+    var hoje = DateOnly.FromDateTime(DateTime.Today);
+    var resultado = calc.Calcular(nascimento, hoje);
+    return Results.Ok(new { resultado.AnoPessoal, resultado.MesPessoal, resultado.DiaPessoal });
+});
+
 // ── Mapas ─────────────────────────────────────────────────────────────────────
 
 app.MapPost("/consulentes/{consulenteId:int}/mapas",
@@ -273,6 +284,7 @@ static MapaResumoResponse ToResumoResponse(Numerologia.Core.Entities.MapaNumerol
 
 static MapaDetalheResponse ToDetalheResponse(Numerologia.Core.Entities.MapaNumerologico m) =>
     new(m.Id, m.NomeUtilizado, m.DataNascimento, m.CriadoEm,
+        m.GradeLetras,
         m.NumeroMotivacao, m.NumeroImpressao, m.NumeroExpressao,
         m.DividasCarmicas, m.FiguraA,
         m.LicoesCarmicas, m.TendenciasOcultas, m.RespostaSubconsciente,
@@ -309,6 +321,7 @@ record MapaResumoResponse(int Id, string NomeUtilizado, DateOnly DataNascimento,
 
 record MapaDetalheResponse(
     int Id, string NomeUtilizado, DateOnly DataNascimento, DateTime CriadoEm,
+    Numerologia.Core.Calculos.EntradaLetra[] GradeLetras,
     int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao,
     int[] DividasCarmicas, Dictionary<int, int> FiguraA,
     int[] LicoesCarmicas, int[] TendenciasOcultas, int RespostaSubconsciente,

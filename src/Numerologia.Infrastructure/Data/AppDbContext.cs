@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Numerologia.Core.Calculos;
 using Numerologia.Core.Entities;
 
 namespace Numerologia.Infrastructure.Data;
@@ -48,6 +49,12 @@ public class AppDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(m => m.ConsulenteId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            // GradeLetras (EntradaLetra[]) → JSON
+            entity.Property(m => m.GradeLetras)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, _jsonOptions),
+                    v => JsonSerializer.Deserialize<EntradaLetra[]>(v, _jsonOptions) ?? Array.Empty<EntradaLetra>());
 
             // Arrays de int → JSON (funciona em SQLite e PostgreSQL)
             entity.Property(m => m.DividasCarmicas)

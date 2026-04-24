@@ -122,10 +122,16 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Blazor: `ListaMapas`, `FormMapa`, `IMapasService`, botão "Mapas" na lista de consulentes
   - Testes: unit (entity + service), integração (endpoints), bUnit (componentes)
 
-- [ ] **F1.4** — Exibição do Gráfico Numerológico
-  - Layout fiel ao Gráfico Numerológico (imagem de referência em `docs/`)
-  - Todos os campos preenchidos automaticamente
-  - Campos dinâmicos (Ano/Mês/Dia Pessoal) recalculados ao abrir
+- [ ] **F1.3.1** — Ícone de acesso aos Mapas na lista de Consulentes
+  - Substituir botão "Mapas" por ícone de documento (📄 ou BI icon) com `alt="Mapas"`
+  - Executar após F1.3 estar validado em staging
+
+- [x] **F1.4** — Exibição do Gráfico Numerológico ✅
+  - Layout fiel ao Gráfico Numerológico (imagem de referência em `docs/privado/`)
+  - Grade de letras (Vogais/Nome/Consoante/TOTAL) com valores cabalísticos por célula
+  - Todos os campos calculados preenchidos automaticamente
+  - Campos dinâmicos (Ano/Mês/Dia Pessoal) recalculados ao abrir via `/calculos/pessoal`
+  - `GradeLetras` adicionada a `ResultadoMapa`, `MapaNumerologico` e API
 
 ---
 
