@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/logo.png" alt="Numerologia Cabalística" width="120" />
-</p>
-
 <h1 align="center">Numerologia Cabalística</h1>
 
 <p align="center">
@@ -56,8 +52,7 @@
 │   └── Numerologia.Infrastructure/ # EF Core, repositórios
 ├── tests/
 │   ├── Numerologia.UnitTests/      # Testes unitários (xUnit)
-│   └── Numerologia.IntegrationTests/ # Testes de integração (WebApplicationFactory)
-├── docs/                           # Documentação e imagens de referência
+│   └── Numerologia.IntegrationTests/ # Testes de integração (WebApplicationFactory + SQLite)
 ├── Dockerfile                      # Multi-stage: Blazor WASM + API → runtime
 ├── docker-compose.yml              # Dev local: API + PostgreSQL
 └── railway.toml                    # Configuração de deploy no Railway
@@ -93,17 +88,12 @@ dotnet restore
 
 # 2. Configurar variáveis de ambiente
 #    Crie src/Numerologia.Api/appsettings.Development.json com:
-#    ConnectionStrings, Google:ClientId e Google:ClientSecret
+#    ConnectionStrings:DefaultConnection, Google:ClientId e Google:ClientSecret
 
-# 3. Aplicar migrations
-dotnet ef database update \
-  --project src/Numerologia.Infrastructure \
-  --startup-project src/Numerologia.Api
-
-# 4. Rodar a API
+# 3. Rodar a API (migrations são aplicadas automaticamente no startup)
 dotnet run --project src/Numerologia.Api
 
-# 5. Rodar o frontend (outro terminal)
+# 4. Rodar o frontend (outro terminal)
 dotnet run --project src/Numerologia.Web
 ```
 
@@ -150,6 +140,16 @@ feature/* ──PR──► staging ──PR──► main
 | `main` | CI completo + deploy no Railway Production |
 
 Branch `staging` e `main` protegidas: PR obrigatório, CI deve passar, aprovação necessária para `main`.
+
+> **Railway:** o auto-deploy nativo deve estar **desabilitado** em todos os environments — os deploys são controlados exclusivamente pelo GitHub Actions (`cd-staging.yml` e `cd-production.yml`).
+
+### Variáveis de ambiente necessárias no Railway
+
+| Variável | Onde |
+|----------|------|
+| `DATABASE_URL` | Injetada automaticamente pelo plugin PostgreSQL |
+| `GOOGLE_CLIENT_ID` | Railway Dashboard → environment → Variables |
+| `GOOGLE_CLIENT_SECRET` | Railway Dashboard → environment → Variables |
 
 ---
 

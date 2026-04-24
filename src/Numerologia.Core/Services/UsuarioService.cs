@@ -12,6 +12,9 @@ public class UsuarioService
         _repository = repository;
     }
 
+    public async Task<Usuario?> ObterPorGoogleIdAsync(string googleId) =>
+        await _repository.ObterPorGoogleIdAsync(googleId);
+
     public async Task<Usuario> ObterOuCriarAsync(string googleId, string email, string nome)
     {
         var existente = await _repository.ObterPorGoogleIdAsync(googleId);

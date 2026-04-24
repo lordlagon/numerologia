@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Numerologia.Core.Entities;
 using Numerologia.Core.Interfaces;
 using Numerologia.Core.Services;
 using Numerologia.Infrastructure.Data;
@@ -47,6 +48,7 @@ static string? ToNpgsqlConnectionString(string? value)
 
 // DI
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IConsulentesRepository, ConsulentesRepository>();
 builder.Services.AddScoped<UsuarioService>();
 
 // Autenticação
@@ -139,10 +141,95 @@ app.MapPost("/auth/logout", async (HttpContext context) =>
     return Results.Ok(new { message = "logout" });
 });
 
+// ── Consulentes ──────────────────────────────────────────────────────────────
+
+app.MapGet("/consulentes", async (HttpContext ctx, IConsulentesRepository repo, UsuarioService usuarioService) =>
+{
+    var usuario = await ResolverUsuario(ctx, usuarioService);
+    if (usuario is null) return Results.Unauthorized();
+
+    var lista = await repo.ObterTodosAsync(usuario.Id);
+    return Results.Ok(lista.Select(ToResponse));
+}).RequireAuthorization();
+
+app.MapPost("/consulentes", async (CriarConsulenteRequest req, HttpContext ctx,
+    IConsulentesRepository repo, UsuarioService usuarioService) =>
+{
+    var usuario = await ResolverUsuario(ctx, usuarioService);
+    if (usuario is null) return Results.Unauthorized();
+
+    var consulente = new Consulente(usuario.Id, req.NomeCompleto,
+        DateOnly.Parse(req.DataNascimento), req.Email, req.Telefone);
+    await repo.AdicionarAsync(consulente);
+
+    var response = ToResponse(consulente);
+    return Results.Created($"/consulentes/{consulente.Id}", response);
+}).RequireAuthorization();
+
+app.MapGet("/consulentes/{id:int}", async (int id, HttpContext ctx,
+    IConsulentesRepository repo, UsuarioService usuarioService) =>
+{
+    var usuario = await ResolverUsuario(ctx, usuarioService);
+    if (usuario is null) return Results.Unauthorized();
+
+    var consulente = await repo.ObterPorIdAsync(id, usuario.Id);
+    return consulente is null ? Results.NotFound() : Results.Ok(ToResponse(consulente));
+}).RequireAuthorization();
+
+app.MapPut("/consulentes/{id:int}", async (int id, AtualizarConsulenteRequest req, HttpContext ctx,
+    IConsulentesRepository repo, UsuarioService usuarioService) =>
+{
+    var usuario = await ResolverUsuario(ctx, usuarioService);
+    if (usuario is null) return Results.Unauthorized();
+
+    var consulente = await repo.ObterPorIdAsync(id, usuario.Id);
+    if (consulente is null) return Results.NotFound();
+
+    consulente.Atualizar(req.NomeCompleto, DateOnly.Parse(req.DataNascimento), req.Email, req.Telefone);
+    await repo.SalvarAlteracoesAsync();
+    return Results.Ok(ToResponse(consulente));
+}).RequireAuthorization();
+
+app.MapDelete("/consulentes/{id:int}", async (int id, HttpContext ctx,
+    IConsulentesRepository repo, UsuarioService usuarioService) =>
+{
+    var usuario = await ResolverUsuario(ctx, usuarioService);
+    if (usuario is null) return Results.Unauthorized();
+
+    var consulente = await repo.ObterPorIdAsync(id, usuario.Id);
+    if (consulente is null) return Results.NotFound();
+
+    await repo.RemoverAsync(consulente);
+    return Results.NoContent();
+}).RequireAuthorization();
+
 // Fallback para o roteamento client-side do Blazor
 app.MapFallbackToFile("index.html");
 
 app.Run();
 
+// ── Funções locais (devem vir antes das declarações de tipo) ─────────────────
+
+static async Task<Numerologia.Core.Entities.Usuario?> ResolverUsuario(
+    HttpContext ctx, UsuarioService svc)
+{
+    var googleId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    return string.IsNullOrEmpty(googleId) ? null : await svc.ObterPorGoogleIdAsync(googleId);
+}
+
+static ConsulenteResponse ToResponse(Consulente c) =>
+    new(c.Id, c.NomeCompleto, c.DataNascimento, c.Email, c.Telefone, c.CriadoEm);
+
+// ── Declarações de tipo ───────────────────────────────────────────────────────
+
 // Necessário para WebApplicationFactory nos testes de integração
 public partial class Program { }
+
+record CriarConsulenteRequest(string NomeCompleto, string DataNascimento,
+    string? Email, string? Telefone);
+
+record AtualizarConsulenteRequest(string NomeCompleto, string DataNascimento,
+    string? Email, string? Telefone);
+
+record ConsulenteResponse(int Id, string NomeCompleto, DateOnly DataNascimento,
+    string? Email, string? Telefone, DateTime CriadoEm);
