@@ -84,4 +84,23 @@ public class ListaConsulentesTests : TestContext
 
         cut.Find("a[href='/consulentes/novo']").Should().NotBeNull();
     }
+
+    [Fact]
+    public void IconeMapas_QuandoHaConsulentes_ExibeIconeComLinkCorreto()
+    {
+        var consulentes = new List<ConsulenteDto>
+        {
+            new(7, "Ana Teste", new DateOnly(1990, 1, 1), null, null, DateTime.UtcNow),
+        };
+        _serviceMock.ListarAsync().Returns(consulentes);
+
+        var cut = RenderComponent<ListaConsulentes>();
+
+        cut.WaitForAssertion(() =>
+        {
+            var link = cut.Find("a[href='/consulentes/7/mapas']");
+            link.GetAttribute("aria-label").Should().Be("Mapas");
+            link.QuerySelector("i.bi-file-text").Should().NotBeNull();
+        });
+    }
 }
