@@ -1,0 +1,63 @@
+@page "/consulentes/{ConsulenteId:int}/mapas/novo"
+@using System.ComponentModel.DataAnnotations
+@inject IMapasService MapasService
+@inject NavigationManager Nav
+
+<PageTitle>Gerar Mapa Numerológico</PageTitle>
+
+<h1>Gerar Mapa Numerológico</h1>
+
+<EditForm Model="_form" OnValidSubmit="Gerar">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label class="form-label">Nome utilizado *</label>
+        <InputText class="form-control" @bind-Value="_form.NomeUtilizado"
+                   data-testid="nome-utilizado" />
+        <ValidationMessage For="() => _form.NomeUtilizado" />
+        <div class="form-text">
+            Nome conforme certidão de nascimento (ou nome de casada, se alterado).
+        </div>
+    </div>
+
+    @if (_erro is not null)
+    {
+        <div class="alert alert-danger">@_erro</div>
+    }
+
+    <button type="submit" class="btn btn-primary" disabled="@_gerando">
+        @(_gerando ? "Gerando..." : "Gerar Mapa")
+    </button>
+    <a href="/consulentes/@ConsulenteId/mapas" class="btn btn-secondary ms-2">Cancelar</a>
+</EditForm>
+
+@code {
+    [Parameter] public int ConsulenteId { get; set; }
+
+    private readonly FormModel _form = new();
+    private bool _gerando;
+    private string? _erro;
+
+    private async Task Gerar()
+    {
+        _gerando = true;
+        _erro = null;
+
+        try
+        {
+            await MapasService.CriarAsync(ConsulenteId, _form.NomeUtilizado!);
+            Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas");
+        }
+        catch
+        {
+            _erro = "Erro ao gerar mapa. Verifique o nome informado.";
+            _gerando = false;
+        }
+    }
+
+    private class FormModel
+    {
+        [Required(ErrorMessage = "Nome utilizado é obrigatório")]
+        public string? NomeUtilizado { get; set; }
+    }
+}
