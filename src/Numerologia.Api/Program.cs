@@ -1,10 +1,14 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using NetEscapades.AspNetCore.SecurityHeaders;
 using Npgsql;
 using Scalar.AspNetCore;
 using Numerologia.Core.Entities;
@@ -72,6 +76,11 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
+    // HttpOnly impede acesso via JavaScript; SameSite=Lax permite o redirect OAuth cross-origin
+    // SecurePolicy=SameAsRequest funciona no Railway onde TLS é terminado no proxy (request interno é HTTP)
+    options.Cookie.HttpOnly     = true;
+    options.Cookie.SameSite     = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     options.ExpireTimeSpan    = TimeSpan.FromDays(30);
     options.SlidingExpiration = true; // renova o prazo a cada request
 })
@@ -97,6 +106,32 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Rate Limiting — protege contra abuso e DoS
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Geral: 60 req/min por usuário autenticado (ou por IP para não-autenticados)
+    options.AddPolicy("api-geral", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                          ?? ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 60, Window = TimeSpan.FromMinutes(1), QueueLimit = 0
+            }));
+
+    // Mapas: 10 req/min — operação CPU-intensiva (executa todos os cálculos numerológicos)
+    options.AddPolicy("mapas", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                          ?? ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0
+            }));
+});
+
 // OpenAPI — disponível em Development e Staging; desabilitado em Production
 builder.Services.AddOpenApi(options =>
 {
@@ -121,11 +156,39 @@ using (var scope = app.Services.CreateScope())
         db.Database.Migrate();
 }
 
+// Tratamento global de exceções — nunca expor stack trace em produção
+app.UseExceptionHandler(exApp => exApp.Run(async ctx =>
+{
+    ctx.Response.StatusCode  = StatusCodes.Status500InternalServerError;
+    ctx.Response.ContentType = "application/json";
+    await ctx.Response.WriteAsJsonAsync(new { error = "Ocorreu um erro interno. Tente novamente." });
+}));
+
 // Railway termina TLS no proxy — informa o scheme real ao ASP.NET Core
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
+
+// Security Headers
+app.UseSecurityHeaders(policies => policies
+    .AddDefaultSecurityHeaders()          // X-Content-Type-Options, X-Frame-Options, Referrer-Policy
+    .AddStrictTransportSecurity(maxAgeInSeconds: 60 * 60 * 24 * 365, includeSubdomains: true, preload: false)
+    .AddContentSecurityPolicy(csp =>
+    {
+        csp.AddDefaultSrc().Self();
+        csp.AddObjectSrc().None();
+        csp.AddBlockAllMixedContent();
+        csp.AddImgSrc().Self().Data();
+        csp.AddFormAction().Self();
+        csp.AddFontSrc().Self();
+        csp.AddStyleSrc().Self().UnsafeInline();  // Bootstrap usa inline styles
+        csp.AddScriptSrc().Self().UnsafeEval();   // Blazor WASM precisa de eval para o runtime
+        csp.AddConnectSrc().Self();               // Chamadas à API
+        csp.AddWorkerSrc().Self().Blob();         // Web workers do Blazor WASM
+    }));
+
+app.UseRateLimiter();
 
 // OpenAPI + Scalar UI — não expor em Production
 if (!app.Environment.IsProduction())
@@ -187,6 +250,9 @@ app.MapPost("/auth/logout", async (HttpContext context) =>
 // Cálculos dinâmicos
 app.MapGet("/api/calculos/pessoal", (int dia, int mes) =>
 {
+    if (dia < 1 || dia > 31 || mes < 1 || mes > 12)
+        return Results.BadRequest(new { error = "Dia (1-31) e mês (1-12) inválidos." });
+
     var calc = new Numerologia.Core.Calculos.CalculosPessoais();
     var nascimento = new DateOnly(2000, mes, dia); // só dia e mês importam
     var hoje = DateOnly.FromDateTime(DateTime.Today);
@@ -202,7 +268,7 @@ app.MapGet("/api/consulentes", async (HttpContext ctx, IConsulentesRepository re
 
     var lista = await repo.ObterTodosAsync(usuario.Id);
     return Results.Ok(lista.Select(ToResponse));
-}).RequireAuthorization();
+}).RequireAuthorization().RequireRateLimiting("api-geral");
 
 app.MapPost("/api/consulentes", async (CriarConsulenteRequest req, HttpContext ctx,
     IConsulentesRepository repo, UsuarioService usuarioService) =>
@@ -210,13 +276,15 @@ app.MapPost("/api/consulentes", async (CriarConsulenteRequest req, HttpContext c
     var usuario = await ResolverUsuario(ctx, usuarioService);
     if (usuario is null) return Results.Unauthorized();
 
-    var consulente = new Consulente(usuario.Id, req.NomeCompleto,
-        DateOnly.Parse(req.DataNascimento), req.Email, req.Telefone);
+    if (!DateOnly.TryParse(req.DataNascimento, out var dataNasc))
+        return Results.BadRequest(new { error = "DataNascimento inválida. Use o formato YYYY-MM-DD." });
+
+    var consulente = new Consulente(usuario.Id, req.NomeCompleto, dataNasc, req.Email, req.Telefone);
     await repo.AdicionarAsync(consulente);
 
     var response = ToResponse(consulente);
     return Results.Created($"/api/consulentes/{consulente.Id}", response);
-}).RequireAuthorization();
+}).RequireAuthorization().RequireRateLimiting("api-geral");
 
 app.MapGet("/api/consulentes/{id:int}", async (int id, HttpContext ctx,
     IConsulentesRepository repo, UsuarioService usuarioService) =>
@@ -226,7 +294,7 @@ app.MapGet("/api/consulentes/{id:int}", async (int id, HttpContext ctx,
 
     var consulente = await repo.ObterPorIdAsync(id, usuario.Id);
     return consulente is null ? Results.NotFound() : Results.Ok(ToResponse(consulente));
-}).RequireAuthorization();
+}).RequireAuthorization().RequireRateLimiting("api-geral");
 
 app.MapPut("/api/consulentes/{id:int}", async (int id, AtualizarConsulenteRequest req, HttpContext ctx,
     IConsulentesRepository repo, UsuarioService usuarioService) =>
@@ -237,10 +305,13 @@ app.MapPut("/api/consulentes/{id:int}", async (int id, AtualizarConsulenteReques
     var consulente = await repo.ObterPorIdAsync(id, usuario.Id);
     if (consulente is null) return Results.NotFound();
 
-    consulente.Atualizar(req.NomeCompleto, DateOnly.Parse(req.DataNascimento), req.Email, req.Telefone);
+    if (!DateOnly.TryParse(req.DataNascimento, out var dataNasc))
+        return Results.BadRequest(new { error = "DataNascimento inválida. Use o formato YYYY-MM-DD." });
+
+    consulente.Atualizar(req.NomeCompleto, dataNasc, req.Email, req.Telefone);
     await repo.SalvarAlteracoesAsync();
     return Results.Ok(ToResponse(consulente));
-}).RequireAuthorization();
+}).RequireAuthorization().RequireRateLimiting("api-geral");
 
 app.MapDelete("/api/consulentes/{id:int}", async (int id, HttpContext ctx,
     IConsulentesRepository repo, UsuarioService usuarioService) =>
@@ -253,7 +324,7 @@ app.MapDelete("/api/consulentes/{id:int}", async (int id, HttpContext ctx,
 
     await repo.RemoverAsync(consulente);
     return Results.NoContent();
-}).RequireAuthorization();
+}).RequireAuthorization().RequireRateLimiting("api-geral");
 
 // Mapas
 app.MapPost("/api/consulentes/{consulenteId:int}/mapas",
@@ -273,7 +344,7 @@ app.MapPost("/api/consulentes/{consulenteId:int}/mapas",
 
         return Results.Created($"/api/consulentes/{consulenteId}/mapas/{mapa.Id}",
             ToResumoResponse(mapa));
-    }).RequireAuthorization();
+    }).RequireAuthorization().RequireRateLimiting("mapas");
 
 app.MapGet("/api/consulentes/{consulenteId:int}/mapas",
     async (int consulenteId, HttpContext ctx,
@@ -286,7 +357,7 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas",
         if (lista is null) return Results.NotFound();
 
         return Results.Ok(lista.Select(ToResumoResponse));
-    }).RequireAuthorization();
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
 
 app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
     async (int consulenteId, int mapaId, HttpContext ctx,
@@ -297,7 +368,7 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
 
         var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
         return mapa is null ? Results.NotFound() : Results.Ok(ToDetalheResponse(mapa));
-    }).RequireAuthorization();
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
 
 // Fallback para o roteamento client-side do Blazor
 // Só alcançado quando o path NÃO começa com /api — resolve o conflito de rotas
@@ -343,11 +414,17 @@ static MapaDetalheResponse ToDetalheResponse(Numerologia.Core.Entities.MapaNumer
 // Necessário para WebApplicationFactory nos testes de integração
 public partial class Program { }
 
-record CriarConsulenteRequest(string NomeCompleto, string DataNascimento,
-    string? Email, string? Telefone);
+record CriarConsulenteRequest(
+    [property: MaxLength(256)] string NomeCompleto,
+    string DataNascimento,
+    [property: MaxLength(256)] string? Email,
+    [property: MaxLength(30)]  string? Telefone);
 
-record AtualizarConsulenteRequest(string NomeCompleto, string DataNascimento,
-    string? Email, string? Telefone);
+record AtualizarConsulenteRequest(
+    [property: MaxLength(256)] string NomeCompleto,
+    string DataNascimento,
+    [property: MaxLength(256)] string? Email,
+    [property: MaxLength(30)]  string? Telefone);
 
 record ConsulenteResponse(int Id, string NomeCompleto, DateOnly DataNascimento,
     string? Email, string? Telefone, DateTime CriadoEm);
