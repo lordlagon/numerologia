@@ -38,7 +38,9 @@ else
                     <td>@(c.Email ?? "—")</td>
                     <td>@(c.Telefone ?? "—")</td>
                     <td class="text-end">
-                        <a href="/consulentes/@c.Id/mapas" class="btn btn-sm btn-outline-secondary me-1">Mapas</a>
+                        <a href="/consulentes/@c.Id/mapas" class="btn btn-sm btn-outline-secondary me-1" aria-label="Mapas" title="Mapas">
+                            <i class="bi bi-file-text"></i>
+                        </a>
                         <a href="/consulentes/@c.Id/editar" class="btn btn-sm btn-outline-primary me-1">Editar</a>
                         <button class="btn btn-sm btn-outline-danger"
                                 data-testid="excluir-@c.Id"

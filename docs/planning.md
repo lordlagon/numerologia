@@ -122,16 +122,29 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Blazor: `ListaMapas`, `FormMapa`, `IMapasService`, botão "Mapas" na lista de consulentes
   - Testes: unit (entity + service), integração (endpoints), bUnit (componentes)
 
-- [ ] **F1.3.1** — Ícone de acesso aos Mapas na lista de Consulentes
-  - Substituir botão "Mapas" por ícone de documento (📄 ou BI icon) com `alt="Mapas"`
-  - Executar após F1.3 estar validado em staging
+- [x] **F1.3.1** — Ícone de acesso aos Mapas na lista de Consulentes ✅
+  - Substituído botão "Mapas" por ícone `bi-file-text` (Bootstrap Icons) com `aria-label="Mapas"` e `title="Mapas"`
 
 - [x] **F1.4** — Exibição do Gráfico Numerológico ✅
   - Layout fiel ao Gráfico Numerológico (imagem de referência em `docs/privado/`)
   - Grade de letras (Vogais/Nome/Consoante/TOTAL) com valores cabalísticos por célula
   - Todos os campos calculados preenchidos automaticamente
-  - Campos dinâmicos (Ano/Mês/Dia Pessoal) recalculados ao abrir via `/calculos/pessoal`
+  - Campos dinâmicos (Ano/Mês/Dia Pessoal) recalculados ao abrir via `/api/calculos/pessoal`
   - `GradeLetras` adicionada a `ResultadoMapa`, `MapaNumerologico` e API
+
+- [x] **F1.5** — Persistência da sessão (cookie) ✅
+  - Cookie com `IsPersistent=true`, `ExpireTimeSpan=30d`, `SlidingExpiration=true`
+  - `DataProtection` persistido no banco via `IDataProtectionKeyContext` — sobrevive a redeploys no Railway
+  - Migration `AddDataProtectionKeys` criada
+
+- [ ] **F1.6** — Hardening de segurança
+  - **Security Headers** (crítico): ativar `NetEscapades.AspNetCore.SecurityHeaders` — já instalado, nunca configurado
+    - `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `HSTS`
+  - **Exception Handler global** (crítico): `app.UseExceptionHandler()` — impede stack traces em produção
+  - **DateOnly.Parse seguro** (crítico): substituir `DateOnly.Parse()` por `DateOnly.TryParse()` com retorno `400 BadRequest`
+  - **Rate Limiting** (alto): `Microsoft.AspNetCore.RateLimiting` (built-in .NET 7+) — proteger especialmente `POST /api/consulentes/{id}/mapas`
+  - **Cookie flags explícitas** (alto): `Secure`, `HttpOnly`, `SameSite=Strict` no `AddCookie()`
+  - **Validação de input nos DTOs** (médio): `[MaxLength]` nos records de request
 
 ---
 

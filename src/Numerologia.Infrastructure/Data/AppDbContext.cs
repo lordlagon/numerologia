@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Numerologia.Core.Calculos;
@@ -6,13 +7,14 @@ using Numerologia.Core.Entities;
 
 namespace Numerologia.Infrastructure.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext, IDataProtectionKeyContext
 {
     private static readonly JsonSerializerOptions _jsonOptions = new();
 
-    public DbSet<Usuario>          Usuarios    => Set<Usuario>();
-    public DbSet<Consulente>       Consulentes => Set<Consulente>();
-    public DbSet<MapaNumerologico> Mapas       => Set<MapaNumerologico>();
+    public DbSet<Usuario>            Usuarios           => Set<Usuario>();
+    public DbSet<Consulente>         Consulentes        => Set<Consulente>();
+    public DbSet<MapaNumerologico>   Mapas              => Set<MapaNumerologico>();
+    public DbSet<DataProtectionKey>  DataProtectionKeys => Set<DataProtectionKey>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
