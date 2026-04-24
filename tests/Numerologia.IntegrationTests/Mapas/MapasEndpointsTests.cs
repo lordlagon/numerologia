@@ -69,7 +69,7 @@ public class MapasEndpointsTests : IClassFixture<NumerologiaWebFactory>
     {
         var client = _factory.CreateUnauthenticatedClient();
 
-        var response = await client.PostAsJsonAsync($"/consulentes/{_consulenteId}/mapas",
+        var response = await client.PostAsJsonAsync($"/api/consulentes/{_consulenteId}/mapas",
             new { NomeUtilizado = "JOSE DA SILVA" });
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.Unauthorized, HttpStatusCode.Redirect);
@@ -80,7 +80,7 @@ public class MapasEndpointsTests : IClassFixture<NumerologiaWebFactory>
     {
         var client = AuthClient();
 
-        var response = await client.PostAsJsonAsync($"/consulentes/{_consulenteId}/mapas",
+        var response = await client.PostAsJsonAsync($"/api/consulentes/{_consulenteId}/mapas",
             new { NomeUtilizado = "JOSE DA SILVA" });
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -96,7 +96,7 @@ public class MapasEndpointsTests : IClassFixture<NumerologiaWebFactory>
     {
         var outroClient = _factory.CreateAuthenticatedClient(OutroGoogleIdPost, "outro@test.com", "Outro Post");
 
-        var response = await outroClient.PostAsJsonAsync($"/consulentes/{_consulenteId}/mapas",
+        var response = await outroClient.PostAsJsonAsync($"/api/consulentes/{_consulenteId}/mapas",
             new { NomeUtilizado = "JOSE DA SILVA" });
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -109,10 +109,10 @@ public class MapasEndpointsTests : IClassFixture<NumerologiaWebFactory>
     {
         var client = AuthClient();
         // Garante que há pelo menos um mapa
-        await client.PostAsJsonAsync($"/consulentes/{_consulenteId}/mapas",
+        await client.PostAsJsonAsync($"/api/consulentes/{_consulenteId}/mapas",
             new { NomeUtilizado = "JOSE LISTA" });
 
-        var response = await client.GetAsync($"/consulentes/{_consulenteId}/mapas");
+        var response = await client.GetAsync($"/api/consulentes/{_consulenteId}/mapas");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<List<MapaResumoResponse>>();
@@ -125,7 +125,7 @@ public class MapasEndpointsTests : IClassFixture<NumerologiaWebFactory>
     {
         var outroClient = _factory.CreateAuthenticatedClient(OutroGoogleIdLista, "outro-lista@test.com", "Outro Lista");
 
-        var response = await outroClient.GetAsync($"/consulentes/{_consulenteId}/mapas");
+        var response = await outroClient.GetAsync($"/api/consulentes/{_consulenteId}/mapas");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -136,11 +136,11 @@ public class MapasEndpointsTests : IClassFixture<NumerologiaWebFactory>
     public async Task GetDetalhe_MapaExistente_RetornaMapaCompleto()
     {
         var client = AuthClient();
-        var criarResponse = await client.PostAsJsonAsync($"/consulentes/{_consulenteId}/mapas",
+        var criarResponse = await client.PostAsJsonAsync($"/api/consulentes/{_consulenteId}/mapas",
             new { NomeUtilizado = "JOSE DETALHE" });
         var criado = await criarResponse.Content.ReadFromJsonAsync<MapaResumoResponse>();
 
-        var response = await client.GetAsync($"/consulentes/{_consulenteId}/mapas/{criado!.Id}");
+        var response = await client.GetAsync($"/api/consulentes/{_consulenteId}/mapas/{criado!.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<MapaDetalheResponse>();
@@ -159,7 +159,7 @@ public class MapasEndpointsTests : IClassFixture<NumerologiaWebFactory>
     {
         var client = AuthClient();
 
-        var response = await client.GetAsync($"/consulentes/{_consulenteId}/mapas/99999");
+        var response = await client.GetAsync($"/api/consulentes/{_consulenteId}/mapas/99999");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

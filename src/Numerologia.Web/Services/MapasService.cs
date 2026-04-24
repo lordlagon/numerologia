@@ -11,18 +11,18 @@ public class MapasService : IMapasService
     public async Task<List<MapaResumoDto>> ListarAsync(int consulenteId)
     {
         var result = await _http.GetFromJsonAsync<List<MapaResumoDto>>(
-            $"/consulentes/{consulenteId}/mapas");
+            $"/api/consulentes/{consulenteId}/mapas");
         return result ?? [];
     }
 
     public async Task<MapaDetalheDto?> ObterAsync(int consulenteId, int mapaId)
         => await _http.GetFromJsonAsync<MapaDetalheDto>(
-            $"/consulentes/{consulenteId}/mapas/{mapaId}");
+            $"/api/consulentes/{consulenteId}/mapas/{mapaId}");
 
     public async Task<MapaResumoDto> CriarAsync(int consulenteId, string nomeUtilizado)
     {
         var response = await _http.PostAsJsonAsync(
-            $"/consulentes/{consulenteId}/mapas",
+            $"/api/consulentes/{consulenteId}/mapas",
             new { NomeUtilizado = nomeUtilizado });
 
         response.EnsureSuccessStatusCode();

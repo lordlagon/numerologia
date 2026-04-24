@@ -11,7 +11,7 @@ public class CalculosPessoaisService : ICalculosPessoaisService
     public async Task<ResultadoPessoalDto> ObterAsync(int diaNascimento, int mesNascimento)
     {
         var result = await _http.GetFromJsonAsync<ResultadoPessoalDto>(
-            $"/calculos/pessoal?dia={diaNascimento}&mes={mesNascimento}");
+            $"/api/calculos/pessoal?dia={diaNascimento}&mes={mesNascimento}");
         return result!;
     }
 }
