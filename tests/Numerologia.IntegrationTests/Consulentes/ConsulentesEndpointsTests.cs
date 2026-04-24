@@ -39,7 +39,7 @@ public class ConsulentesEndpointsTests : IClassFixture<NumerologiaWebFactory>
     {
         var client = _factory.CreateUnauthenticatedClient();
 
-        var response = await client.PostAsJsonAsync("/consulentes",
+        var response = await client.PostAsJsonAsync("/api/consulentes",
             new { NomeCompleto = "Teste", DataNascimento = "1990-01-01" });
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.Unauthorized, HttpStatusCode.Redirect);
@@ -48,7 +48,7 @@ public class ConsulentesEndpointsTests : IClassFixture<NumerologiaWebFactory>
     [Fact]
     public async Task Post_ComDadosValidos_DeveRetornar201ComConsulente()
     {
-        var response = await AuthClient().PostAsJsonAsync("/consulentes", new
+        var response = await AuthClient().PostAsJsonAsync("/api/consulentes", new
         {
             NomeCompleto    = "Maria Teste Post",
             DataNascimento  = "1990-06-15",
@@ -69,13 +69,13 @@ public class ConsulentesEndpointsTests : IClassFixture<NumerologiaWebFactory>
     [Fact]
     public async Task Get_DeveRetornarConsulentesDoUsuario()
     {
-        await AuthClient().PostAsJsonAsync("/consulentes", new
+        await AuthClient().PostAsJsonAsync("/api/consulentes", new
         {
             NomeCompleto   = "Consulente Get List",
             DataNascimento = "1985-03-20"
         });
 
-        var response = await AuthClient().GetAsync("/consulentes");
+        var response = await AuthClient().GetAsync("/api/consulentes");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var lista = await response.Content.ReadFromJsonAsync<List<ConsulenteResponse>>();
@@ -88,12 +88,12 @@ public class ConsulentesEndpointsTests : IClassFixture<NumerologiaWebFactory>
     [Fact]
     public async Task GetById_QuandoExiste_DeveRetornar200()
     {
-        var criado = await (await AuthClient().PostAsJsonAsync("/consulentes", new
+        var criado = await (await AuthClient().PostAsJsonAsync("/api/consulentes", new
         {
             NomeCompleto = "Consulente GetById", DataNascimento = "1980-01-01"
         })).Content.ReadFromJsonAsync<ConsulenteResponse>();
 
-        var response = await AuthClient().GetAsync($"/consulentes/{criado!.Id}");
+        var response = await AuthClient().GetAsync($"/api/consulentes/{criado!.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<ConsulenteResponse>();
@@ -103,7 +103,7 @@ public class ConsulentesEndpointsTests : IClassFixture<NumerologiaWebFactory>
     [Fact]
     public async Task GetById_QuandoNaoExiste_DeveRetornar404()
     {
-        var response = await AuthClient().GetAsync("/consulentes/999999");
+        var response = await AuthClient().GetAsync("/api/consulentes/999999");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -113,12 +113,12 @@ public class ConsulentesEndpointsTests : IClassFixture<NumerologiaWebFactory>
     [Fact]
     public async Task Put_QuandoExiste_DeveRetornar200EAtualizarDados()
     {
-        var criado = await (await AuthClient().PostAsJsonAsync("/consulentes", new
+        var criado = await (await AuthClient().PostAsJsonAsync("/api/consulentes", new
         {
             NomeCompleto = "Consulente Put Original", DataNascimento = "1975-07-04"
         })).Content.ReadFromJsonAsync<ConsulenteResponse>();
 
-        var response = await AuthClient().PutAsJsonAsync($"/consulentes/{criado!.Id}", new
+        var response = await AuthClient().PutAsJsonAsync($"/api/consulentes/{criado!.Id}", new
         {
             NomeCompleto   = "Consulente Put Atualizado",
             DataNascimento = "1975-07-04",
@@ -135,7 +135,7 @@ public class ConsulentesEndpointsTests : IClassFixture<NumerologiaWebFactory>
     [Fact]
     public async Task Put_QuandoNaoExiste_DeveRetornar404()
     {
-        var response = await AuthClient().PutAsJsonAsync("/consulentes/999999", new
+        var response = await AuthClient().PutAsJsonAsync("/api/consulentes/999999", new
         {
             NomeCompleto   = "X",
             DataNascimento = "1990-01-01",
@@ -151,12 +151,12 @@ public class ConsulentesEndpointsTests : IClassFixture<NumerologiaWebFactory>
     [Fact]
     public async Task Delete_QuandoExiste_DeveRetornar204()
     {
-        var criado = await (await AuthClient().PostAsJsonAsync("/consulentes", new
+        var criado = await (await AuthClient().PostAsJsonAsync("/api/consulentes", new
         {
             NomeCompleto = "Consulente Delete", DataNascimento = "1993-12-25"
         })).Content.ReadFromJsonAsync<ConsulenteResponse>();
 
-        var response = await AuthClient().DeleteAsync($"/consulentes/{criado!.Id}");
+        var response = await AuthClient().DeleteAsync($"/api/consulentes/{criado!.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -164,7 +164,7 @@ public class ConsulentesEndpointsTests : IClassFixture<NumerologiaWebFactory>
     [Fact]
     public async Task Delete_QuandoNaoExiste_DeveRetornar404()
     {
-        var response = await AuthClient().DeleteAsync("/consulentes/999999");
+        var response = await AuthClient().DeleteAsync("/api/consulentes/999999");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

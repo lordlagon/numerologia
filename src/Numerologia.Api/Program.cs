@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Scalar.AspNetCore;
 using Numerologia.Core.Entities;
 using Numerologia.Core.Interfaces;
 using Numerologia.Core.Services;
@@ -79,6 +80,19 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// OpenAPI — disponível em Development e Staging; desabilitado em Production
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((doc, context, ct) =>
+    {
+        doc.Info.Title       = "Numerologia API";
+        doc.Info.Version     = "v1";
+        doc.Info.Description = "API do CRM de Numerologia Cabalística. Autenticação via Google OAuth (cookie). " +
+                               "Para testar endpoints protegidos, faça login em /auth/login antes de usar o Scalar.";
+        return Task.CompletedTask;
+    });
+});
+
 var app = builder.Build();
 
 // Aplica migrations pendentes automaticamente ao iniciar (Railway não tem step de migrate no deploy)
@@ -95,6 +109,13 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
+
+// OpenAPI + Scalar UI — não expor em Production
+if (!app.Environment.IsProduction())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 // Railway termina HTTPS no proxy — não redirecionar internamente
 // app.UseHttpsRedirection();
@@ -116,7 +137,7 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Endpoints
+// ── Endpoints de infra (sem prefixo /api — usados diretamente pelo browser/OAuth) ──
 
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 
@@ -144,9 +165,20 @@ app.MapPost("/auth/logout", async (HttpContext context) =>
     return Results.Ok(new { message = "logout" });
 });
 
-// ── Consulentes ──────────────────────────────────────────────────────────────
+// ── API de negócio (prefixo /api — não conflitam com rotas Blazor) ────────────
 
-app.MapGet("/consulentes", async (HttpContext ctx, IConsulentesRepository repo, UsuarioService usuarioService) =>
+// Cálculos dinâmicos
+app.MapGet("/api/calculos/pessoal", (int dia, int mes) =>
+{
+    var calc = new Numerologia.Core.Calculos.CalculosPessoais();
+    var nascimento = new DateOnly(2000, mes, dia); // só dia e mês importam
+    var hoje = DateOnly.FromDateTime(DateTime.Today);
+    var resultado = calc.Calcular(nascimento, hoje);
+    return Results.Ok(new { resultado.AnoPessoal, resultado.MesPessoal, resultado.DiaPessoal });
+});
+
+// Consulentes
+app.MapGet("/api/consulentes", async (HttpContext ctx, IConsulentesRepository repo, UsuarioService usuarioService) =>
 {
     var usuario = await ResolverUsuario(ctx, usuarioService);
     if (usuario is null) return Results.Unauthorized();
@@ -155,7 +187,7 @@ app.MapGet("/consulentes", async (HttpContext ctx, IConsulentesRepository repo, 
     return Results.Ok(lista.Select(ToResponse));
 }).RequireAuthorization();
 
-app.MapPost("/consulentes", async (CriarConsulenteRequest req, HttpContext ctx,
+app.MapPost("/api/consulentes", async (CriarConsulenteRequest req, HttpContext ctx,
     IConsulentesRepository repo, UsuarioService usuarioService) =>
 {
     var usuario = await ResolverUsuario(ctx, usuarioService);
@@ -166,10 +198,10 @@ app.MapPost("/consulentes", async (CriarConsulenteRequest req, HttpContext ctx,
     await repo.AdicionarAsync(consulente);
 
     var response = ToResponse(consulente);
-    return Results.Created($"/consulentes/{consulente.Id}", response);
+    return Results.Created($"/api/consulentes/{consulente.Id}", response);
 }).RequireAuthorization();
 
-app.MapGet("/consulentes/{id:int}", async (int id, HttpContext ctx,
+app.MapGet("/api/consulentes/{id:int}", async (int id, HttpContext ctx,
     IConsulentesRepository repo, UsuarioService usuarioService) =>
 {
     var usuario = await ResolverUsuario(ctx, usuarioService);
@@ -179,7 +211,7 @@ app.MapGet("/consulentes/{id:int}", async (int id, HttpContext ctx,
     return consulente is null ? Results.NotFound() : Results.Ok(ToResponse(consulente));
 }).RequireAuthorization();
 
-app.MapPut("/consulentes/{id:int}", async (int id, AtualizarConsulenteRequest req, HttpContext ctx,
+app.MapPut("/api/consulentes/{id:int}", async (int id, AtualizarConsulenteRequest req, HttpContext ctx,
     IConsulentesRepository repo, UsuarioService usuarioService) =>
 {
     var usuario = await ResolverUsuario(ctx, usuarioService);
@@ -193,7 +225,7 @@ app.MapPut("/consulentes/{id:int}", async (int id, AtualizarConsulenteRequest re
     return Results.Ok(ToResponse(consulente));
 }).RequireAuthorization();
 
-app.MapDelete("/consulentes/{id:int}", async (int id, HttpContext ctx,
+app.MapDelete("/api/consulentes/{id:int}", async (int id, HttpContext ctx,
     IConsulentesRepository repo, UsuarioService usuarioService) =>
 {
     var usuario = await ResolverUsuario(ctx, usuarioService);
@@ -206,20 +238,8 @@ app.MapDelete("/consulentes/{id:int}", async (int id, HttpContext ctx,
     return Results.NoContent();
 }).RequireAuthorization();
 
-// ── Cálculos dinâmicos ────────────────────────────────────────────────────────
-
-app.MapGet("/calculos/pessoal", (int dia, int mes) =>
-{
-    var calc = new Numerologia.Core.Calculos.CalculosPessoais();
-    var nascimento = new DateOnly(2000, mes, dia); // só dia e mês importam
-    var hoje = DateOnly.FromDateTime(DateTime.Today);
-    var resultado = calc.Calcular(nascimento, hoje);
-    return Results.Ok(new { resultado.AnoPessoal, resultado.MesPessoal, resultado.DiaPessoal });
-});
-
-// ── Mapas ─────────────────────────────────────────────────────────────────────
-
-app.MapPost("/consulentes/{consulenteId:int}/mapas",
+// Mapas
+app.MapPost("/api/consulentes/{consulenteId:int}/mapas",
     async (int consulenteId, CriarMapaRequest req, HttpContext ctx,
         IConsulentesRepository consultesRepo, IMapasRepository mapaRepo,
         GeradorMapa gerador, UsuarioService usuarioService) =>
@@ -234,11 +254,11 @@ app.MapPost("/consulentes/{consulenteId:int}/mapas",
         await mapaRepo.AdicionarAsync(mapa);
         await mapaRepo.SalvarAlteracoesAsync();
 
-        return Results.Created($"/consulentes/{consulenteId}/mapas/{mapa.Id}",
+        return Results.Created($"/api/consulentes/{consulenteId}/mapas/{mapa.Id}",
             ToResumoResponse(mapa));
     }).RequireAuthorization();
 
-app.MapGet("/consulentes/{consulenteId:int}/mapas",
+app.MapGet("/api/consulentes/{consulenteId:int}/mapas",
     async (int consulenteId, HttpContext ctx,
         IMapasRepository repo, UsuarioService usuarioService) =>
     {
@@ -251,7 +271,7 @@ app.MapGet("/consulentes/{consulenteId:int}/mapas",
         return Results.Ok(lista.Select(ToResumoResponse));
     }).RequireAuthorization();
 
-app.MapGet("/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
+app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
     async (int consulenteId, int mapaId, HttpContext ctx,
         IMapasRepository repo, UsuarioService usuarioService) =>
     {
@@ -263,6 +283,7 @@ app.MapGet("/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
     }).RequireAuthorization();
 
 // Fallback para o roteamento client-side do Blazor
+// Só alcançado quando o path NÃO começa com /api — resolve o conflito de rotas
 app.MapFallbackToFile("index.html");
 
 app.Run();
