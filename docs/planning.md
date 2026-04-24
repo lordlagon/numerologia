@@ -130,8 +130,21 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Layout fiel ao Gráfico Numerológico (imagem de referência em `docs/privado/`)
   - Grade de letras (Vogais/Nome/Consoante/TOTAL) com valores cabalísticos por célula
   - Todos os campos calculados preenchidos automaticamente
-  - Campos dinâmicos (Ano/Mês/Dia Pessoal) recalculados ao abrir via `/calculos/pessoal`
+  - Campos dinâmicos (Ano/Mês/Dia Pessoal) recalculados ao abrir via `/api/calculos/pessoal`
   - `GradeLetras` adicionada a `ResultadoMapa`, `MapaNumerologico` e API
+
+- [x] **F1.5** — Persistência da sessão (cookie) ✅
+  - Cookie com `IsPersistent=true`, `ExpireTimeSpan=30d`, `SlidingExpiration=true`
+  - `DataProtection` persistido no banco via `IDataProtectionKeyContext` — sobrevive a redeploys no Railway
+  - Migration `AddDataProtectionKeys` criada
+
+- [x] **F1.6** — Hardening de segurança ✅
+  - **Security Headers**: `NetEscapades.AspNetCore.SecurityHeaders` ativado — CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+  - **Exception Handler global**: `app.UseExceptionHandler()` — retorna JSON genérico, nunca stack trace em produção
+  - **DateOnly.Parse seguro**: `DateOnly.TryParse()` com `400 BadRequest` nos endpoints POST/PUT e range check em `/api/calculos/pessoal`
+  - **Rate Limiting**: 60 req/min geral por usuário; 10 req/min no `POST /api/consulentes/{id}/mapas`
+  - **Cookie flags**: `HttpOnly=true`, `SameSite=Lax`, `SecurePolicy=SameAsRequest`
+  - **Validação de input**: `[MaxLength]` nos records de request
 
 ---
 
