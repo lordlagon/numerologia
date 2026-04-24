@@ -181,9 +181,9 @@ app.UseSecurityHeaders(policies => policies
         csp.AddBlockAllMixedContent();
         csp.AddImgSrc().Self().Data();
         csp.AddFormAction().Self();
-        csp.AddFontSrc().Self();
-        csp.AddStyleSrc().Self().UnsafeInline();  // Bootstrap usa inline styles
-        csp.AddScriptSrc().Self().UnsafeEval();   // Blazor WASM precisa de eval para o runtime
+        csp.AddFontSrc().Self().From("https://cdn.jsdelivr.net");
+        csp.AddStyleSrc().Self().UnsafeInline().From("https://cdn.jsdelivr.net");  // Bootstrap usa inline styles + Bootstrap Icons CDN
+        csp.AddScriptSrc().Self().UnsafeEval().UnsafeInline();   // Blazor WASM precisa de eval + inline importmap
         csp.AddConnectSrc().Self();               // Chamadas à API
         csp.AddWorkerSrc().Self().Blob();         // Web workers do Blazor WASM
     }));

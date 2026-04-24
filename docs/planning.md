@@ -145,6 +145,14 @@ Numeróloga (usuária autenticada via Google OAuth)
   - **Cookie flags**: `HttpOnly=true`, `SameSite=Lax`, `SecurePolicy=SameAsRequest`
   - **Validação de input**: `[MaxLength]` nos records de request
 
+- [ ] **F1.7** — Verificar e testar DELETE CASCADE nas tabelas de Consulente
+  - **Contexto:** o `AppDbContext` já configura `OnDelete(DeleteBehavior.Cascade)` nas FKs `Usuario → Consulente` e `Consulente → MapaNumerologico`, mas não há testes que validem o comportamento em cascata
+  - Verificar que a migration aplicada no PostgreSQL contém `ON DELETE CASCADE` nas FKs relevantes
+  - Criar teste de integração: ao deletar um Consulente, todos os seus MapaNumerologicos devem ser removidos automaticamente
+  - Criar teste de integração: ao deletar um Usuario, todos os seus Consulentes (e consequentemente Mapas) devem ser removidos
+  - Validar que o endpoint `DELETE /consulentes/{id}` não retorna erro de FK constraint ao excluir consulente com mapas
+  - Verificar se o frontend (`ListaConsulentes`) exibe confirmação antes da exclusão informando que os mapas também serão excluídos
+
 ---
 
 ### Fase 2 — Experiência
@@ -161,6 +169,11 @@ Numeróloga (usuária autenticada via Google OAuth)
 - [ ] **F2.3** — Busca e filtros
   - Buscar consulente por nome
   - Filtrar mapas por data
+
+- [x] **F2.4** — Botão "Pirâmides" na lista de mapas ✅
+  - Botão ao lado de "Ver Mapa" em cada linha da `ListaMapas`
+  - Inicialmente desabilitado (`disabled`) — telas das Pirâmides da Vida ainda não desenvolvidas
+  - Será habilitado quando a funcionalidade de Pirâmides estiver pronta
 
 ---
 
