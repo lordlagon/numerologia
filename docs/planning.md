@@ -137,6 +137,15 @@ Numeróloga (usuária autenticada via Google OAuth)
   - `DataProtection` persistido no banco via `IDataProtectionKeyContext` — sobrevive a redeploys no Railway
   - Migration `AddDataProtectionKeys` criada
 
+- [ ] **F1.6** — Hardening de segurança
+  - **Security Headers** (crítico): ativar `NetEscapades.AspNetCore.SecurityHeaders` — já instalado, nunca configurado
+    - `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `HSTS`
+  - **Exception Handler global** (crítico): `app.UseExceptionHandler()` — impede stack traces em produção
+  - **DateOnly.Parse seguro** (crítico): substituir `DateOnly.Parse()` por `DateOnly.TryParse()` com retorno `400 BadRequest`
+  - **Rate Limiting** (alto): `Microsoft.AspNetCore.RateLimiting` (built-in .NET 7+) — proteger especialmente `POST /api/consulentes/{id}/mapas`
+  - **Cookie flags explícitas** (alto): `Secure`, `HttpOnly`, `SameSite=Strict` no `AddCookie()`
+  - **Validação de input nos DTOs** (médio): `[MaxLength]` nos records de request
+
 ---
 
 ### Fase 2 — Experiência
