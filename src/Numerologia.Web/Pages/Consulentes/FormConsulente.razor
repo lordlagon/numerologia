@@ -1,0 +1,134 @@
+@page "/consulentes/novo"
+@page "/consulentes/{Id:int}/editar"
+@using System.ComponentModel.DataAnnotations
+@inject IConsulentesService ConsulentesService
+@inject NavigationManager Nav
+
+<PageTitle>@(_id is null ? "Novo Consulente" : "Editar Consulente")</PageTitle>
+
+<h1>@(_id is null ? "Novo Consulente" : "Editar Consulente")</h1>
+
+@if (_carregando)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    <EditForm Model="_form" OnValidSubmit="Salvar">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <label class="form-label">Nome completo *</label>
+            <InputText class="form-control" @bind-Value="_form.NomeCompleto"
+                       data-testid="nome" />
+            <ValidationMessage For="() => _form.NomeCompleto" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Data de nascimento *</label>
+            <InputDate class="form-control" @bind-Value="_form.DataNascimento"
+                       data-testid="data-nascimento" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="_form.Email"
+                       data-testid="email" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Telefone</label>
+            <InputText class="form-control" @bind-Value="_form.Telefone"
+                       data-testid="telefone" />
+        </div>
+
+        @if (_erro is not null)
+        {
+            <div class="alert alert-danger">@_erro</div>
+        }
+
+        <button type="submit" class="btn btn-primary" disabled="@_salvando">
+            @(_salvando ? "Salvando..." : "Salvar")
+        </button>
+        <a href="/consulentes" class="btn btn-secondary ms-2">Cancelar</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    private int? _id;
+    private FormModel _form = new();
+    private bool _carregando = true;
+    private bool _salvando;
+    private string? _erro;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _id = Id;
+        _carregando = true;
+
+        if (_id is not null)
+        {
+            try
+            {
+                var consulente = await ConsulentesService.ObterAsync(_id.Value);
+                if (consulente is not null)
+                {
+                    _form = new FormModel
+                    {
+                        NomeCompleto   = consulente.NomeCompleto,
+                        DataNascimento = consulente.DataNascimento,
+                        Email          = consulente.Email,
+                        Telefone       = consulente.Telefone,
+                    };
+                }
+            }
+            catch
+            {
+                _erro = "Erro ao carregar consulente.";
+            }
+        }
+
+        _carregando = false;
+    }
+
+    private async Task Salvar()
+    {
+        _salvando = true;
+        _erro = null;
+
+        try
+        {
+            var dto = new SalvarConsulenteDto(
+                _form.NomeCompleto!,
+                _form.DataNascimento.ToString("yyyy-MM-dd"),
+                _form.Email,
+                _form.Telefone);
+
+            if (_id is null)
+                await ConsulentesService.CriarAsync(dto);
+            else
+                await ConsulentesService.AtualizarAsync(_id.Value, dto);
+
+            Nav.NavigateTo("/consulentes");
+        }
+        catch
+        {
+            _erro = "Erro ao salvar consulente.";
+            _salvando = false;
+        }
+    }
+
+    private class FormModel
+    {
+        [Required(ErrorMessage = "Nome é obrigatório")]
+        public string? NomeCompleto { get; set; }
+
+        public DateOnly DataNascimento { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+
+        public string? Email { get; set; }
+
+        public string? Telefone { get; set; }
+    }
+}
