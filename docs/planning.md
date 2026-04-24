@@ -153,6 +153,17 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Validar que o endpoint `DELETE /consulentes/{id}` não retorna erro de FK constraint ao excluir consulente com mapas
   - Verificar se o frontend (`ListaConsulentes`) exibe confirmação antes da exclusão informando que os mapas também serão excluídos
 
+- [ ] **F1.7** — Ajustar lista de Mapas numerológicos
+  - Incluir os valores de Motivação e ImpressãoBotão na lista de Mapas.
+
+- [ ] **F1.8** — Verificar e testar DELETE CASCADE nas tabelas de Consulente
+  - **Contexto:** o `AppDbContext` já configura `OnDelete(DeleteBehavior.Cascade)` nas FKs `Usuario → Consulente` e `Consulente → MapaNumerologico`, mas não há testes que validem o comportamento em cascata
+  - Verificar que a migration aplicada no PostgreSQL contém `ON DELETE CASCADE` nas FKs relevantes
+  - Criar teste de integração: ao deletar um Consulente, todos os seus MapaNumerologicos devem ser removidos automaticamente
+  - Criar teste de integração: ao deletar um Usuario, todos os seus Consulentes (e consequentemente Mapas) devem ser removidos
+  - Validar que o endpoint `DELETE /consulentes/{id}` não retorna erro de FK constraint ao excluir consulente com mapas
+  - Verificar se o frontend (`ListaConsulentes`) exibe confirmação antes da exclusão informando que os mapas também serão excluídos
+
 ---
 
 ### Fase 2 — Experiência
@@ -184,6 +195,24 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Layout idêntico ao gráfico físico (`docs/Screenshot 2026-04-23 at 23.58.51.png`)
   - Download direto pelo sistema
 
+---
+
+### Fase 4 — Pirâmides da Vida
+> Objetivo: gerar as piramides da vida.
+
+- [x] **F4.1** — Botão "Pirâmides" na lista de mapas ✅
+  - Botão ao lado de "Ver Mapa" em cada linha da `ListaMapas`
+  - Inicialmente desabilitado (`disabled`) — telas das Pirâmides da Vida ainda não desenvolvidas
+  - Será habilitado quando a funcionalidade de Pirâmides estiver pronta
+
+- [ ] **F4.2** — Inclusão do arquivo de referencia (sheets)
+  - Inclusão do arquivo de referencia (sheets)
+  - Informar como é a lógica da criação das pirâmides
+
+- [ ] **F4.3** — Geração de PDF da piramides
+  - Incluir imagem de referencia (ainda não incluido)
+  - Layout idêntico ao gráfico 
+  - Download direto pelo sistema
 ---
 
 ## Ordem de Desenvolvimento (TDD — XP)
