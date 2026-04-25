@@ -9,6 +9,20 @@ public interface IMapasService
     Task<MapaResumoDto> AtualizarAsync(int consulenteId, int mapaId, string nomeUtilizado);
 }
 
+public interface IDashboardService
+{
+    Task<DashboardDto> ObterAsync();
+}
+
+public record DashboardDto(int TotalConsulentes, List<UltimoMapaDto> UltimosMapas);
+
+public record UltimoMapaDto(
+    int MapaId,
+    int ConsulenteId,
+    string NomeConsulente,
+    string NomeUtilizado,
+    DateTime CriadoEm);
+
 public interface ICalculosPessoaisService
 {
     Task<ResultadoPessoalDto> ObterAsync(int diaNascimento, int mesNascimento);
