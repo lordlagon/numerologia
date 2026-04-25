@@ -86,8 +86,9 @@ public class GraficoNumerologicoTests : TestContext
         ConfigurarServicos();
         var cut = RenderGrafico();
 
+        // Grade fake: O(7)+E(5)=12 vogais → "12 => 3"
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='motivacao']").TextContent.Should().Be("3"));
+            cut.Find("[data-testid='motivacao']").TextContent.Should().Be("12 => 3"));
     }
 
     [Fact]
@@ -96,8 +97,9 @@ public class GraficoNumerologicoTests : TestContext
         ConfigurarServicos();
         var cut = RenderGrafico();
 
+        // Grade fake: J(1)+S(3)=4 consoantes → "4 => 4"
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='impressao']").TextContent.Should().Be("4"));
+            cut.Find("[data-testid='impressao']").TextContent.Should().Be("4 => 4"));
     }
 
     [Fact]
@@ -106,8 +108,9 @@ public class GraficoNumerologicoTests : TestContext
         ConfigurarServicos();
         var cut = RenderGrafico();
 
+        // Grade fake: total 12+4=16 → "16 => 7"
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='expressao']").TextContent.Should().Be("7"));
+            cut.Find("[data-testid='expressao']").TextContent.Should().Be("16 => 7"));
     }
 
     [Fact]

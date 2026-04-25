@@ -163,7 +163,7 @@ public class MapaNumerologicoTests
         var mapa = CriarMapaPadrao();
         var criadoEmOriginal = mapa.CriadoEm;
 
-        mapa.Atualizar("EVA", _mapaAtualizado, _destinoAtualizado,
+        mapa.Atualizar("EVA", new DateOnly(1990, 8, 15), _mapaAtualizado, _destinoAtualizado,
             _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
 
         mapa.NomeUtilizado.Should().Be("EVA");
@@ -176,7 +176,7 @@ public class MapaNumerologicoTests
         var criadoEmOriginal = mapa.CriadoEm;
         var idOriginal       = mapa.Id;
 
-        mapa.Atualizar("EVA", _mapaAtualizado, _destinoAtualizado,
+        mapa.Atualizar("EVA", new DateOnly(1990, 8, 15), _mapaAtualizado, _destinoAtualizado,
             _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
 
         mapa.CriadoEm.Should().Be(criadoEmOriginal);
@@ -188,7 +188,7 @@ public class MapaNumerologicoTests
     {
         var mapa = CriarMapaPadrao();
 
-        mapa.Atualizar("EVA", _mapaAtualizado, _destinoAtualizado,
+        mapa.Atualizar("EVA", new DateOnly(1990, 8, 15), _mapaAtualizado, _destinoAtualizado,
             _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
 
         mapa.NumeroMotivacao.Should().Be(_mapaAtualizado.NumeroMotivacao);
@@ -201,7 +201,7 @@ public class MapaNumerologicoTests
     {
         var mapa = CriarMapaPadrao();
 
-        mapa.Atualizar("EVA", _mapaAtualizado, _destinoAtualizado,
+        mapa.Atualizar("EVA", new DateOnly(1990, 8, 15), _mapaAtualizado, _destinoAtualizado,
             _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
 
         mapa.CoresFavoraveis.Should().BeEquivalentTo(_coresAtualizadas);
