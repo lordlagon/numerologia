@@ -191,13 +191,42 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Substituiu o link "About" do template padrão
   - Controlado por Blazor (sem Bootstrap JS / Popper.js)
 
+- [ ] **F2.7** — Ajuste no Quadro Fig. F - Ciclos da vida:
+  - Incluir nova coluna para conter os anos respectivos
+  - Incluir o ano do nascimento em cada ciclo por exemplo no mapa do André:
+    ciclo 1 -> 7 -> até 33 anos. deve ficar ciclo 1 -> 7 -> de 1984 até 2017 -> até 33 anos
+    ciclo 2 -> 1 -> até 60 anos. deve ficar ciclo 2 -> 1 -> de 2017 até 2044 -> até 60 anos
+    ciclo 3 -> 7 -> em diante. deve ficar ciclo 3 -> 22 -> de 2044 em diante -> em diante
+
+- [ ] **F2.8** — Ajuste no Quadro Fig. G - Momentos decisivos:
+  - Incluir nova coluna para conter os anos respectivos, da mesma forma que o F2.7.
+    - incluir o ano do nascimento em cada momento por exemplo no mapa do André:
+      momento 1 -> 8. deve ficar momento 1 -> 8 -> de 1984 até 1992
+      momento 2 -> 5. deve ficar momento 2 -> 5 -> de 1992 até 2001
+      momento 3 -> 4. deve ficar momento 3 -> 4 -> de 2001 em 2010
+      momento 4 -> 11. deve ficar momento 3 -> 11 -> de 2010 em diante
+
+- [ ] **F2.9** — Ajuste no Quadro Fig. 4 - Data nascimento:
+  - Incluir a soma dos valores da data de nascimento por exemplo no mapa do André:
+      Mês -> 07 => 7
+      Dia -> 28 => 1
+      Ano -> 1984 => 22
+
+- [ ] **F2.10** — Verificação das interpretações:
+  - Confirmar no livro se exitem interpretações para os outros quadros do mapa, 
+  percebi isso no relações intervalores (pag. 203) que tem interpretação e não foi incluida na secção.     
+
 ---
 
 ### Fase 3 — PDF
 > Objetivo: gerar o Gráfico Numerológico preenchido em PDF para impressão.
 
 - [ ] **F3.1** — Geração de PDF
-  - Layout idêntico ao gráfico físico (`docs/Screenshot 2026-04-23 at 23.58.51.png`)
+  - Criar uma capa para o Mapa Numerologico Cabalistico, deve conter o nome do Numerólogo (editável)
+  - Incluir uma página com um cabeçalho contendo os dados do consulente (nome, data nascimento),
+  incluir em todas as paginas
+  - Layout semelhante ao gráfico físico (`docs/Screenshot 2026-04-23 at 23.58.51.png`)
+  - Incluir uma pagina com as interpretações. 
   - Download direto pelo sistema
 
 ---
