@@ -1,0 +1,12 @@
+@using Numerologia.Web.Helpers
+
+<span class="badge"
+      style="background-color: @CorFavoravelHelper.ObterBackgroundCss(Cor);
+             color: @CorFavoravelHelper.ObterTextoCss(Cor);
+             border: 1px solid rgba(0,0,0,.1)">
+    @Cor
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string Cor { get; set; } = "";
+}

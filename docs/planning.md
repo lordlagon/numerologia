@@ -162,20 +162,20 @@ Numeróloga (usuária autenticada via Google OAuth)
 ### Fase 2 — Experiência
 > Objetivo: melhorar usabilidade e adicionar contexto ao mapa.
 
-- [ ] **F2.1** — Excluir e reeditar Mapa Numerológico
-  - Endpoint `DELETE /consulentes/{id}/mapas/{mapaId}` — remove o mapa com confirmação
-  - Endpoint `PUT /consulentes/{id}/mapas/{mapaId}` — recalcula o mapa com novo `NomeUtilizado`
-  - Blazor: botão "Excluir" na `ListaMapas` (com confirmação) e botão "Editar" que abre form para alterar o nome
-  - Testes: unit (repositório), integração (endpoints), bUnit (componentes)
+- [x] **F2.1** — Delete e Editar Mapa ✅
+  - `DELETE /consulentes/{id}/mapas/{mapaId}` → 204
+  - `PUT /consulentes/{id}/mapas/{mapaId}` → 200 (recalcula todos os números do nome)
+  - Botão Excluir com `confirm()` na `ListaMapas`
+  - Página `EditarMapa.razor` em `/consulentes/{id}/mapas/{mapaId}/editar`
 
 - [ ] **F2.2** — Interpretações por número
   - Para cada campo do mapa, exibir o significado do número calculado
   - Baseado no `docs/numerologia.md`
 
-- [ ] **F2.3** — Cores favoráveis
-  - Além do texto das cores, incluir a cor no texto
-  - Ex: "Vermelho" escrito com o fundo da cor vermelha, "Azul" escrito com o fundo da cor azul, etc.
-  - Ajustar a cor do texto para ficar visível (fundo preto → texto branco, fundo branco → texto preto)
+- [x] **F2.3** — Cores favoráveis (visual) ✅
+  - Além do texto das cores, incluir a cor no fundo do badge
+  - Ex: "Vermelho" com fundo vermelho, "Azul" com fundo azul
+  - Ajustar cor do texto para contraste (fundo escuro → texto branco, fundo claro → texto preto)
 
 - [ ] **F2.4** — Dashboard da numeróloga
   - Últimos mapas criados
