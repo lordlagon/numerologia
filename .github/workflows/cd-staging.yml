@@ -13,7 +13,7 @@ concurrency:
 permissions:
   contents: read
   pull-requests: read
-  
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
@@ -40,7 +40,7 @@ jobs:
           dotnet-version: "10.x"
       - run: dotnet restore
       - run: dotnet test --no-restore --collect:"XPlat Code Coverage" --results-directory coverage
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v4
         with:
           name: coverage-staging
           path: coverage
@@ -71,18 +71,11 @@ jobs:
     environment:
       name: "staging"
       url: ${{ vars.RAILWAY_STAGING_URL }}
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Railway CLI
-        run: |
-          mkdir -p ~/.local/bin
-          curl -fsSL https://github.com/railwayapp/cli/releases/latest/download/railway-linux-x64.tar.gz -o railway.tar.gz
-          tar -xzf railway.tar.gz -C ~/.local/bin
-          chmod +x ~/.local/bin/railway
-          echo ~/.local/bin >> $GITHUB_PATH
+        run: curl -fsSL https://railway.app/install.sh | sh
 
       - name: Deploy (staging)
         run: railway up --service numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
