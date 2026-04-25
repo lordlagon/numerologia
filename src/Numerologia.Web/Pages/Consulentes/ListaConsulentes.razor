@@ -1,0 +1,98 @@
+@page "/consulentes"
+@inject IConsulentesService ConsulentesService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<PageTitle>Consulentes</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Consulentes</h1>
+    <a href="/consulentes/novo" class="btn btn-primary">+ Novo Consulente</a>
+</div>
+
+@if (_carregando)
+{
+    <p>Carregando...</p>
+}
+else if (_consulentes.Count == 0)
+{
+    <p>Nenhum consulente cadastrado ainda.</p>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Data de Nascimento</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in _consulentes)
+            {
+                <tr>
+                    <td>@c.NomeCompleto</td>
+                    <td>@c.DataNascimento.ToString("dd/MM/yyyy")</td>
+                    <td>@(c.Email ?? "—")</td>
+                    <td>@(c.Telefone ?? "—")</td>
+                    <td class="text-end">
+                        <a href="/consulentes/@c.Id/mapas" class="btn btn-sm btn-outline-secondary me-1" aria-label="Mapas" title="Mapas">
+                            <i class="bi bi-file-text"></i>
+                        </a>
+                        <a href="/consulentes/@c.Id/editar" class="btn btn-sm btn-outline-primary me-1">Editar</a>
+                        <button class="btn btn-sm btn-outline-danger"
+                                data-testid="excluir-@c.Id"
+                                @onclick="() => Excluir(c.Id)">Excluir</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (_erro is not null)
+{
+    <div class="alert alert-danger mt-3">@_erro</div>
+}
+
+@code {
+    private List<ConsulenteDto> _consulentes = [];
+    private bool _carregando = true;
+    private string? _erro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _consulentes = await ConsulentesService.ListarAsync();
+        }
+        catch
+        {
+            _erro = "Erro ao carregar consulentes.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private async Task Excluir(int id)
+    {
+        var confirmar = await JS.InvokeAsync<bool>("confirm",
+            "Excluir este consulente? Todos os seus mapas também serão excluídos.");
+        if (!confirmar) return;
+
+        try
+        {
+            await ConsulentesService.RemoverAsync(id);
+            _consulentes = _consulentes.Where(c => c.Id != id).ToList();
+        }
+        catch
+        {
+            _erro = "Erro ao excluir consulente.";
+        }
+    }
+}

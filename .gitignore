@@ -1,8 +1,8 @@
 # Java project (reference only, not part of this repo)
 Numerologia-Java/
 
-# Docs (livro, imagens de referência — não versionar)
-docs/
+# Docs sensíveis (livro, imagens, segredos OAuth — não versionar)
+docs/privado/
 
 # .NET build artifacts
 bin/

@@ -22,6 +22,208 @@ namespace Numerologia.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
+                });
+
+            modelBuilder.Entity("Numerologia.Core.Entities.Consulente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("DataNascimento")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NomeCompleto")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Telefone")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Consulentes");
+                });
+
+            modelBuilder.Entity("Numerologia.Core.Entities.MapaNumerologico", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AnoNascimentoReduzido")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CicloVida1")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CicloVida2")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CicloVida3")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ConsulenteId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CoresFavoraveis")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("DataNascimento")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Desafio1")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Desafio2")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DesafioPrincipal")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DiaNascimentoReduzido")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DiasMesFavoraveis")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DividasCarmicas")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FiguraA")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("FimCiclo1Idade")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FimCiclo2Idade")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("GradeLetras")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HarmoniaAtrai")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HarmoniaEOpostoA")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HarmoniaEPassivoEm")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HarmoniaProfundamenteOpostoA")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("HarmoniaVibraCom")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LicoesCarmicas")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MesNascimentoReduzido")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Missao")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MomentoDecisivo1")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MomentoDecisivo2")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MomentoDecisivo3")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MomentoDecisivo4")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NomeUtilizado")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("NumeroDestino")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NumeroExpressao")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NumeroImpressao")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NumeroMotivacao")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NumerosHarmonicos")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RelacaoIntervalores")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RespostaSubconsciente")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TendenciasOcultas")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConsulenteId");
+
+                    b.ToTable("Mapas");
+                });
+
             modelBuilder.Entity("Numerologia.Core.Entities.Usuario", b =>
                 {
                     b.Property<int>("Id")
@@ -57,6 +259,24 @@ namespace Numerologia.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Usuarios");
+                });
+
+            modelBuilder.Entity("Numerologia.Core.Entities.Consulente", b =>
+                {
+                    b.HasOne("Numerologia.Core.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Numerologia.Core.Entities.MapaNumerologico", b =>
+                {
+                    b.HasOne("Numerologia.Core.Entities.Consulente", null)
+                        .WithMany()
+                        .HasForeignKey("ConsulenteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

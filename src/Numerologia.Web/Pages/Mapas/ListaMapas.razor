@@ -1,0 +1,87 @@
+@page "/consulentes/{ConsulenteId:int}/mapas"
+@inject IMapasService MapasService
+@inject NavigationManager Nav
+
+<PageTitle>Mapas Numerológicos</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Mapas Numerológicos</h1>
+    <a href="/consulentes/@ConsulenteId/mapas/novo" class="btn btn-primary">+ Gerar Mapa</a>
+</div>
+
+@if (_carregando)
+{
+    <p>Carregando...</p>
+}
+else if (_mapas.Count == 0)
+{
+    <p>Nenhum mapa gerado ainda.</p>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Nome Utilizado</th>
+                <th>Data de Nascimento</th>
+                <th>Motivação</th>
+                <th>Impressão</th>
+                <th>Expressão</th>
+                <th>Destino</th>
+                <th>Criado em</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in _mapas)
+            {
+                <tr data-testid="mapa-@m.Id">
+                    <td>@m.NomeUtilizado</td>
+                    <td>@m.DataNascimento.ToString("dd/MM/yyyy")</td>
+                    <td>@m.NumeroMotivacao</td>
+                    <td>@m.NumeroImpressao</td>
+                    <td>@m.NumeroExpressao</td>
+                    <td>@m.NumeroDestino</td>
+                    <td>@m.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="text-end">
+                        <a href="/consulentes/@ConsulenteId/mapas/@m.Id"
+                           class="btn btn-sm btn-outline-primary">Ver Mapa</a>
+                        <button class="btn btn-sm btn-outline-secondary ms-1" disabled
+                                title="Em breve">Pirâmides</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (_erro is not null)
+{
+    <div class="alert alert-danger mt-3">@_erro</div>
+}
+
+<a href="/consulentes" class="btn btn-secondary mt-2">Voltar</a>
+
+@code {
+    [Parameter] public int ConsulenteId { get; set; }
+
+    private List<MapaResumoDto> _mapas = [];
+    private bool _carregando = true;
+    private string? _erro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _mapas = await MapasService.ListarAsync(ConsulenteId);
+        }
+        catch
+        {
+            _erro = "Erro ao carregar mapas.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+}
