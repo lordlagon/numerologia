@@ -5,6 +5,8 @@ public interface IMapasService
     Task<List<MapaResumoDto>> ListarAsync(int consulenteId);
     Task<MapaDetalheDto?> ObterAsync(int consulenteId, int mapaId);
     Task<MapaResumoDto> CriarAsync(int consulenteId, string nomeUtilizado);
+    Task RemoverAsync(int consulenteId, int mapaId);
+    Task<MapaResumoDto> AtualizarAsync(int consulenteId, int mapaId, string nomeUtilizado);
 }
 
 public interface ICalculosPessoaisService

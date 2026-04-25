@@ -122,4 +122,62 @@ public class ListaMapasTests : TestContext
             btn.HasAttribute("disabled").Should().BeTrue();
         });
     }
+
+    [Fact]
+    public async Task BotaoExcluir_QuandoConfirmado_RemoveMapa()
+    {
+        var mapas = new List<MapaResumoDto>
+        {
+            new(1, "JOSE DA SILVA", new DateOnly(1985, 3, 10), 3, 5, 7, 9, DateTime.UtcNow),
+        };
+        _mapasService.ListarAsync(1).Returns(mapas, new List<MapaResumoDto>());
+        _mapasService.RemoverAsync(1, 1).Returns(Task.CompletedTask);
+        JSInterop.Setup<bool>("confirm", _ => true).SetResult(true);
+
+        var cut = RenderComponent<ListaMapas>(p => p.Add(c => c.ConsulenteId, 1));
+        cut.WaitForAssertion(() => cut.FindAll("button").Should().NotBeEmpty());
+
+        var btnExcluir = cut.FindAll("button").First(b => b.TextContent.Contains("Excluir"));
+        await cut.InvokeAsync(() => btnExcluir.Click());
+
+        await _mapasService.Received(1).RemoverAsync(1, 1);
+    }
+
+    [Fact]
+    public async Task BotaoExcluir_QuandoCancelado_NaoRemoveMapa()
+    {
+        var mapas = new List<MapaResumoDto>
+        {
+            new(1, "JOSE DA SILVA", new DateOnly(1985, 3, 10), 3, 5, 7, 9, DateTime.UtcNow),
+        };
+        _mapasService.ListarAsync(1).Returns(mapas);
+        JSInterop.Setup<bool>("confirm", _ => true).SetResult(false);
+
+        var cut = RenderComponent<ListaMapas>(p => p.Add(c => c.ConsulenteId, 1));
+        cut.WaitForAssertion(() => cut.FindAll("button").Should().NotBeEmpty());
+
+        var btnExcluir = cut.FindAll("button").First(b => b.TextContent.Contains("Excluir"));
+        await cut.InvokeAsync(() => btnExcluir.Click());
+
+        await _mapasService.DidNotReceive().RemoverAsync(Arg.Any<int>(), Arg.Any<int>());
+    }
+
+    [Fact]
+    public void Render_ComMapas_ExibeLinkEditar()
+    {
+        var mapas = new List<MapaResumoDto>
+        {
+            new(1, "JOSE DA SILVA", new DateOnly(1985, 3, 10), 3, 5, 7, 9, DateTime.UtcNow),
+        };
+        _mapasService.ListarAsync(1).Returns(mapas);
+
+        var cut = RenderComponent<ListaMapas>(p => p.Add(c => c.ConsulenteId, 1));
+
+        cut.WaitForAssertion(() =>
+        {
+            var link = cut.FindAll("a").FirstOrDefault(a => a.TextContent.Contains("Editar"));
+            link.Should().NotBeNull();
+            link!.GetAttribute("href").Should().Contain("/editar");
+        });
+    }
 }

@@ -121,6 +121,92 @@ public class MapaNumerologicoTests
         mapa.HarmoniaEPassivoEm.Should().BeEquivalentTo(_harmonia.EPassivoEm);
     }
 
+    // ── Atualizar ────────────────────────────────────────────────────────────
+
+    private static readonly ResultadoMapa _mapaAtualizado = new(
+        GradeLetras:          [new('E', TipoLetra.Vogal, 5), new('V', TipoLetra.Consoante, 6), new('A', TipoLetra.Vogal, 1)],
+        NumeroMotivacao:      6,
+        NumeroImpressao:      6,
+        NumeroExpressao:      3,
+        DividasCarmicas:      [],
+        FiguraA:              new Dictionary<int,int> { [1]=1,[2]=0,[3]=0,[4]=0,[5]=1,[6]=2,[7]=0,[8]=0,[9]=0 },
+        LicoesCarmicas:       [2,3,4,7,8,9],
+        TendenciasOcultas:    [6],
+        RespostaSubconsciente: 6
+    );
+
+    private static readonly ResultadoDestino _destinoAtualizado = new(
+        NumeroDestino:    6,
+        Missao:           ReducaoNumerologica.Reduzir(6 + 3),
+        MesReduzido:      8,
+        DiaReduzido:      6,
+        AnoReduzido:      1,
+        CicloVida1:       8,
+        CicloVida2:       6,
+        CicloVida3:       1,
+        FimCiclo1Idade:   30,
+        FimCiclo2Idade:   57,
+        Desafio1:         Math.Abs(8 - 6),
+        Desafio2:         Math.Abs(1 - 6),
+        DesafioPrincipal: Math.Abs(5 - 2),
+        MomentoDecisivo1: ReducaoNumerologica.Reduzir(6 + 8),
+        MomentoDecisivo2: ReducaoNumerologica.Reduzir(6 + 1),
+        MomentoDecisivo3: ReducaoNumerologica.Reduzir(5 + 7),
+        MomentoDecisivo4: ReducaoNumerologica.Reduzir(8 + 1)
+    );
+
+    private static readonly string[] _coresAtualizadas = ["Azul", "Verde"];
+
+    [Fact]
+    public void Atualizar_AlteraNomeUtilizado()
+    {
+        var mapa = CriarMapaPadrao();
+        var criadoEmOriginal = mapa.CriadoEm;
+
+        mapa.Atualizar("EVA", _mapaAtualizado, _destinoAtualizado,
+            _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
+
+        mapa.NomeUtilizado.Should().Be("EVA");
+    }
+
+    [Fact]
+    public void Atualizar_NaoAlteraCriadoEmNemId()
+    {
+        var mapa = CriarMapaPadrao();
+        var criadoEmOriginal = mapa.CriadoEm;
+        var idOriginal       = mapa.Id;
+
+        mapa.Atualizar("EVA", _mapaAtualizado, _destinoAtualizado,
+            _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
+
+        mapa.CriadoEm.Should().Be(criadoEmOriginal);
+        mapa.Id.Should().Be(idOriginal);
+    }
+
+    [Fact]
+    public void Atualizar_RecalculaNumerosDoNome()
+    {
+        var mapa = CriarMapaPadrao();
+
+        mapa.Atualizar("EVA", _mapaAtualizado, _destinoAtualizado,
+            _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
+
+        mapa.NumeroMotivacao.Should().Be(_mapaAtualizado.NumeroMotivacao);
+        mapa.NumeroImpressao.Should().Be(_mapaAtualizado.NumeroImpressao);
+        mapa.NumeroExpressao.Should().Be(_mapaAtualizado.NumeroExpressao);
+    }
+
+    [Fact]
+    public void Atualizar_RecalculaTabelas()
+    {
+        var mapa = CriarMapaPadrao();
+
+        mapa.Atualizar("EVA", _mapaAtualizado, _destinoAtualizado,
+            _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
+
+        mapa.CoresFavoraveis.Should().BeEquivalentTo(_coresAtualizadas);
+    }
+
     private static MapaNumerologico CriarMapaPadrao() =>
         MapaNumerologico.Criar(1, "ANA", new DateOnly(1990, 8, 15),
             _mapa, _destino, _diasFavoraveis, _numerosHarmonicos, _cores, _harmonia);

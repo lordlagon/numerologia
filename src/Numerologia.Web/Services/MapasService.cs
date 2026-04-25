@@ -28,4 +28,21 @@ public class MapasService : IMapasService
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<MapaResumoDto>())!;
     }
+
+    public async Task RemoverAsync(int consulenteId, int mapaId)
+    {
+        var response = await _http.DeleteAsync(
+            $"/api/consulentes/{consulenteId}/mapas/{mapaId}");
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<MapaResumoDto> AtualizarAsync(int consulenteId, int mapaId, string nomeUtilizado)
+    {
+        var response = await _http.PutAsJsonAsync(
+            $"/api/consulentes/{consulenteId}/mapas/{mapaId}",
+            new { NomeUtilizado = nomeUtilizado });
+
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<MapaResumoDto>())!;
+    }
 }

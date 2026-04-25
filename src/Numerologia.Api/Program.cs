@@ -369,6 +369,36 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
         return mapa is null ? Results.NotFound() : Results.Ok(ToDetalheResponse(mapa));
     }).RequireAuthorization().RequireRateLimiting("api-geral");
 
+app.MapDelete("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
+    async (int consulenteId, int mapaId, HttpContext ctx,
+        IMapasRepository repo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        await repo.RemoverAsync(mapa);
+        await repo.SalvarAlteracoesAsync();
+        return Results.NoContent();
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+app.MapPut("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
+    async (int consulenteId, int mapaId, AtualizarMapaRequest req, HttpContext ctx,
+        IMapasRepository repo, UsuarioService usuarioService, GeradorMapa gerador) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        gerador.Atualizar(mapa, req.NomeUtilizado);
+        await repo.SalvarAlteracoesAsync();
+        return Results.Ok(ToResumoResponse(mapa));
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
 // Fallback para o roteamento client-side do Blazor
 // Só alcançado quando o path NÃO começa com /api — resolve o conflito de rotas
 app.MapFallbackToFile("index.html");
@@ -428,7 +458,8 @@ record AtualizarConsulenteRequest(
 record ConsulenteResponse(int Id, string NomeCompleto, DateOnly DataNascimento,
     string? Email, string? Telefone, DateTime CriadoEm);
 
-record CriarMapaRequest(string NomeUtilizado);
+record CriarMapaRequest([property: MaxLength(256)] string NomeUtilizado);
+record AtualizarMapaRequest([property: MaxLength(256)] string NomeUtilizado);
 
 record MapaResumoResponse(int Id, string NomeUtilizado, DateOnly DataNascimento,
     int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);

@@ -164,6 +164,97 @@ public class MapasEndpointsTests : IClassFixture<NumerologiaWebFactory>
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    // ─── DELETE /consulentes/{id}/mapas/{mapaId} ─────────────────────────────
+
+    [Fact]
+    public async Task Delete_MapaExistente_Retorna204()
+    {
+        var client = AuthClient();
+        var criado = await CriarMapa(client, "JOSE DELETE");
+
+        var response = await client.DeleteAsync(
+            $"/api/consulentes/{_consulenteId}/mapas/{criado.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task Delete_MapaInexistente_Retorna404()
+    {
+        var response = await AuthClient().DeleteAsync(
+            $"/api/consulentes/{_consulenteId}/mapas/99999");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Delete_MapaExistente_RemoveDoRepositorio()
+    {
+        var client = AuthClient();
+        var criado = await CriarMapa(client, "JOSE REMOVE");
+
+        await client.DeleteAsync($"/api/consulentes/{_consulenteId}/mapas/{criado.Id}");
+
+        var getResponse = await client.GetAsync(
+            $"/api/consulentes/{_consulenteId}/mapas/{criado.Id}");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    // ─── PUT /consulentes/{id}/mapas/{mapaId} ────────────────────────────────
+
+    [Fact]
+    public async Task Put_MapaExistente_Retorna200ComNomeAtualizado()
+    {
+        var client = AuthClient();
+        var criado = await CriarMapa(client, "JOSE PUT");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/consulentes/{_consulenteId}/mapas/{criado.Id}",
+            new { NomeUtilizado = "ANA PUT" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<MapaResumoResponse>();
+        body!.NomeUtilizado.Should().Be("ANA PUT");
+        body.Id.Should().Be(criado.Id);
+    }
+
+    [Fact]
+    public async Task Put_MapaInexistente_Retorna404()
+    {
+        var response = await AuthClient().PutAsJsonAsync(
+            $"/api/consulentes/{_consulenteId}/mapas/99999",
+            new { NomeUtilizado = "QUALQUER" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Put_MapaExistente_RecalculaNumerosDoNome()
+    {
+        var client = AuthClient();
+        var criado = await CriarMapa(client, "JOSE PUT CALC");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/consulentes/{_consulenteId}/mapas/{criado.Id}",
+            new { NomeUtilizado = "ANA" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<MapaResumoResponse>();
+        // ANA: Motivação=2, Impressão=5, Expressão=7
+        body!.NumeroMotivacao.Should().Be(2);
+        body.NumeroImpressao.Should().Be(5);
+        body.NumeroExpressao.Should().Be(7);
+    }
+
+    // ── helper ───────────────────────────────────────────────────────────────
+
+    private async Task<MapaResumoResponse> CriarMapa(HttpClient client, string nome)
+    {
+        var r = await client.PostAsJsonAsync($"/api/consulentes/{_consulenteId}/mapas",
+            new { NomeUtilizado = nome });
+        return (await r.Content.ReadFromJsonAsync<MapaResumoResponse>())!;
+    }
+
     // Records de resposta (espelham os do Program.cs)
     private record MapaResumoResponse(int Id, string NomeUtilizado, DateOnly DataNascimento,
         int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);
