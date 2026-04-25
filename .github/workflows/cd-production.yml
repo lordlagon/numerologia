@@ -70,15 +70,21 @@ jobs:
     needs: [test, security]
     environment:
       name: "production"
-      url: ${{ vars.RAILWAY_PRODUCTION_URL }}
+      url: ${{ vars.RAILWAY_PRODUCTION_URL }}     
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Railway CLI
-        run: curl -fsSL https://railway.app/install.sh | sh
+        run: |
+          mkdir -p ~/.local/bin
+          curl -fsSL https://github.com/railwayapp/cli/releases/latest/download/railway-linux-x64.tar.gz -o railway.tar.gz
+          tar -xzf railway.tar.gz -C ~/.local/bin
+          chmod +x ~/.local/bin/railway
+          echo ~/.local/bin >> $GITHUB_PATH
 
-      - name: Deploy (production)
-        
+      - name: Deploy (production)        
         run: railway up --service numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
