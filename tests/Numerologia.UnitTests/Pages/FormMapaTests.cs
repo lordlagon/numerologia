@@ -38,7 +38,7 @@ public class FormMapaTests : TestContext
     [Fact]
     public async Task Submit_ComNomeValido_ChamaServico()
     {
-        var esperado = new MapaResumoDto(1, "JOSE", new DateOnly(1985, 3, 10), 7, 9, DateTime.UtcNow);
+        var esperado = new MapaResumoDto(1, "JOSE", new DateOnly(1985, 3, 10), 3, 5, 7, 9, DateTime.UtcNow);
         _mapasService.CriarAsync(1, Arg.Any<string>())
             .Returns(esperado);
 
@@ -54,7 +54,7 @@ public class FormMapaTests : TestContext
     public async Task Submit_ComNomeValido_NavegaParaLista()
     {
         _mapasService.CriarAsync(1, Arg.Any<string>())
-            .Returns(new MapaResumoDto(1, "JOSE", new DateOnly(1985, 3, 10), 7, 9, DateTime.UtcNow));
+            .Returns(new MapaResumoDto(1, "JOSE", new DateOnly(1985, 3, 10), 3, 5, 7, 9, DateTime.UtcNow));
 
         var cut = RenderComponent<FormMapa>(p => p.Add(c => c.ConsulenteId, 1));
 

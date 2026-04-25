@@ -145,7 +145,7 @@ Numeróloga (usuária autenticada via Google OAuth)
   - **Cookie flags**: `HttpOnly=true`, `SameSite=Lax`, `SecurePolicy=SameAsRequest`
   - **Validação de input**: `[MaxLength]` nos records de request
 
-- [ ] **F1.7** — Verificar e testar DELETE CASCADE nas tabelas de Consulente
+- [x] **F1.7** — Verificar e testar DELETE CASCADE nas tabelas de Consulente ✅
   - **Contexto:** o `AppDbContext` já configura `OnDelete(DeleteBehavior.Cascade)` nas FKs `Usuario → Consulente` e `Consulente → MapaNumerologico`, mas não há testes que validem o comportamento em cascata
   - Verificar que a migration aplicada no PostgreSQL contém `ON DELETE CASCADE` nas FKs relevantes
   - Criar teste de integração: ao deletar um Consulente, todos os seus MapaNumerologicos devem ser removidos automaticamente
@@ -153,16 +153,9 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Validar que o endpoint `DELETE /consulentes/{id}` não retorna erro de FK constraint ao excluir consulente com mapas
   - Verificar se o frontend (`ListaConsulentes`) exibe confirmação antes da exclusão informando que os mapas também serão excluídos
 
-- [ ] **F1.7** — Ajustar lista de Mapas numerológicos
-  - Incluir os valores de Motivação e ImpressãoBotão na lista de Mapas.
-
-- [ ] **F1.8** — Verificar e testar DELETE CASCADE nas tabelas de Consulente
-  - **Contexto:** o `AppDbContext` já configura `OnDelete(DeleteBehavior.Cascade)` nas FKs `Usuario → Consulente` e `Consulente → MapaNumerologico`, mas não há testes que validem o comportamento em cascata
-  - Verificar que a migration aplicada no PostgreSQL contém `ON DELETE CASCADE` nas FKs relevantes
-  - Criar teste de integração: ao deletar um Consulente, todos os seus MapaNumerologicos devem ser removidos automaticamente
-  - Criar teste de integração: ao deletar um Usuario, todos os seus Consulentes (e consequentemente Mapas) devem ser removidos
-  - Validar que o endpoint `DELETE /consulentes/{id}` não retorna erro de FK constraint ao excluir consulente com mapas
-  - Verificar se o frontend (`ListaConsulentes`) exibe confirmação antes da exclusão informando que os mapas também serão excluídos
+- [x] **F1.8** — Ajustar lista de Mapas numerológicos ✅
+  - Incluir data de nascimento após o nome
+  - Incluir os valores de Motivação e Impressão de cada mapa na listagem
 
 ---
 
@@ -173,18 +166,19 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Para cada campo do mapa, exibir o significado do número calculado
   - Baseado no `docs/numerologia.md`
 
-- [ ] **F2.2** — Dashboard da numeróloga
+- [ ] **F2.2** — Cores favoraveis
+  - Além do texto das cores, incluir a cor no texto. 
+  - Ex: "Vermelho" escrito com o fundo da cor vermelha, "Azul" escrito com o fundo da cor azul, etc.
+  - Ajustar a cor do texto para fica ficar visivel.
+  - Ex. Fundo preto, com o texto branco. fundo branco com o texto branco.
+  
+- [ ] **F2.3** — Dashboard da numeróloga
   - Últimos mapas criados
   - Total de consulentes
 
-- [ ] **F2.3** — Busca e filtros
+- [ ] **F2.4** — Busca e filtros
   - Buscar consulente por nome
   - Filtrar mapas por data
-
-- [x] **F2.4** — Botão "Pirâmides" na lista de mapas ✅
-  - Botão ao lado de "Ver Mapa" em cada linha da `ListaMapas`
-  - Inicialmente desabilitado (`disabled`) — telas das Pirâmides da Vida ainda não desenvolvidas
-  - Será habilitado quando a funcionalidade de Pirâmides estiver pronta
 
 ---
 

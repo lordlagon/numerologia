@@ -57,8 +57,9 @@ public class ListaConsulentesTests : TestContext
     }
 
     [Fact]
-    public async Task BotaoExcluir_QuandoClicado_ChamamRemoverERemoveDaLista()
+    public async Task BotaoExcluir_QuandoConfirmado_ChamamRemoverERemoveDaLista()
     {
+        JSInterop.Setup<bool>("confirm", _ => true).SetResult(true);
         var consulentes = new List<ConsulenteDto>
         {
             new(1, "Para Excluir", new DateOnly(1990, 6, 15), null, null, DateTime.UtcNow),
@@ -73,6 +74,25 @@ public class ListaConsulentesTests : TestContext
 
         await _serviceMock.Received(1).RemoverAsync(1);
         cut.WaitForAssertion(() => cut.Markup.Should().NotContain("Para Excluir"));
+    }
+
+    [Fact]
+    public async Task BotaoExcluir_QuandoCancelado_NaoChamaRemoverEMantemNaLista()
+    {
+        JSInterop.Setup<bool>("confirm", _ => true).SetResult(false);
+        var consulentes = new List<ConsulenteDto>
+        {
+            new(1, "Nao Excluir", new DateOnly(1990, 6, 15), null, null, DateTime.UtcNow),
+        };
+        _serviceMock.ListarAsync().Returns(consulentes);
+
+        var cut = RenderComponent<ListaConsulentes>();
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Nao Excluir"));
+
+        await cut.Find("[data-testid='excluir-1']").ClickAsync(new());
+
+        await _serviceMock.DidNotReceive().RemoverAsync(Arg.Any<int>());
+        cut.Markup.Should().Contain("Nao Excluir");
     }
 
     [Fact]

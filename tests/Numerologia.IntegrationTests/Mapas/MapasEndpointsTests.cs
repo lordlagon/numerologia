@@ -166,7 +166,7 @@ public class MapasEndpointsTests : IClassFixture<NumerologiaWebFactory>
 
     // Records de resposta (espelham os do Program.cs)
     private record MapaResumoResponse(int Id, string NomeUtilizado, DateOnly DataNascimento,
-        int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);
+        int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);
 
     private record MapaDetalheResponse(int Id, string NomeUtilizado, DateOnly DataNascimento,
         DateTime CriadoEm,

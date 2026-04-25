@@ -389,7 +389,7 @@ static ConsulenteResponse ToResponse(Consulente c) =>
     new(c.Id, c.NomeCompleto, c.DataNascimento, c.Email, c.Telefone, c.CriadoEm);
 
 static MapaResumoResponse ToResumoResponse(Numerologia.Core.Entities.MapaNumerologico m) =>
-    new(m.Id, m.NomeUtilizado, m.DataNascimento, m.NumeroExpressao, m.NumeroDestino, m.CriadoEm);
+    new(m.Id, m.NomeUtilizado, m.DataNascimento, m.NumeroMotivacao, m.NumeroImpressao, m.NumeroExpressao, m.NumeroDestino, m.CriadoEm);
 
 static MapaDetalheResponse ToDetalheResponse(Numerologia.Core.Entities.MapaNumerologico m) =>
     new(m.Id, m.NomeUtilizado, m.DataNascimento, m.CriadoEm,
@@ -432,7 +432,7 @@ record ConsulenteResponse(int Id, string NomeCompleto, DateOnly DataNascimento,
 record CriarMapaRequest(string NomeUtilizado);
 
 record MapaResumoResponse(int Id, string NomeUtilizado, DateOnly DataNascimento,
-    int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);
+    int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);
 
 record MapaDetalheResponse(
     int Id, string NomeUtilizado, DateOnly DataNascimento, DateTime CriadoEm,

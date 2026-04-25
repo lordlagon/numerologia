@@ -22,6 +22,8 @@ public record MapaResumoDto(
     int Id,
     string NomeUtilizado,
     DateOnly DataNascimento,
+    int NumeroMotivacao,
+    int NumeroImpressao,
     int NumeroExpressao,
     int NumeroDestino,
     DateTime CriadoEm);
