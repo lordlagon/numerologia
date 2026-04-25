@@ -1,4 +1,5 @@
 @page "/consulentes/{ConsulenteId:int}/mapas/{MapaId:int}"
+@using Numerologia.Web.Components
 @inject IMapasService MapasService
 @inject ICalculosPessoaisService PessoaisService
 @inject NavigationManager Nav
@@ -264,7 +265,7 @@ else if (_mapa is not null)
                                 <div class="d-flex gap-2 flex-wrap">
                                     @foreach (var cor in _mapa.CoresFavoraveis)
                                     {
-                                        <span class="badge bg-secondary">@cor</span>
+                                        <BadgeCor Cor="@cor" />
                                     }
                                 </div>
                             </div>
