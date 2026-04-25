@@ -165,4 +165,20 @@ public static class InterpretacoesNumerologicas
     public static string DividaCarmica(int numero)         => _dividaCarmica.GetValueOrDefault(numero, string.Empty);
     public static string DiaNascimento(int numero)         => _diaNascimento.GetValueOrDefault(numero, string.Empty);
     public static string AnoPessoal(int numero)            => _anoPessoal.GetValueOrDefault(numero, string.Empty);
+
+    // ── Relação Intervalores (pág. 203) ────────────────────────────────
+    /// <summary>
+    /// Interpreta o Grau de Ascensão = Impressão − Motivação.
+    /// Positivo: a pessoa projeta mais ao mundo do que sente por dentro (evolução).
+    /// Negativo: revela internamente mais do que projeta para fora.
+    /// Zero: equilíbrio entre o que sente e o que projeta.
+    /// </summary>
+    public static string RelacaoIntervalores(int diferenca)
+    {
+        if (diferenca > 0)
+            return $"Grau de Ascensão positivo (+{diferenca}): a pessoa apresenta ao mundo mais do que sente por dentro — sinal de evolução espiritual. Quanto maior a diferença, maior o desenvolvimento.";
+        if (diferenca < 0)
+            return $"Grau de Ascensão negativo ({diferenca}): a pessoa revela internamente mais do que projeta para fora.";
+        return "Grau de Ascensão neutro (0): equilíbrio entre o que sente internamente e o que projeta ao mundo.";
+    }
 }
