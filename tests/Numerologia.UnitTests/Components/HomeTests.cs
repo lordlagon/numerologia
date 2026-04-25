@@ -26,34 +26,17 @@ public class HomeTests : TestContext
     }
 
     [Fact]
-    public void Home_QuandoAutenticado_ExibeNomeDoUsuario()
+    public void Home_QuandoAutenticado_RedirecionaParaDashboard()
     {
-        // Arrange
         var authService = Substitute.For<IAuthService>();
         authService.GetCurrentUserAsync().Returns(new UsuarioInfo("João Silva", "joao@example.com"));
         Services.AddSingleton(authService);
 
-        // Act
+        var navMan = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+
         var cut = RenderComponent<Home>();
 
-        // Assert
-        cut.Markup.Should().Contain("João Silva");
-        cut.Markup.Should().Contain("joao@example.com");
-    }
-
-    [Fact]
-    public void Home_QuandoAutenticado_ExibeBotaoSair()
-    {
-        // Arrange
-        var authService = Substitute.For<IAuthService>();
-        authService.GetCurrentUserAsync().Returns(new UsuarioInfo("João Silva", "joao@example.com"));
-        Services.AddSingleton(authService);
-
-        // Act
-        var cut = RenderComponent<Home>();
-
-        // Assert
-        cut.Find("button[id='btn-logout']").Should().NotBeNull();
-        cut.Markup.Should().NotContain("Entrar com Google");
+        cut.WaitForAssertion(() =>
+            navMan.Uri.Should().Contain("dashboard"));
     }
 }

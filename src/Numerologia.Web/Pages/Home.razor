@@ -16,9 +16,7 @@ else if (_usuario is null)
 }
 else
 {
-    <h1>Bem-vindo, @_usuario.Nome!</h1>
-    <p>@_usuario.Email</p>
-    <button id="btn-logout" class="btn btn-secondary" @onclick="Logout">Sair</button>
+    Nav.NavigateTo("/dashboard", replace: true);
 }
 
 @code {

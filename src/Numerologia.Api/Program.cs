@@ -259,6 +259,35 @@ app.MapGet("/api/calculos/pessoal", (int dia, int mes) =>
     return Results.Ok(new { resultado.AnoPessoal, resultado.MesPessoal, resultado.DiaPessoal });
 });
 
+// Dashboard
+app.MapGet("/api/dashboard",
+    async (HttpContext ctx, AppDbContext db, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var totalConsulentes = await db.Consulentes
+            .CountAsync(c => c.UsuarioId == usuario.Id);
+
+        var ultimosMapas = await db.Mapas
+            .Join(db.Consulentes.Where(c => c.UsuarioId == usuario.Id),
+                  m => m.ConsulenteId,
+                  c => c.Id,
+                  (m, c) => new
+                  {
+                      MapaId         = m.Id,
+                      ConsulenteId   = m.ConsulenteId,
+                      NomeConsulente = c.NomeCompleto,
+                      NomeUtilizado  = m.NomeUtilizado,
+                      CriadoEm       = m.CriadoEm,
+                  })
+            .OrderByDescending(x => x.CriadoEm)
+            .Take(5)
+            .ToListAsync();
+
+        return Results.Ok(new { TotalConsulentes = totalConsulentes, UltimosMapas = ultimosMapas });
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
 // Consulentes
 app.MapGet("/api/consulentes", async (HttpContext ctx, IConsulentesRepository repo, UsuarioService usuarioService) =>
 {
