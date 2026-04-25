@@ -177,13 +177,19 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Ex: "Vermelho" com fundo vermelho, "Azul" com fundo azul
   - Ajustar cor do texto para contraste (fundo escuro → texto branco, fundo claro → texto preto)
 
-- [ ] **F2.4** — Dashboard da numeróloga
-  - Últimos mapas criados
-  - Total de consulentes
+- [x] **F2.4** — Dashboard da numeróloga ✅
+  - Card com total de consulentes
+  - Lista dos últimos 5 mapas criados com link direto para o gráfico
+  - Home redireciona para `/dashboard` quando autenticado
 
-- [ ] **F2.5** — Busca e filtros
-  - Buscar consulente por nome
-  - Filtrar mapas por data
+- [x] **F2.5** — Busca por nome de consulente ✅
+  - Input de busca filtra em tempo real (oninput, case-insensitive)
+  - Sem resultado exibe mensagem "Nenhum consulente encontrado"
+
+- [x] **F2.6** — Menu de usuário na barra superior ✅
+  - Dropdown com nome, email, link `/perfil` (placeholder) e botão Sair
+  - Substituiu o link "About" do template padrão
+  - Controlado por Blazor (sem Bootstrap JS / Popper.js)
 
 ---
 
