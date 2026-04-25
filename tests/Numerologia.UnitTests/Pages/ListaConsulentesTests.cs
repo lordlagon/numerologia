@@ -96,6 +96,89 @@ public class ListaConsulentesTests : TestContext
     }
 
     [Fact]
+    public void Busca_FiltraPorNome()
+    {
+        var consulentes = new List<ConsulenteDto>
+        {
+            new(1, "Maria Silva",  new DateOnly(1990, 6, 15), null, null, DateTime.UtcNow),
+            new(2, "João Santos",  new DateOnly(1985, 3, 20), null, null, DateTime.UtcNow),
+            new(3, "Ana Lima",     new DateOnly(1992, 1, 10), null, null, DateTime.UtcNow),
+        };
+        _serviceMock.ListarAsync().Returns(consulentes);
+
+        var cut = RenderComponent<ListaConsulentes>();
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Maria Silva"));
+
+        cut.Find("input[data-testid='busca-nome']").Input("maria");
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("Maria Silva");
+            cut.Markup.Should().NotContain("João Santos");
+            cut.Markup.Should().NotContain("Ana Lima");
+        });
+    }
+
+    [Fact]
+    public void Busca_CaseInsensitive()
+    {
+        var consulentes = new List<ConsulenteDto>
+        {
+            new(1, "Carlos Mendes", new DateOnly(1988, 4, 5), null, null, DateTime.UtcNow),
+        };
+        _serviceMock.ListarAsync().Returns(consulentes);
+
+        var cut = RenderComponent<ListaConsulentes>();
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Carlos Mendes"));
+
+        cut.Find("input[data-testid='busca-nome']").Input("CARLOS");
+
+        cut.WaitForAssertion(() =>
+            cut.Markup.Should().Contain("Carlos Mendes"));
+    }
+
+    [Fact]
+    public void Busca_Vazia_MostraTodos()
+    {
+        var consulentes = new List<ConsulenteDto>
+        {
+            new(1, "Maria Silva", new DateOnly(1990, 6, 15), null, null, DateTime.UtcNow),
+            new(2, "João Santos", new DateOnly(1985, 3, 20), null, null, DateTime.UtcNow),
+        };
+        _serviceMock.ListarAsync().Returns(consulentes);
+
+        var cut = RenderComponent<ListaConsulentes>();
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Maria Silva"));
+
+        cut.Find("input[data-testid='busca-nome']").Input("joao");
+        cut.Find("input[data-testid='busca-nome']").Input("");
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("Maria Silva");
+            cut.Markup.Should().Contain("João Santos");
+        });
+    }
+
+    [Fact]
+    public void Busca_SemResultados_ExibeMensagem()
+    {
+        var consulentes = new List<ConsulenteDto>
+        {
+            new(1, "Maria Silva", new DateOnly(1990, 6, 15), null, null, DateTime.UtcNow),
+        };
+        _serviceMock.ListarAsync().Returns(consulentes);
+
+        var cut = RenderComponent<ListaConsulentes>();
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Maria Silva"));
+
+        cut.Find("input[data-testid='busca-nome']").Input("zzz");
+
+        cut.WaitForAssertion(() =>
+            cut.Markup.Should().Contain("Nenhum consulente encontrado"));
+    }
+
+    [Fact]
     public void BotaoNovoConsulente_Existe_ComLinkCorreto()
     {
         _serviceMock.ListarAsync().Returns(new List<ConsulenteDto>());

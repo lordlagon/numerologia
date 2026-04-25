@@ -1,0 +1,58 @@
+@page "/dashboard"
+@inject IDashboardService DashboardService
+
+<PageTitle>Dashboard</PageTitle>
+
+@if (_carregando)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="fs-1 fw-bold text-primary">@_dados!.TotalConsulentes</div>
+                    <div class="text-muted">Consulentes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="h5 mb-3">Últimos Mapas Criados</h2>
+
+    @if (_dados!.UltimosMapas.Count == 0)
+    {
+        <p class="text-muted">Nenhum mapa gerado ainda.</p>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var m in _dados.UltimosMapas)
+            {
+                <a href="/consulentes/@m.ConsulenteId/mapas/@m.MapaId"
+                   class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">@m.NomeConsulente</div>
+                            <small class="text-muted">@m.NomeUtilizado</small>
+                        </div>
+                        <small class="text-muted">@m.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+}
+
+@code {
+    private DashboardDto? _dados;
+    private bool _carregando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _dados = await DashboardService.ObterAsync();
+        _carregando = false;
+    }
+}

@@ -1,12 +1,11 @@
-@page "/consulentes/{ConsulenteId:int}/mapas/novo"
+@page "/consulentes/{ConsulenteId:int}/mapas/{MapaId:int}/editar"
 @using System.ComponentModel.DataAnnotations
 @inject IMapasService MapasService
-@inject IConsulentesService ConsulentesService
 @inject NavigationManager Nav
 
-<PageTitle>Gerar Mapa Numerológico</PageTitle>
+<PageTitle>Editar Mapa Numerológico</PageTitle>
 
-<h1>Gerar Mapa Numerológico</h1>
+<h1>Editar Mapa Numerológico</h1>
 
 @if (_carregando)
 {
@@ -14,7 +13,7 @@
 }
 else
 {
-    <EditForm Model="_form" OnValidSubmit="Gerar">
+    <EditForm Model="_form" OnValidSubmit="Salvar">
         <DataAnnotationsValidator />
 
         <div class="mb-3">
@@ -39,50 +38,57 @@ else
             <div class="alert alert-danger">@_erro</div>
         }
 
-        <button type="submit" class="btn btn-primary" disabled="@_gerando">
-            @(_gerando ? "Gerando..." : "Gerar Mapa")
+        <button type="submit" class="btn btn-primary" disabled="@_salvando">
+            @(_salvando ? "Salvando..." : "Salvar")
         </button>
-        <a href="/consulentes/@ConsulenteId/mapas" class="btn btn-secondary ms-2">Cancelar</a>
+        <a href="/consulentes/@ConsulenteId/mapas/@MapaId" class="btn btn-secondary ms-2">Cancelar</a>
     </EditForm>
 }
 
 @code {
     [Parameter] public int ConsulenteId { get; set; }
+    [Parameter] public int MapaId { get; set; }
 
     private readonly FormModel _form = new();
     private bool _carregando = true;
-    private bool _gerando;
+    private bool _salvando;
     private string? _erro;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var consulente = await ConsulentesService.ObterAsync(ConsulenteId);
-            if (consulente is not null)
-                _form.DataNascimento = consulente.DataNascimento;
+            var mapa = await MapasService.ObterAsync(ConsulenteId, MapaId);
+            if (mapa is not null)
+            {
+                _form.NomeUtilizado = mapa.NomeUtilizado;
+                _form.DataNascimento = mapa.DataNascimento;
+            }
         }
-        catch { }
+        catch
+        {
+            _erro = "Erro ao carregar mapa.";
+        }
         finally
         {
             _carregando = false;
         }
     }
 
-    private async Task Gerar()
+    private async Task Salvar()
     {
-        _gerando = true;
+        _salvando = true;
         _erro = null;
 
         try
         {
-            await MapasService.CriarAsync(ConsulenteId, _form.NomeUtilizado!, _form.DataNascimento);
-            Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas");
+            await MapasService.AtualizarAsync(ConsulenteId, MapaId, _form.NomeUtilizado!, _form.DataNascimento);
+            Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas/{MapaId}");
         }
         catch
         {
-            _erro = "Erro ao gerar mapa. Verifique o nome informado.";
-            _gerando = false;
+            _erro = "Erro ao salvar mapa.";
+            _salvando = false;
         }
     }
 

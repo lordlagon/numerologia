@@ -14,43 +14,60 @@
 {
     <p>Carregando...</p>
 }
-else if (_consulentes.Count == 0)
-{
-    <p>Nenhum consulente cadastrado ainda.</p>
-}
 else
 {
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Data de Nascimento</th>
-                <th>Email</th>
-                <th>Telefone</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var c in _consulentes)
-            {
+    <div class="mb-3">
+        <input type="search"
+               class="form-control"
+               placeholder="Buscar por nome..."
+               data-testid="busca-nome"
+               @bind="_busca"
+               @bind:event="oninput" />
+    </div>
+
+    @if (_consultentsFiltrados.Count == 0 && _consulentes.Count > 0)
+    {
+        <p class="text-muted">Nenhum consulente encontrado para "@_busca".</p>
+    }
+    else if (_consulentes.Count == 0)
+    {
+        <p>Nenhum consulente cadastrado ainda.</p>
+    }
+    else
+    {
+        <table class="table table-hover">
+            <thead>
                 <tr>
-                    <td>@c.NomeCompleto</td>
-                    <td>@c.DataNascimento.ToString("dd/MM/yyyy")</td>
-                    <td>@(c.Email ?? "—")</td>
-                    <td>@(c.Telefone ?? "—")</td>
-                    <td class="text-end">
-                        <a href="/consulentes/@c.Id/mapas" class="btn btn-sm btn-outline-secondary me-1" aria-label="Mapas" title="Mapas">
-                            <i class="bi bi-file-text"></i>
-                        </a>
-                        <a href="/consulentes/@c.Id/editar" class="btn btn-sm btn-outline-primary me-1">Editar</a>
-                        <button class="btn btn-sm btn-outline-danger"
-                                data-testid="excluir-@c.Id"
-                                @onclick="() => Excluir(c.Id)">Excluir</button>
-                    </td>
+                    <th>Nome</th>
+                    <th>Data de Nascimento</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var c in _consultentsFiltrados)
+                {
+                    <tr>
+                        <td>@c.NomeCompleto</td>
+                        <td>@c.DataNascimento.ToString("dd/MM/yyyy")</td>
+                        <td>@(c.Email ?? "—")</td>
+                        <td>@(c.Telefone ?? "—")</td>
+                        <td class="text-end">
+                            <a href="/consulentes/@c.Id/mapas" class="btn btn-sm btn-outline-secondary me-1" aria-label="Mapas" title="Mapas">
+                                <i class="bi bi-file-text"></i>
+                                Mapas
+                            </a>
+                            <a href="/consulentes/@c.Id/editar" class="btn btn-sm btn-outline-primary me-1">Editar</a>
+                            <button class="btn btn-sm btn-outline-danger"
+                                    data-testid="excluir-@c.Id"
+                                    @onclick="() => Excluir(c.Id)">Excluir</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 }
 
 @if (_erro is not null)
@@ -62,6 +79,14 @@ else
     private List<ConsulenteDto> _consulentes = [];
     private bool _carregando = true;
     private string? _erro;
+    private string _busca = "";
+
+    private List<ConsulenteDto> _consultentsFiltrados =>
+        string.IsNullOrWhiteSpace(_busca)
+            ? _consulentes
+            : _consulentes
+                .Where(c => c.NomeCompleto.Contains(_busca, StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
     protected override async Task OnInitializedAsync()
     {

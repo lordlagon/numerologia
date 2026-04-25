@@ -9,10 +9,10 @@ public class CalculoMapaFiguraATests
 
     // ── MARIA ──────────────────────────────────────────────────────────────
     // M(4) A(1) R(2) I(1) A(1)
-    // FigA: {1→3, 2→1, 4→1}
-    // Lições Cármicas: 3, 5, 6, 7, 8  (ausentes de 1-8)
+    // FigA: {1→3, 2→1, 4→1} — valores 3,5,6,7,8,9 ausentes
+    // Lições Cármicas: 3, 5, 6, 7, 8, 9  (ausentes de 1-9)
     // Tendência Oculta: [1]  (aparece 3 vezes)
-    // Resposta Subconsciente: 5
+    // Resposta Subconsciente: 9 − 6 = 3
 
     [Fact]
     public void Calcular_Maria_FiguraA_ContagemCorreta()
@@ -33,7 +33,7 @@ public class CalculoMapaFiguraATests
     public void Calcular_Maria_LicoesCarmicas()
     {
         var r = _sut.Calcular("MARIA");
-        r.LicoesCarmicas.Should().BeEquivalentTo([3, 5, 6, 7, 8]);
+        r.LicoesCarmicas.Should().BeEquivalentTo([3, 5, 6, 7, 8, 9]);
     }
 
     [Fact]
@@ -47,15 +47,15 @@ public class CalculoMapaFiguraATests
     public void Calcular_Maria_RespostaSubconsciente()
     {
         var r = _sut.Calcular("MARIA");
-        r.RespostaSubconsciente.Should().Be(5);
+        r.RespostaSubconsciente.Should().Be(3); // 9 - 6 lições
     }
 
     // ── CARLOS ─────────────────────────────────────────────────────────────
     // C(3) A(1) R(2) L(3) O(7) S(3)
-    // FigA: {1→1, 2→1, 3→3, 7→1}
-    // Lições Cármicas: 4, 5, 6, 8
+    // FigA: {1→1, 2→1, 3→3, 7→1} — valores 4,5,6,8,9 ausentes
+    // Lições Cármicas: 4, 5, 6, 8, 9  (ausentes de 1-9)
     // Tendência Oculta: [3]
-    // Resposta Subconsciente: 4
+    // Resposta Subconsciente: 9 − 5 = 4
 
     [Fact]
     public void Calcular_Carlos_FiguraA_ContagemCorreta()
@@ -75,7 +75,7 @@ public class CalculoMapaFiguraATests
     public void Calcular_Carlos_LicoesCarmicas()
     {
         var r = _sut.Calcular("CARLOS");
-        r.LicoesCarmicas.Should().BeEquivalentTo([4, 5, 6, 8]);
+        r.LicoesCarmicas.Should().BeEquivalentTo([4, 5, 6, 8, 9]);
     }
 
     [Fact]
@@ -105,14 +105,15 @@ public class CalculoMapaFiguraATests
     }
 
     // ── Nome sem Lições Cármicas ────────────────────────────────────────────
-    // Nome que cobre todos os valores 1-8 → sem lições
+    // Nome que cobre todos os valores 1-9 → sem lições
+    // Ó = O(7) + agudo(+2) = 9
 
     [Fact]
     public void Calcular_NomeComTodosOsValores_SemLicoes()
     {
-        // A(1) B(2) C(3) D(4) E(5) U(6) O(7) F(8)
-        var r = _sut.Calcular("ABCDEOUOF");
+        // A(1) B(2) C(3) D(4) E(5) U(6) O(7) F(8) Ó(9)
+        var r = _sut.Calcular("ABCDEOUOF Ó");
         r.LicoesCarmicas.Should().BeEmpty();
-        r.RespostaSubconsciente.Should().Be(0);
+        r.RespostaSubconsciente.Should().Be(9); // 9 − 0 lições
     }
 }

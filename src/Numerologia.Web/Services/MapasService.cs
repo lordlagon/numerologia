@@ -19,11 +19,28 @@ public class MapasService : IMapasService
         => await _http.GetFromJsonAsync<MapaDetalheDto>(
             $"/api/consulentes/{consulenteId}/mapas/{mapaId}");
 
-    public async Task<MapaResumoDto> CriarAsync(int consulenteId, string nomeUtilizado)
+    public async Task<MapaResumoDto> CriarAsync(int consulenteId, string nomeUtilizado, DateOnly dataNascimento)
     {
         var response = await _http.PostAsJsonAsync(
             $"/api/consulentes/{consulenteId}/mapas",
-            new { NomeUtilizado = nomeUtilizado });
+            new { NomeUtilizado = nomeUtilizado, DataNascimento = dataNascimento.ToString("yyyy-MM-dd") });
+
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<MapaResumoDto>())!;
+    }
+
+    public async Task RemoverAsync(int consulenteId, int mapaId)
+    {
+        var response = await _http.DeleteAsync(
+            $"/api/consulentes/{consulenteId}/mapas/{mapaId}");
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<MapaResumoDto> AtualizarAsync(int consulenteId, int mapaId, string nomeUtilizado, DateOnly dataNascimento)
+    {
+        var response = await _http.PutAsJsonAsync(
+            $"/api/consulentes/{consulenteId}/mapas/{mapaId}",
+            new { NomeUtilizado = nomeUtilizado, DataNascimento = dataNascimento.ToString("yyyy-MM-dd") });
 
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<MapaResumoDto>())!;

@@ -29,4 +29,26 @@ public class GeradorMapa
             cores,
             harmonia);
     }
+
+    public void Atualizar(MapaNumerologico mapaExistente, string novoNomeUtilizado, DateOnly? dataNascimento = null)
+    {
+        var dataEfetiva = dataNascimento ?? mapaExistente.DataNascimento;
+        var mapa    = _calculoMapa.Calcular(novoNomeUtilizado);
+        var destino = _calculoDestino.Calcular(dataEfetiva, mapa.NumeroExpressao);
+
+        var diasFavoraveis = TabelaNumerosFavoraveis.Consultar(dataEfetiva.Day, dataEfetiva.Month);
+        var harmonicos     = TabelaNumerosHarmonicos.Consultar(destino.DiaReduzido);
+        var cores          = TabelaCoresFavoraveis.Consultar(mapa.NumeroExpressao);
+        var harmonia       = TabelaHarmoniaConjugal.Consultar(mapa.NumeroExpressao);
+
+        mapaExistente.Atualizar(
+            novoNomeUtilizado,
+            dataEfetiva,
+            mapa,
+            destino,
+            diasFavoraveis,
+            harmonicos.SeHarmonizamCom,
+            cores,
+            harmonia);
+    }
 }

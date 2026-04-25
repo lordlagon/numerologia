@@ -2,12 +2,14 @@ services:
   api:
     build: .
     ports:
-      - "8080:8080"
+      - "5005:8080"
+    env_file: .env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;Port=5432;Database=numerologia;
         Username=numerologia;Password=numerologia
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     depends_on:
       postgres:
         condition: service_healthy

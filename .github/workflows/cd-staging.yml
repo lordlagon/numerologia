@@ -68,16 +68,17 @@ jobs:
     name: Deploy → Railway Staging
     runs-on: ubuntu-latest
     needs: [test, security]
+    
+    container: ghcr.io/railwayapp/cli:latest
     environment:
       name: "staging"
       url: ${{ vars.RAILWAY_STAGING_URL }}
+    
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: curl -fsSL https://railway.app/install.sh | sh
-
       - name: Deploy (staging)
-        run: railway up --service numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service=numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
+    

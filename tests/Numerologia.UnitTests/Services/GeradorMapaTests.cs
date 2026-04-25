@@ -75,4 +75,32 @@ public class GeradorMapaTests
         mapa.NomeUtilizado.Should().Be("JOSE");
         mapa.DataNascimento.Should().Be(new DateOnly(1985, 3, 10));
     }
+
+    // ── Atualizar ────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void Atualizar_AlteraNomeERecalculaNumeros()
+    {
+        var mapa = _gerador.Gerar(1, "JOSE", new DateOnly(1985, 3, 10));
+
+        // "ANA": A=1, N=5, A=1 → Motivação=2, Impressão=5, Expressão=7
+        _gerador.Atualizar(mapa, "ANA");
+
+        mapa.NomeUtilizado.Should().Be("ANA");
+        mapa.NumeroMotivacao.Should().Be(2);
+        mapa.NumeroImpressao.Should().Be(5);
+        mapa.NumeroExpressao.Should().Be(7);
+    }
+
+    [Fact]
+    public void Atualizar_MantemDataNascimentoEConsulenteId()
+    {
+        var dataNasc = new DateOnly(1985, 3, 10);
+        var mapa = _gerador.Gerar(consulenteId: 5, "JOSE", dataNasc);
+
+        _gerador.Atualizar(mapa, "ANA");
+
+        mapa.DataNascimento.Should().Be(dataNasc);
+        mapa.ConsulenteId.Should().Be(5);
+    }
 }

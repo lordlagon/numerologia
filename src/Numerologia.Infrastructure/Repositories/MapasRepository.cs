@@ -39,6 +39,12 @@ public class MapasRepository : IMapasRepository
     public async Task AdicionarAsync(MapaNumerologico mapa)
         => await _db.Mapas.AddAsync(mapa);
 
+    public Task RemoverAsync(MapaNumerologico mapa)
+    {
+        _db.Mapas.Remove(mapa);
+        return Task.CompletedTask;
+    }
+
     public async Task SalvarAlteracoesAsync()
         => await _db.SaveChangesAsync();
 }

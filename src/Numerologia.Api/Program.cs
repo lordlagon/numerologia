@@ -259,6 +259,35 @@ app.MapGet("/api/calculos/pessoal", (int dia, int mes) =>
     return Results.Ok(new { resultado.AnoPessoal, resultado.MesPessoal, resultado.DiaPessoal });
 });
 
+// Dashboard
+app.MapGet("/api/dashboard",
+    async (HttpContext ctx, AppDbContext db, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var totalConsulentes = await db.Consulentes
+            .CountAsync(c => c.UsuarioId == usuario.Id);
+
+        var ultimosMapas = await db.Mapas
+            .Join(db.Consulentes.Where(c => c.UsuarioId == usuario.Id),
+                  m => m.ConsulenteId,
+                  c => c.Id,
+                  (m, c) => new
+                  {
+                      MapaId         = m.Id,
+                      ConsulenteId   = m.ConsulenteId,
+                      NomeConsulente = c.NomeCompleto,
+                      NomeUtilizado  = m.NomeUtilizado,
+                      CriadoEm       = m.CriadoEm,
+                  })
+            .OrderByDescending(x => x.CriadoEm)
+            .Take(5)
+            .ToListAsync();
+
+        return Results.Ok(new { TotalConsulentes = totalConsulentes, UltimosMapas = ultimosMapas });
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
 // Consulentes
 app.MapGet("/api/consulentes", async (HttpContext ctx, IConsulentesRepository repo, UsuarioService usuarioService) =>
 {
@@ -337,7 +366,8 @@ app.MapPost("/api/consulentes/{consulenteId:int}/mapas",
         var consulente = await consultesRepo.ObterPorIdAsync(consulenteId, usuario.Id);
         if (consulente is null) return Results.NotFound();
 
-        var mapa = gerador.Gerar(consulente.Id, req.NomeUtilizado, consulente.DataNascimento);
+        var dataNascimento = DateOnly.TryParse(req.DataNascimento, out var d) ? d : consulente.DataNascimento;
+        var mapa = gerador.Gerar(consulente.Id, req.NomeUtilizado, dataNascimento);
         await mapaRepo.AdicionarAsync(mapa);
         await mapaRepo.SalvarAlteracoesAsync();
 
@@ -367,6 +397,37 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
 
         var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
         return mapa is null ? Results.NotFound() : Results.Ok(ToDetalheResponse(mapa));
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+app.MapDelete("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
+    async (int consulenteId, int mapaId, HttpContext ctx,
+        IMapasRepository repo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        await repo.RemoverAsync(mapa);
+        await repo.SalvarAlteracoesAsync();
+        return Results.NoContent();
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+app.MapPut("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
+    async (int consulenteId, int mapaId, AtualizarMapaRequest req, HttpContext ctx,
+        IMapasRepository repo, UsuarioService usuarioService, GeradorMapa gerador) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        var dataNascimento = DateOnly.TryParse(req.DataNascimento, out var d) ? d : (DateOnly?)null;
+        gerador.Atualizar(mapa, req.NomeUtilizado, dataNascimento);
+        await repo.SalvarAlteracoesAsync();
+        return Results.Ok(ToResumoResponse(mapa));
     }).RequireAuthorization().RequireRateLimiting("api-geral");
 
 // Fallback para o roteamento client-side do Blazor
@@ -428,7 +489,8 @@ record AtualizarConsulenteRequest(
 record ConsulenteResponse(int Id, string NomeCompleto, DateOnly DataNascimento,
     string? Email, string? Telefone, DateTime CriadoEm);
 
-record CriarMapaRequest(string NomeUtilizado);
+record CriarMapaRequest([property: MaxLength(256)] string NomeUtilizado, string? DataNascimento = null);
+record AtualizarMapaRequest([property: MaxLength(256)] string NomeUtilizado, string? DataNascimento = null);
 
 record MapaResumoResponse(int Id, string NomeUtilizado, DateOnly DataNascimento,
     int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);

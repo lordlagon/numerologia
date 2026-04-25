@@ -4,8 +4,24 @@ public interface IMapasService
 {
     Task<List<MapaResumoDto>> ListarAsync(int consulenteId);
     Task<MapaDetalheDto?> ObterAsync(int consulenteId, int mapaId);
-    Task<MapaResumoDto> CriarAsync(int consulenteId, string nomeUtilizado);
+    Task<MapaResumoDto> CriarAsync(int consulenteId, string nomeUtilizado, DateOnly dataNascimento);
+    Task RemoverAsync(int consulenteId, int mapaId);
+    Task<MapaResumoDto> AtualizarAsync(int consulenteId, int mapaId, string nomeUtilizado, DateOnly dataNascimento);
 }
+
+public interface IDashboardService
+{
+    Task<DashboardDto> ObterAsync();
+}
+
+public record DashboardDto(int TotalConsulentes, List<UltimoMapaDto> UltimosMapas);
+
+public record UltimoMapaDto(
+    int MapaId,
+    int ConsulenteId,
+    string NomeConsulente,
+    string NomeUtilizado,
+    DateTime CriadoEm);
 
 public interface ICalculosPessoaisService
 {
