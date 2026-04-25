@@ -162,21 +162,26 @@ Numeróloga (usuária autenticada via Google OAuth)
 ### Fase 2 — Experiência
 > Objetivo: melhorar usabilidade e adicionar contexto ao mapa.
 
-- [ ] **F2.1** — Interpretações por número
+- [ ] **F2.1** — Excluir e reeditar Mapa Numerológico
+  - Endpoint `DELETE /consulentes/{id}/mapas/{mapaId}` — remove o mapa com confirmação
+  - Endpoint `PUT /consulentes/{id}/mapas/{mapaId}` — recalcula o mapa com novo `NomeUtilizado`
+  - Blazor: botão "Excluir" na `ListaMapas` (com confirmação) e botão "Editar" que abre form para alterar o nome
+  - Testes: unit (repositório), integração (endpoints), bUnit (componentes)
+
+- [ ] **F2.2** — Interpretações por número
   - Para cada campo do mapa, exibir o significado do número calculado
   - Baseado no `docs/numerologia.md`
 
-- [ ] **F2.2** — Cores favoraveis
-  - Além do texto das cores, incluir a cor no texto. 
+- [ ] **F2.3** — Cores favoráveis
+  - Além do texto das cores, incluir a cor no texto
   - Ex: "Vermelho" escrito com o fundo da cor vermelha, "Azul" escrito com o fundo da cor azul, etc.
-  - Ajustar a cor do texto para fica ficar visivel.
-  - Ex. Fundo preto, com o texto branco. fundo branco com o texto branco.
-  
-- [ ] **F2.3** — Dashboard da numeróloga
+  - Ajustar a cor do texto para ficar visível (fundo preto → texto branco, fundo branco → texto preto)
+
+- [ ] **F2.4** — Dashboard da numeróloga
   - Últimos mapas criados
   - Total de consulentes
 
-- [ ] **F2.4** — Busca e filtros
+- [ ] **F2.5** — Busca e filtros
   - Buscar consulente por nome
   - Filtrar mapas por data
 
