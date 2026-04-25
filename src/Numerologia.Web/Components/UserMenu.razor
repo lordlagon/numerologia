@@ -2,24 +2,28 @@
 @inject IAuthService AuthService
 @inject NavigationManager Nav
 
+@if (_aberto)
+{
+    <div style="position:fixed;inset:0;z-index:999" @onclick="FecharMenu"></div>
+}
+
 @if (_usuario is not null)
 {
-    <div class="dropdown">
+    <div class="dropdown" style="z-index:1000;position:relative" @onclick:stopPropagation>
         <button class="btn btn-link text-dark text-decoration-none dropdown-toggle d-flex align-items-center gap-2"
                 type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false">
+                @onclick="ToggleMenu"
+                aria-expanded="@_aberto">
             <span class="bi bi-person-circle fs-5" aria-hidden="true"></span>
             <span class="d-none d-sm-inline">@_usuario.Nome</span>
-            <span class="bi bi-three-dots-vertical" aria-hidden="true"></span>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow">
+        <ul class="dropdown-menu dropdown-menu-end shadow @(_aberto ? "show" : "")">
             <li>
                 <span class="dropdown-item-text small text-muted">@_usuario.Email</span>
             </li>
             <li><hr class="dropdown-divider" /></li>
             <li>
-                <a class="dropdown-item" href="/perfil">
+                <a class="dropdown-item" href="/perfil" @onclick="FecharMenu">
                     <span class="bi bi-person me-2" aria-hidden="true"></span>Perfil
                 </a>
             </li>
@@ -34,14 +38,19 @@
 
 @code {
     private UsuarioInfo? _usuario;
+    private bool _aberto;
 
     protected override async Task OnInitializedAsync()
     {
         _usuario = await AuthService.GetCurrentUserAsync();
     }
 
+    private void ToggleMenu() => _aberto = !_aberto;
+    private void FecharMenu() => _aberto = false;
+
     private async Task Sair()
     {
+        _aberto = false;
         await AuthService.LogoutAsync();
         Nav.NavigateTo("/", forceLoad: true);
     }
