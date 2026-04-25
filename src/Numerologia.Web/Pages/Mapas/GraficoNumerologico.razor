@@ -1,5 +1,6 @@
 @page "/consulentes/{ConsulenteId:int}/mapas/{MapaId:int}"
 @using Numerologia.Web.Components
+@using Numerologia.Core.Services
 @inject IMapasService MapasService
 @inject ICalculosPessoaisService PessoaisService
 @inject NavigationManager Nav
@@ -23,9 +24,9 @@ else if (_mapa is not null)
 
         <!-- ── GRADE DE LETRAS ─────────────────────────────────────────── -->
         @{
-            var somaMotivacao  = _mapa.GradeLetras.Where(e => e.Tipo == TipoLetraDto.Vogal).Sum(e => e.ValorCabalistico);
-            var somaImpressao  = _mapa.GradeLetras.Where(e => e.Tipo == TipoLetraDto.Consoante).Sum(e => e.ValorCabalistico);
-            var somaExpressao  = _mapa.GradeLetras.Where(e => e.Tipo != TipoLetraDto.Espaco).Sum(e => e.ValorCabalistico);
+            var somaMotivacao  = _mapa.SomaMotivacao;
+            var somaImpressao  = _mapa.SomaImpressao;
+            var somaExpressao  = _mapa.SomaExpressao;
 
             // F2.7 — anos dos Ciclos de Vida
             var anoNasc      = _mapa.DataNascimento.Year;
@@ -556,8 +557,12 @@ else if (_mapa is not null)
         </div>
     </details>
 
-    <div class="mt-3">
+    <div class="mt-3 mb-5">
         <a href="/consulentes/@ConsulenteId/mapas/@MapaId/editar" class="btn btn-outline-primary me-2">Editar</a>
+        <a href="/api/consulentes/@ConsulenteId/mapas/@MapaId/pdf"
+           target="_blank" class="btn btn-outline-danger me-2" data-testid="btn-baixar-pdf">
+            <i class="bi bi-file-earmark-pdf"></i> Baixar PDF
+        </a>
         <a href="/consulentes/@ConsulenteId/mapas" class="btn btn-secondary">Voltar</a>
     </div>
 }

@@ -9,6 +9,7 @@
 | Banco de dados | PostgreSQL |
 | ORM | Entity Framework Core 10 + Npgsql 10 |
 | Auth | Google OAuth (`Microsoft.AspNetCore.Authentication.Google` v10.*) |
+| Geração de PDF | QuestPDF (MIT) — server-side no backend |
 | Deploy | Railway |
 | Containerização | Docker (multi-stage build) |
 

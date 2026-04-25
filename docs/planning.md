@@ -222,13 +222,16 @@ Numeróloga (usuária autenticada via Google OAuth)
 ### Fase 3 — PDF
 > Objetivo: gerar o Gráfico Numerológico preenchido em PDF para impressão.
 
-- [ ] **F3.1** — Geração de PDF
-  - Criar uma capa para o Mapa Numerologico Cabalistico, deve conter o nome do Numerólogo (editável)
-  - Incluir uma página com um cabeçalho contendo os dados do consulente (nome, data nascimento),
-  incluir em todas as paginas
-  - Layout semelhante ao gráfico físico (`docs/Screenshot 2026-04-23 at 23.58.51.png`)
-  - Incluir uma pagina com as interpretações. 
-  - Download direto pelo sistema
+- [x] **F3.1** — Geração de PDF
+  - **Biblioteca:** QuestPDF (MIT) — geração server-side no backend
+  - **Endpoint API:** `GET /consulentes/{id}/mapas/{mapaId}/pdf` → `application/pdf`
+  - **Estrutura do PDF:**
+    - **Capa** (pág. 1): título "Mapa Numerológico Cabalístico", nome do Numerólogo (editável — campo no perfil), logo opcional
+    - **Cabeçalho** (todas as páginas): nome do consulente + data de nascimento
+    - **Gráfico** (pág. 2): layout fiel ao gráfico físico (`docs/privado/Screenshot 2026-04-23 at 23.58.51.png`) — grade de letras, Fig. A–H, ciclos, momentos, harmonia, cores
+    - **Interpretações** (pág. 3+): todos os campos com texto interpretativo (mesmo conteúdo da seção Interpretações na tela)
+  - **Frontend:** botão "Baixar PDF" na tela do gráfico → download via endpoint
+  - **Testes:** unit (gerador produz bytes não-nulos), integração (endpoint retorna 200 + `application/pdf`)
 
 ---
 
