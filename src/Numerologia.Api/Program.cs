@@ -49,7 +49,6 @@ static string? ToNpgsqlConnectionString(string? value)
         Username = Uri.UnescapeDataString(userInfo[0]),
         Password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "",
         SslMode = SslMode.Require,
-        TrustServerCertificate = true,
     }.ConnectionString;
 }
 
