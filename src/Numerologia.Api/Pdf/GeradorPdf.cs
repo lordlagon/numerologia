@@ -15,11 +15,13 @@ public static class GeradorPdf
 {
     public static byte[] Gerar(MapaNumerologico mapa, string nomeConsulente, string nomeNumerologa)
     {
+        var pessoal = new CalculosPessoais().Calcular(mapa.DataNascimento, DateOnly.FromDateTime(DateTime.Today));
+
         var doc = Document.Create(container =>
         {
             AdicionarCapa(container, mapa, nomeConsulente, nomeNumerologa);
-            AdicionarGrafico(container, mapa, nomeConsulente);
-            AdicionarInterpretacoes(container, mapa, nomeConsulente);
+            AdicionarGrafico(container, mapa, nomeConsulente, pessoal);
+            AdicionarInterpretacoes(container, mapa, nomeConsulente, pessoal);
         });
 
         return doc.GeneratePdf();
@@ -56,18 +58,18 @@ public static class GeradorPdf
                 col.Item().PaddingTop(4).AlignCenter()
                     .Text(nomeNumerologa)
                     .FontSize(13).Bold();
-
-                col.Item().PaddingTop(80).AlignCenter()
-                    .Text($"Gerado em {DateTime.Now:dd/MM/yyyy}")
-                    .FontSize(9).FontColor(Colors.Grey.Medium);
             });
+
+            page.Footer().AlignCenter()
+                .Text($"Gerado em {DateTime.Now:dd/MM/yyyy}")
+                .FontSize(9).FontColor(Colors.Grey.Medium);
         });
     }
 
     // ── Gráfico ───────────────────────────────────────────────────────────────
 
     private static void AdicionarGrafico(IDocumentContainer container, MapaNumerologico mapa,
-        string nomeConsulente)
+        string nomeConsulente, ResultadoPessoal pessoal)
     {
         var anoNasc      = mapa.DataNascimento.Year;
         var anoFimCiclo1 = anoNasc + mapa.FimCiclo1Idade;
@@ -79,7 +81,7 @@ public static class GeradorPdf
         container.Page(page =>
         {
             page.Size(PageSizes.A4.Landscape());
-            page.Margin(1f, Unit.Centimetre);
+            page.Margin(0.8f, Unit.Centimetre);
             page.DefaultTextStyle(t => t.FontSize(8));
 
             page.Header().PaddingBottom(4).BorderBottom(1f, Unit.Point).BorderColor(Colors.Grey.Lighten1)
@@ -91,20 +93,20 @@ public static class GeradorPdf
                         .FontSize(9).FontColor(Colors.Grey.Darken2);
                 });
 
-            page.Content().PaddingTop(8).Column(col =>
+            page.Content().PaddingTop(6).Column(col =>
             {
-                col.Spacing(5);
+                col.Spacing(4);
 
-                // Grade de letras
+                // Grade de letras (topo)
                 col.Item().Element(c => GradeLetras(c, mapa));
 
                 // Corpo principal: Fig. A | Centro | Direita
-                col.Item().Row(row =>
+                col.Item().Extend().Row(row =>
                 {
                     row.Spacing(5);
-                    row.AutoItem().Element(c => FiguraA(c, mapa));
-                    row.RelativeItem().Element(c => ColunaCentral(c, mapa, anoNasc, anoFimCiclo1, anoFimCiclo2, anoFimMD1, anoFimMD2, anoFimMD3));
-                    row.ConstantItem(210).Element(c => ColunaDireita(c, mapa, anoNasc, anoFimCiclo1, anoFimCiclo2, anoFimMD1, anoFimMD2, anoFimMD3));
+                    row.ConstantItem(46).Element(c => FiguraA(c, mapa));
+                    row.RelativeItem().Element(c => ColunaCentral(c, mapa, pessoal));
+                    row.ConstantItem(215).Element(c => ColunaDireita(c, mapa, anoNasc, anoFimCiclo1, anoFimCiclo2, anoFimMD1, anoFimMD2, anoFimMD3));
                 });
             });
         });
@@ -116,10 +118,10 @@ public static class GeradorPdf
         {
             tbl.ColumnsDefinition(c =>
             {
-                c.ConstantColumn(52);
+                c.ConstantColumn(50);
                 foreach (var _ in mapa.GradeLetras) c.ConstantColumn(13);
                 c.RelativeColumn();
-                c.ConstantColumn(52);
+                c.ConstantColumn(55);
             });
 
             void CelulaLabel(string txt) =>
@@ -131,7 +133,7 @@ public static class GeradorPdf
             void CelulaResultado(string txt) =>
                 tbl.Cell().Border(1f, Colors.Grey.Medium)
                     .AlignCenter().AlignMiddle().Padding(1)
-                    .Text(txt).Bold().FontSize(8);
+                    .Text(txt).Bold().FontSize(9);
 
             // Vogais
             CelulaLabel("Vogais");
@@ -176,7 +178,7 @@ public static class GeradorPdf
 
     private static void FiguraA(IContainer ct, MapaNumerologico mapa)
     {
-        ct.Border(1f, Colors.Grey.Medium).Column(col =>
+        ct.Extend().Border(1f, Colors.Grey.Medium).Column(col =>
         {
             col.Item().Background(Colors.Grey.Lighten3).Padding(2)
                 .AlignCenter().Text("Fig. \"A\"").Bold().FontSize(7);
@@ -188,48 +190,47 @@ public static class GeradorPdf
                         r.ConstantItem(18).BorderRight(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2)
                             .AlignCenter().AlignMiddle().Padding(1)
                             .Text(kv.Key.ToString()).Bold().FontSize(7);
-                        r.ConstantItem(18).AlignCenter().AlignMiddle().Padding(1)
+                        r.RelativeItem().AlignCenter().AlignMiddle().Padding(1)
                             .Text(kv.Value.ToString()).FontSize(7);
                     });
 
-            col.Item().AlignCenter().Padding(2)
+            col.Item().PaddingTop(4).AlignCenter()
                 .Text("Total de Letras\nem Cada Número")
                 .FontSize(6).FontColor(Colors.Grey.Darken1);
         });
     }
 
-    private static void ColunaCentral(IContainer ct, MapaNumerologico mapa,
-        int anoNasc, int anoFimCiclo1, int anoFimCiclo2, int anoFimMD1, int anoFimMD2, int anoFimMD3)
+    private static void ColunaCentral(IContainer ct, MapaNumerologico mapa, ResultadoPessoal pessoal)
     {
         ct.Column(col =>
         {
             col.Spacing(4);
 
-            // Fig. B, C, D em linha
+            // Linha 1: Fig. B, C, D
             col.Item().Row(r =>
             {
                 r.Spacing(4);
 
-                // Fig. B
+                // Fig. B — Lições Cármicas
                 r.RelativeItem().Border(1f, Colors.Grey.Medium).Column(b =>
                 {
                     b.Item().Background(Colors.Grey.Lighten3).Padding(2)
                         .AlignCenter().Text("Fig. B — Lições Cármicas").Bold().FontSize(7);
-                    b.Item().Padding(3).Text(
+                    b.Item().Padding(4).Text(
                         mapa.LicoesCarmicas.Length > 0
-                            ? string.Join("  ", mapa.LicoesCarmicas)
-                            : "—").Bold().FontSize(9);
+                            ? string.Join("   ", mapa.LicoesCarmicas)
+                            : "—").Bold().FontSize(10);
                 });
 
-                // Fig. C
+                // Fig. C — Tendências Ocultas
                 r.RelativeItem().Border(1f, Colors.Grey.Medium).Column(c =>
                 {
                     c.Item().Background(Colors.Grey.Lighten3).Padding(2)
                         .AlignCenter().Text("Fig. C — Tendências Ocultas").Bold().FontSize(7);
-                    c.Item().Padding(3).Text(
+                    c.Item().Padding(4).Text(
                         mapa.TendenciasOcultas.Length > 0
-                            ? string.Join("  ", mapa.TendenciasOcultas)
-                            : "—").Bold().FontSize(9);
+                            ? string.Join("   ", mapa.TendenciasOcultas)
+                            : "—").Bold().FontSize(10);
                 });
 
                 // Fig. D
@@ -239,7 +240,7 @@ public static class GeradorPdf
                         .AlignCenter().Text("Fig. D").Bold().FontSize(7);
                     d.Item().Table(t =>
                     {
-                        t.ColumnsDefinition(c2 => { c2.RelativeColumn(); c2.ConstantColumn(50); });
+                        t.ColumnsDefinition(c2 => { c2.RelativeColumn(); c2.ConstantColumn(52); });
 
                         void FigDRow(string label, string val)
                         {
@@ -250,29 +251,32 @@ public static class GeradorPdf
                         }
 
                         FigDRow("Resp. Subconsciente", mapa.RespostaSubconsciente.ToString());
-                        FigDRow("Mês", $"{mapa.DataNascimento.Month:00} => {mapa.MesNascimentoReduzido}");
-                        FigDRow("Dia", $"{mapa.DataNascimento.Day} => {mapa.DiaNascimentoReduzido}");
-                        FigDRow("Ano", $"{mapa.DataNascimento.Year} => {mapa.AnoNascimentoReduzido}");
+                        FigDRow("Mês", $"{mapa.DataNascimento.Month:00} ⇒ {mapa.MesNascimentoReduzido}");
+                        FigDRow("Dia", $"{mapa.DataNascimento.Day:00} ⇒ {mapa.DiaNascimentoReduzido}");
+                        FigDRow("Ano", $"{mapa.DataNascimento.Year} ⇒ {mapa.AnoNascimentoReduzido}");
                     });
                 });
             });
 
-            // Fig. E
+            // Linha 2: Fig. E (Dívidas, Destino, Missão, Ano/Mês/Dia Pessoal)
             col.Item().Border(1f, Colors.Grey.Medium).Column(e =>
             {
                 e.Item().Background(Colors.Grey.Lighten3).Padding(2)
                     .AlignCenter().Text("Fig. E").Bold().FontSize(7);
                 e.Item().Padding(4).Row(r2 =>
                 {
-                    r2.Spacing(10);
+                    r2.Spacing(8);
                     NumeroCard(r2.AutoItem(), "Dívidas Cármicas",
-                        mapa.DividasCarmicas.Length > 0 ? string.Join(" ", mapa.DividasCarmicas) : "—", 9);
+                        mapa.DividasCarmicas.Length > 0 ? string.Join(" ", mapa.DividasCarmicas) : "—", 10);
                     NumeroCard(r2.AutoItem(), "Nº Destino", mapa.NumeroDestino.ToString(), 14);
                     NumeroCard(r2.AutoItem(), "Missão", mapa.Missao.ToString(), 14);
+                    NumeroCard(r2.AutoItem(), "Ano Pessoal", pessoal.AnoPessoal.ToString(), 14);
+                    NumeroCard(r2.AutoItem(), "Mês Pessoal", pessoal.MesPessoal.ToString(), 14);
+                    NumeroCard(r2.AutoItem(), "Dia Pessoal", pessoal.DiaPessoal.ToString(), 14);
                 });
             });
 
-            // Dias do mês favoráveis
+            // Linha 3: Dias do mês favoráveis
             col.Item().Border(1f, Colors.Grey.Medium).Column(df =>
             {
                 df.Item().Background(Colors.Grey.Lighten3).Padding(2)
@@ -280,7 +284,7 @@ public static class GeradorPdf
                 df.Item().Padding(3).Text(string.Join("  ", mapa.DiasMesFavoraveis)).FontSize(8);
             });
 
-            // Nº Harmônicos + Relação Intervalores
+            // Linha 4: Nº Harmônicos + Relação Intervalores
             col.Item().Row(r3 =>
             {
                 r3.Spacing(4);
@@ -290,16 +294,16 @@ public static class GeradorPdf
                         .Text("Números Harmônicos").Bold().FontSize(7);
                     nh.Item().Padding(3).Text(string.Join("  ", mapa.NumerosHarmonicos)).FontSize(8);
                 });
-                r3.AutoItem().Border(1f, Colors.Grey.Medium).Column(ri =>
+                r3.ConstantItem(70).Border(1f, Colors.Grey.Medium).Column(ri =>
                 {
                     ri.Item().Background(Colors.Grey.Lighten3).Padding(2)
                         .AlignCenter().Text("Relação Intervalores").Bold().FontSize(7);
                     ri.Item().Padding(3).AlignCenter()
-                        .Text(mapa.RelacaoIntervalores.ToString()).Bold().FontSize(13);
+                        .Text(mapa.RelacaoIntervalores.ToString()).Bold().FontSize(14);
                 });
             });
 
-            // Cores favoráveis
+            // Linha 5: Cores favoráveis
             col.Item().Border(1f, Colors.Grey.Medium).Column(cf =>
             {
                 cf.Item().Background(Colors.Grey.Lighten3).Padding(2)
@@ -323,19 +327,19 @@ public static class GeradorPdf
                     .AlignCenter().Text("Fig. F — Ciclos de Vida").Bold().FontSize(7);
                 f.Item().Table(t =>
                 {
-                    t.ColumnsDefinition(c => { c.ConstantColumn(38); c.ConstantColumn(16); c.ConstantColumn(112); c.ConstantColumn(34); });
+                    t.ColumnsDefinition(c => { c.ConstantColumn(36); c.ConstantColumn(16); c.ConstantColumn(110); c.ConstantColumn(38); });
 
                     void CicloRow(string label, int num, string periodo, string idade)
                     {
                         t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).Padding(1).Text(label).FontSize(7);
-                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(num.ToString()).Bold().FontSize(7);
-                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).Padding(1).Text(periodo).FontSize(6).FontColor(Colors.Grey.Darken1);
-                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(idade).FontSize(6);
+                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(num.ToString()).Bold().FontSize(8);
+                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(periodo).FontSize(6.5f).FontColor(Colors.Grey.Darken1);
+                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(idade).FontSize(6.5f);
                     }
 
-                    CicloRow("1º Ciclo", mapa.CicloVida1, $"{anoNasc}–{anoFimCiclo1}", $"até {mapa.FimCiclo1Idade}a");
-                    CicloRow("2º Ciclo", mapa.CicloVida2, $"{anoFimCiclo1}–{anoFimCiclo2}", $"até {mapa.FimCiclo2Idade}a");
-                    CicloRow("3º Ciclo", mapa.CicloVida3, $"{anoFimCiclo2}+", "em diante");
+                    CicloRow("1º Ciclo", mapa.CicloVida1, $"{anoNasc} – {anoFimCiclo1}", $"até {mapa.FimCiclo1Idade}a");
+                    CicloRow("2º Ciclo", mapa.CicloVida2, $"{anoFimCiclo1} – {anoFimCiclo2}", $"até {mapa.FimCiclo2Idade}a");
+                    CicloRow("3º Ciclo", mapa.CicloVida3, $"{anoFimCiclo2} +", "em diante");
                 });
             });
 
@@ -346,16 +350,16 @@ public static class GeradorPdf
                     .AlignCenter().Text("Fig. H — Desafios").Bold().FontSize(7);
                 h.Item().Table(t =>
                 {
-                    t.ColumnsDefinition(c => { c.ConstantColumn(190); c.ConstantColumn(20); });
+                    t.ColumnsDefinition(c => { c.RelativeColumn(); c.ConstantColumn(22); });
 
                     void DesafioRow(string label, int val)
                     {
                         t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).Padding(1).Text(label).FontSize(7);
-                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(val.ToString()).Bold().FontSize(8);
+                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(val.ToString()).Bold().FontSize(9);
                     }
 
-                    DesafioRow("Primeiro", mapa.Desafio1);
-                    DesafioRow("Segundo",  mapa.Desafio2);
+                    DesafioRow("Primeiro",  mapa.Desafio1);
+                    DesafioRow("Segundo",   mapa.Desafio2);
                     DesafioRow("Principal", mapa.DesafioPrincipal);
                 });
             });
@@ -367,19 +371,19 @@ public static class GeradorPdf
                     .AlignCenter().Text("Fig. G — Momentos Decisivos").Bold().FontSize(7);
                 g.Item().Table(t =>
                 {
-                    t.ColumnsDefinition(c => { c.ConstantColumn(14); c.ConstantColumn(16); c.ConstantColumn(180); });
+                    t.ColumnsDefinition(c => { c.ConstantColumn(14); c.ConstantColumn(18); c.RelativeColumn(); });
 
                     void MdRow(string ord, int val, string periodo)
                     {
                         t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(ord).FontSize(7);
-                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(val.ToString()).Bold().FontSize(8);
-                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).Padding(1).Text(periodo).FontSize(6).FontColor(Colors.Grey.Darken1);
+                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(val.ToString()).Bold().FontSize(9);
+                        t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).Padding(1).Text(periodo).FontSize(6.5f).FontColor(Colors.Grey.Darken1);
                     }
 
-                    MdRow("1º", mapa.MomentoDecisivo1, $"{anoNasc}–{anoFimMD1}");
-                    MdRow("2º", mapa.MomentoDecisivo2, $"{anoFimMD1}–{anoFimMD2}");
-                    MdRow("3º", mapa.MomentoDecisivo3, $"{anoFimMD2}–{anoFimMD3}");
-                    MdRow("4º", mapa.MomentoDecisivo4, $"{anoFimMD3}+");
+                    MdRow("1º", mapa.MomentoDecisivo1, $"{anoNasc} – {anoFimMD1}");
+                    MdRow("2º", mapa.MomentoDecisivo2, $"{anoFimMD1} – {anoFimMD2}");
+                    MdRow("3º", mapa.MomentoDecisivo3, $"{anoFimMD2} – {anoFimMD3}");
+                    MdRow("4º", mapa.MomentoDecisivo4, $"{anoFimMD3} +");
                 });
             });
 
@@ -390,7 +394,7 @@ public static class GeradorPdf
                     .AlignCenter().Text("Harmonia Conjugal").Bold().FontSize(7);
                 hc.Item().Table(t =>
                 {
-                    t.ColumnsDefinition(c => { c.ConstantColumn(162); c.ConstantColumn(48); });
+                    t.ColumnsDefinition(c => { c.RelativeColumn(); c.ConstantColumn(52); });
 
                     void HcRow(string label, string val)
                     {
@@ -398,10 +402,10 @@ public static class GeradorPdf
                         t.Cell().BorderTop(1f, Unit.Point).BorderColor(Colors.Grey.Lighten2).AlignCenter().Padding(1).Text(val).Bold().FontSize(7);
                     }
 
-                    HcRow("Vibra com", mapa.HarmoniaVibraCom.ToString());
-                    HcRow("Atrai", string.Join(", ", mapa.HarmoniaAtrai));
-                    HcRow("É oposto a", string.Join(", ", mapa.HarmoniaEOpostoA));
-                    HcRow("É passivo em", string.Join(", ", mapa.HarmoniaEPassivoEm));
+                    HcRow("Vibra com",   mapa.HarmoniaVibraCom.ToString());
+                    HcRow("Atrai",       string.Join(", ", mapa.HarmoniaAtrai));
+                    HcRow("É oposto a",  string.Join(", ", mapa.HarmoniaEOpostoA));
+                    HcRow("É passivo em",string.Join(", ", mapa.HarmoniaEPassivoEm));
                 });
             });
         });
@@ -410,7 +414,7 @@ public static class GeradorPdf
     // ── Interpretações ────────────────────────────────────────────────────────
 
     private static void AdicionarInterpretacoes(IDocumentContainer container,
-        MapaNumerologico mapa, string nomeConsulente)
+        MapaNumerologico mapa, string nomeConsulente, ResultadoPessoal pessoal)
     {
         container.Page(page =>
         {
@@ -456,6 +460,8 @@ public static class GeradorPdf
                     InterpretacoesNumerologicas.RespostaSubconsciente(mapa.RespostaSubconsciente));
                 Card($"Relação Intervalores — {mapa.RelacaoIntervalores}",
                     InterpretacoesNumerologicas.RelacaoIntervalores(mapa.RelacaoIntervalores));
+                Card($"Ano Pessoal — {pessoal.AnoPessoal}",
+                    InterpretacoesNumerologicas.AnoPessoal(pessoal.AnoPessoal));
 
                 if (mapa.LicoesCarmicas.Length > 0)
                 {
