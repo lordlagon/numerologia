@@ -127,4 +127,55 @@ public class MapaNumerologico
             CoresFavoraveis              = coresFavoraveis,
         };
     }
+
+    public void Atualizar(
+        string nomeUtilizado,
+        ResultadoMapa mapa,
+        ResultadoDestino destino,
+        int[] diasFavoraveis,
+        int[] numerosHarmonicos,
+        string[] coresFavoraveis,
+        ResultadoHarmoniaConjugal harmonia)
+    {
+        NomeUtilizado = nomeUtilizado;
+
+        GradeLetras           = [.. mapa.GradeLetras];
+        NumeroMotivacao       = mapa.NumeroMotivacao;
+        NumeroImpressao       = mapa.NumeroImpressao;
+        NumeroExpressao       = mapa.NumeroExpressao;
+        DividasCarmicas       = [.. mapa.DividasCarmicas];
+        FiguraA               = new Dictionary<int, int>(mapa.FiguraA);
+        LicoesCarmicas        = [.. mapa.LicoesCarmicas];
+        TendenciasOcultas     = [.. mapa.TendenciasOcultas];
+        RespostaSubconsciente = mapa.RespostaSubconsciente;
+
+        MesNascimentoReduzido = destino.MesReduzido;
+        DiaNascimentoReduzido = destino.DiaReduzido;
+        AnoNascimentoReduzido = destino.AnoReduzido;
+        NumeroDestino         = destino.NumeroDestino;
+        Missao                = destino.Missao;
+        CicloVida1            = destino.CicloVida1;
+        CicloVida2            = destino.CicloVida2;
+        CicloVida3            = destino.CicloVida3;
+        FimCiclo1Idade        = destino.FimCiclo1Idade;
+        FimCiclo2Idade        = destino.FimCiclo2Idade;
+        Desafio1              = destino.Desafio1;
+        Desafio2              = destino.Desafio2;
+        DesafioPrincipal      = destino.DesafioPrincipal;
+        MomentoDecisivo1      = destino.MomentoDecisivo1;
+        MomentoDecisivo2      = destino.MomentoDecisivo2;
+        MomentoDecisivo3      = destino.MomentoDecisivo3;
+        MomentoDecisivo4      = destino.MomentoDecisivo4;
+
+        DiasMesFavoraveis = diasFavoraveis;
+        NumerosHarmonicos = numerosHarmonicos;
+
+        RelacaoIntervalores          = mapa.NumeroImpressao - mapa.NumeroMotivacao;
+        HarmoniaVibraCom             = harmonia.VibraCom;
+        HarmoniaAtrai                = [.. harmonia.Atrai];
+        HarmoniaEOpostoA             = [.. harmonia.EOpostoA];
+        HarmoniaProfundamenteOpostoA = [.. harmonia.ProfundamenteOpostoA];
+        HarmoniaEPassivoEm           = [.. harmonia.EPassivoEm];
+        CoresFavoraveis              = coresFavoraveis;
+    }
 }

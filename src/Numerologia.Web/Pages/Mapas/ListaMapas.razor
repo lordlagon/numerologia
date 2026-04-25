@@ -1,6 +1,7 @@
 @page "/consulentes/{ConsulenteId:int}/mapas"
 @inject IMapasService MapasService
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <PageTitle>Mapas Numerológicos</PageTitle>
 
@@ -46,6 +47,10 @@ else
                     <td class="text-end">
                         <a href="/consulentes/@ConsulenteId/mapas/@m.Id"
                            class="btn btn-sm btn-outline-primary">Ver Mapa</a>
+                        <a href="/consulentes/@ConsulenteId/mapas/@m.Id/editar"
+                           class="btn btn-sm btn-outline-secondary ms-1">Editar</a>
+                        <button class="btn btn-sm btn-outline-danger ms-1"
+                                @onclick="() => Excluir(m.Id, m.NomeUtilizado)">Excluir</button>
                         <button class="btn btn-sm btn-outline-secondary ms-1" disabled
                                 title="Em breve">Pirâmides</button>
                     </td>
@@ -82,6 +87,24 @@ else
         finally
         {
             _carregando = false;
+        }
+    }
+
+    private async Task Excluir(int mapaId, string nomeUtilizado)
+    {
+        var confirmado = await JS.InvokeAsync<bool>("confirm",
+            $"Excluir o mapa de \"{nomeUtilizado}\"? Esta ação não pode ser desfeita.");
+
+        if (!confirmado) return;
+
+        try
+        {
+            await MapasService.RemoverAsync(ConsulenteId, mapaId);
+            _mapas = await MapasService.ListarAsync(ConsulenteId);
+        }
+        catch
+        {
+            _erro = "Erro ao excluir mapa.";
         }
     }
 }

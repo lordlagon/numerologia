@@ -1,0 +1,90 @@
+@page "/consulentes/{ConsulenteId:int}/mapas/{MapaId:int}/editar"
+@using System.ComponentModel.DataAnnotations
+@inject IMapasService MapasService
+@inject NavigationManager Nav
+
+<PageTitle>Editar Mapa Numerológico</PageTitle>
+
+<h1>Editar Mapa Numerológico</h1>
+
+@if (_carregando)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    <EditForm Model="_form" OnValidSubmit="Salvar">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <label class="form-label">Nome utilizado *</label>
+            <InputText class="form-control" @bind-Value="_form.NomeUtilizado"
+                       data-testid="nome-utilizado" />
+            <ValidationMessage For="() => _form.NomeUtilizado" />
+            <div class="form-text">
+                Nome conforme certidão de nascimento (ou nome de casada, se alterado).
+            </div>
+        </div>
+
+        @if (_erro is not null)
+        {
+            <div class="alert alert-danger">@_erro</div>
+        }
+
+        <button type="submit" class="btn btn-primary" disabled="@_salvando">
+            @(_salvando ? "Salvando..." : "Salvar")
+        </button>
+        <a href="/consulentes/@ConsulenteId/mapas" class="btn btn-secondary ms-2">Cancelar</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int ConsulenteId { get; set; }
+    [Parameter] public int MapaId { get; set; }
+
+    private readonly FormModel _form = new();
+    private bool _carregando = true;
+    private bool _salvando;
+    private string? _erro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var mapa = await MapasService.ObterAsync(ConsulenteId, MapaId);
+            if (mapa is not null)
+                _form.NomeUtilizado = mapa.NomeUtilizado;
+        }
+        catch
+        {
+            _erro = "Erro ao carregar mapa.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private async Task Salvar()
+    {
+        _salvando = true;
+        _erro = null;
+
+        try
+        {
+            await MapasService.AtualizarAsync(ConsulenteId, MapaId, _form.NomeUtilizado!);
+            Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas");
+        }
+        catch
+        {
+            _erro = "Erro ao salvar mapa.";
+            _salvando = false;
+        }
+    }
+
+    private class FormModel
+    {
+        [Required(ErrorMessage = "Nome utilizado é obrigatório")]
+        public string? NomeUtilizado { get; set; }
+    }
+}
