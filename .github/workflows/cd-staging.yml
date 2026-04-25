@@ -74,10 +74,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Railway CLI
-        run: curl -fsSL https://railway.app/install.sh | sh
-
       - name: Deploy (staging)
-        run: railway up --service numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
+        uses: bervProject/railway-deploy@main
+        with:
+          service: numerologia
+          environment: ${{ vars.RAILWAY_ENVIRONMENT }}
+          detach: true
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
