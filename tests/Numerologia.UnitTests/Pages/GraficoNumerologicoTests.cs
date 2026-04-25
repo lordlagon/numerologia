@@ -191,6 +191,135 @@ public class GraficoNumerologicoTests : TestContext
             cut.Markup.Should().Contain("Verde"));
     }
 
+    // ── F2.7 — Anos dos Ciclos de Vida ───────────────────────────────────────
+
+    [Fact]
+    public void Render_ExibePeriodoCiclo1()
+    {
+        // DataNascimento: 1985-03-10, FimCiclo1Idade: 27 → de 1985 até 2012
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='ciclo1-periodo']").TextContent.Should().Be("de 1985 até 2012"));
+    }
+
+    [Fact]
+    public void Render_ExibePeriodoCiclo2()
+    {
+        // FimCiclo2Idade: 54 → de 2012 até 2039
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='ciclo2-periodo']").TextContent.Should().Be("de 2012 até 2039"));
+    }
+
+    [Fact]
+    public void Render_ExibePeriodoCiclo3()
+    {
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='ciclo3-periodo']").TextContent.Should().Be("de 2039 em diante"));
+    }
+
+    // ── F2.8 — Anos dos Momentos Decisivos ───────────────────────────────────
+    // MD1 dura FimCiclo1Idade (= 27 anos); MD2 e MD3 duram 9 anos cada (livro pág. 196)
+
+    [Fact]
+    public void Render_ExibePeriodoMD1()
+    {
+        // anoFimMD1 = anoFimCiclo1 = 1985 + 27 = 2012
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='md1-periodo']").TextContent.Should().Be("de 1985 até 2012"));
+    }
+
+    [Fact]
+    public void Render_ExibePeriodoMD2()
+    {
+        // anoFimMD2 = 2012 + 9 = 2021
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='md2-periodo']").TextContent.Should().Be("de 2012 até 2021"));
+    }
+
+    [Fact]
+    public void Render_ExibePeriodoMD3()
+    {
+        // anoFimMD3 = 2021 + 9 = 2030
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='md3-periodo']").TextContent.Should().Be("de 2021 até 2030"));
+    }
+
+    [Fact]
+    public void Render_ExibePeriodoMD4()
+    {
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='md4-periodo']").TextContent.Should().Be("de 2030 em diante"));
+    }
+
+    // ── F2.9 — Data de nascimento original => reduzido (Fig. D) ─────────────
+
+    [Fact]
+    public void Render_ExibeDataNascimentoDia()
+    {
+        // DataNascimento.Day=10, DiaNascimentoReduzido=1 → "10 => 1"
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='data-dia']").TextContent.Should().Be("10 => 1"));
+    }
+
+    [Fact]
+    public void Render_ExibeDataNascimentoMes()
+    {
+        // DataNascimento.Month=3, MesNascimentoReduzido=3 → "03 => 3"
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='data-mes']").TextContent.Should().Be("03 => 3"));
+    }
+
+    [Fact]
+    public void Render_ExibeDataNascimentoAno()
+    {
+        // DataNascimento.Year=1985, AnoNascimentoReduzido=5 → "1985 => 5"
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='data-ano']").TextContent.Should().Be("1985 => 5"));
+    }
+
+    // ── F2.10 — Interpretação da Relação Intervalores ────────────────────────
+
+    [Fact]
+    public void Render_ExibeInterpretacaoRelacaoIntervaloresPositiva()
+    {
+        // RelacaoIntervalores = 1 (positivo) → deve conter texto de evolução
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='interp-intervalores']").TextContent
+                .Should().Contain("positivo"));
+    }
+
     private void ConfigurarServicos()
     {
         _mapasService.ObterAsync(1, 1).Returns(_mapaFake);
