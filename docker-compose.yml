@@ -9,6 +9,7 @@ services:
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;Port=5432;Database=numerologia;
         Username=numerologia;Password=numerologia
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     depends_on:
       postgres:
         condition: service_healthy
