@@ -30,18 +30,20 @@ public class GeradorMapa
             harmonia);
     }
 
-    public void Atualizar(MapaNumerologico mapaExistente, string novoNomeUtilizado)
+    public void Atualizar(MapaNumerologico mapaExistente, string novoNomeUtilizado, DateOnly? dataNascimento = null)
     {
+        var dataEfetiva = dataNascimento ?? mapaExistente.DataNascimento;
         var mapa    = _calculoMapa.Calcular(novoNomeUtilizado);
-        var destino = _calculoDestino.Calcular(mapaExistente.DataNascimento, mapa.NumeroExpressao);
+        var destino = _calculoDestino.Calcular(dataEfetiva, mapa.NumeroExpressao);
 
-        var diasFavoraveis = TabelaNumerosFavoraveis.Consultar(mapaExistente.DataNascimento.Day, mapaExistente.DataNascimento.Month);
+        var diasFavoraveis = TabelaNumerosFavoraveis.Consultar(dataEfetiva.Day, dataEfetiva.Month);
         var harmonicos     = TabelaNumerosHarmonicos.Consultar(destino.DiaReduzido);
         var cores          = TabelaCoresFavoraveis.Consultar(mapa.NumeroExpressao);
         var harmonia       = TabelaHarmoniaConjugal.Consultar(mapa.NumeroExpressao);
 
         mapaExistente.Atualizar(
             novoNomeUtilizado,
+            dataEfetiva,
             mapa,
             destino,
             diasFavoraveis,

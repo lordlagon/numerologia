@@ -366,7 +366,8 @@ app.MapPost("/api/consulentes/{consulenteId:int}/mapas",
         var consulente = await consultesRepo.ObterPorIdAsync(consulenteId, usuario.Id);
         if (consulente is null) return Results.NotFound();
 
-        var mapa = gerador.Gerar(consulente.Id, req.NomeUtilizado, consulente.DataNascimento);
+        var dataNascimento = DateOnly.TryParse(req.DataNascimento, out var d) ? d : consulente.DataNascimento;
+        var mapa = gerador.Gerar(consulente.Id, req.NomeUtilizado, dataNascimento);
         await mapaRepo.AdicionarAsync(mapa);
         await mapaRepo.SalvarAlteracoesAsync();
 
@@ -423,7 +424,8 @@ app.MapPut("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
         var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
         if (mapa is null) return Results.NotFound();
 
-        gerador.Atualizar(mapa, req.NomeUtilizado);
+        var dataNascimento = DateOnly.TryParse(req.DataNascimento, out var d) ? d : (DateOnly?)null;
+        gerador.Atualizar(mapa, req.NomeUtilizado, dataNascimento);
         await repo.SalvarAlteracoesAsync();
         return Results.Ok(ToResumoResponse(mapa));
     }).RequireAuthorization().RequireRateLimiting("api-geral");
@@ -487,8 +489,8 @@ record AtualizarConsulenteRequest(
 record ConsulenteResponse(int Id, string NomeCompleto, DateOnly DataNascimento,
     string? Email, string? Telefone, DateTime CriadoEm);
 
-record CriarMapaRequest([property: MaxLength(256)] string NomeUtilizado);
-record AtualizarMapaRequest([property: MaxLength(256)] string NomeUtilizado);
+record CriarMapaRequest([property: MaxLength(256)] string NomeUtilizado, string? DataNascimento = null);
+record AtualizarMapaRequest([property: MaxLength(256)] string NomeUtilizado, string? DataNascimento = null);
 
 record MapaResumoResponse(int Id, string NomeUtilizado, DateOnly DataNascimento,
     int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);

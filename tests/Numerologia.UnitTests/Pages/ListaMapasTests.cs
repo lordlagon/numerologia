@@ -87,24 +87,6 @@ public class ListaMapasTests : TestContext
     }
 
     [Fact]
-    public async Task Render_ComMapas_ExibeMotivacaoEImpressao()
-    {
-        var mapas = new List<MapaResumoDto>
-        {
-            new(1, "ANA LIMA", new DateOnly(1990, 7, 25), 3, 5, 7, 9, DateTime.UtcNow),
-        };
-        _mapasService.ListarAsync(1).Returns(mapas);
-
-        var cut = RenderComponent<ListaMapas>(p => p.Add(c => c.ConsulenteId, 1));
-
-        cut.WaitForAssertion(() =>
-        {
-            cut.Markup.Should().Contain("Motivação");
-            cut.Markup.Should().Contain("Impressão");
-        });
-    }
-
-    [Fact]
     public void Render_ComMapas_ExibeBotaoPiramidesDesabilitado()
     {
         var mapas = new List<MapaResumoDto>

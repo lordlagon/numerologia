@@ -1,0 +1,21 @@
+.interpretacoes-secao summary {
+    list-style: none;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.interpretacoes-secao summary::-webkit-details-marker {
+    display: none;
+}
+
+.interpretacoes-secao summary::before {
+    content: "▶ ";
+    font-size: 0.8rem;
+}
+
+.interpretacoes-secao[open] summary::before {
+    content: "▼ ";
+}

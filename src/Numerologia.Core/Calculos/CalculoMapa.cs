@@ -27,7 +27,7 @@ public class CalculoMapa
             FiguraA:              figuraA,
             LicoesCarmicas:       licoesCarmicas,
             TendenciasOcultas:    tendenciasOcultas,
-            RespostaSubconsciente: licoesCarmicas.Count
+            RespostaSubconsciente: 9 - licoesCarmicas.Count
         );
     }
 
@@ -70,7 +70,7 @@ public class CalculoMapa
     }
 
     private static IReadOnlyList<int> CalcularLicoes(IReadOnlyDictionary<int, int> figuraA) =>
-        Enumerable.Range(1, 8).Where(n => figuraA[n] == 0).ToList();
+        Enumerable.Range(1, 9).Where(n => figuraA[n] == 0).ToList();
 
     private static IReadOnlyList<int> CalcularTendencias(IReadOnlyDictionary<int, int> figuraA)
     {

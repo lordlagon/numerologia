@@ -130,6 +130,7 @@ public class MapaNumerologico
 
     public void Atualizar(
         string nomeUtilizado,
+        DateOnly dataNascimento,
         ResultadoMapa mapa,
         ResultadoDestino destino,
         int[] diasFavoraveis,
@@ -137,7 +138,8 @@ public class MapaNumerologico
         string[] coresFavoraveis,
         ResultadoHarmoniaConjugal harmonia)
     {
-        NomeUtilizado = nomeUtilizado;
+        NomeUtilizado  = nomeUtilizado;
+        DataNascimento = dataNascimento;
 
         GradeLetras           = [.. mapa.GradeLetras];
         NumeroMotivacao       = mapa.NumeroMotivacao;

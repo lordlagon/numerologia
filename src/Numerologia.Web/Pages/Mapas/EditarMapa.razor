@@ -26,6 +26,13 @@ else
             </div>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Data de nascimento *</label>
+            <InputDate class="form-control" @bind-Value="_form.DataNascimento"
+                       data-testid="data-nascimento" />
+            <ValidationMessage For="() => _form.DataNascimento" />
+        </div>
+
         @if (_erro is not null)
         {
             <div class="alert alert-danger">@_erro</div>
@@ -34,7 +41,7 @@ else
         <button type="submit" class="btn btn-primary" disabled="@_salvando">
             @(_salvando ? "Salvando..." : "Salvar")
         </button>
-        <a href="/consulentes/@ConsulenteId/mapas" class="btn btn-secondary ms-2">Cancelar</a>
+        <a href="/consulentes/@ConsulenteId/mapas/@MapaId" class="btn btn-secondary ms-2">Cancelar</a>
     </EditForm>
 }
 
@@ -53,7 +60,10 @@ else
         {
             var mapa = await MapasService.ObterAsync(ConsulenteId, MapaId);
             if (mapa is not null)
+            {
                 _form.NomeUtilizado = mapa.NomeUtilizado;
+                _form.DataNascimento = mapa.DataNascimento;
+            }
         }
         catch
         {
@@ -72,8 +82,8 @@ else
 
         try
         {
-            await MapasService.AtualizarAsync(ConsulenteId, MapaId, _form.NomeUtilizado!);
-            Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas");
+            await MapasService.AtualizarAsync(ConsulenteId, MapaId, _form.NomeUtilizado!, _form.DataNascimento);
+            Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas/{MapaId}");
         }
         catch
         {
@@ -86,5 +96,8 @@ else
     {
         [Required(ErrorMessage = "Nome utilizado é obrigatório")]
         public string? NomeUtilizado { get; set; }
+
+        [Required(ErrorMessage = "Data de nascimento é obrigatória")]
+        public DateOnly DataNascimento { get; set; }
     }
 }
