@@ -80,5 +80,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Deploy (staging)
-      - run: railway up --service=numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach  
+        run: railway up --service=numerologia --environment ${{ vars.RAILWAY_ENVIRONMENT }} --detach
     
