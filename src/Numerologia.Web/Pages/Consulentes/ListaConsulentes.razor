@@ -1,6 +1,7 @@
 @page "/consulentes"
 @inject IConsulentesService ConsulentesService
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <PageTitle>Consulentes</PageTitle>
 
@@ -80,6 +81,10 @@ else
 
     private async Task Excluir(int id)
     {
+        var confirmar = await JS.InvokeAsync<bool>("confirm",
+            "Excluir este consulente? Todos os seus mapas também serão excluídos.");
+        if (!confirmar) return;
+
         try
         {
             await ConsulentesService.RemoverAsync(id);
