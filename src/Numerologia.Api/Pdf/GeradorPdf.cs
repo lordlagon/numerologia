@@ -143,7 +143,7 @@ public static class GeradorPdf
                     .Text(e.Tipo == TipoLetra.Vogal ? e.ValorCabalistico.ToString() : "")
                     .Bold().FontSize(7);
             CelulaLabel("Nº de Motivação");
-            CelulaResultado($"{mapa.NumeroMotivacao}");
+            CelulaResultado($"{mapa.SomaMotivacao} => {mapa.NumeroMotivacao}");
 
             // Nome
             CelulaLabel("Nome");
@@ -162,7 +162,7 @@ public static class GeradorPdf
                     .Text(e.Tipo == TipoLetra.Consoante ? e.ValorCabalistico.ToString() : "")
                     .FontSize(7);
             CelulaLabel("Nº de Impressão");
-            CelulaResultado($"{mapa.NumeroImpressao}");
+            CelulaResultado($"{mapa.SomaImpressao} => {mapa.NumeroImpressao}");
 
             // Total
             CelulaLabel("TOTAL");
@@ -172,7 +172,7 @@ public static class GeradorPdf
                     .Text(e.Tipo != TipoLetra.Espaco ? e.ValorCabalistico.ToString() : "")
                     .FontSize(7);
             CelulaLabel("Nº de Expressão");
-            CelulaResultado($"{mapa.NumeroExpressao}");
+            CelulaResultado($"{mapa.SomaExpressao} => {mapa.NumeroExpressao}");
         });
     }
 
@@ -251,9 +251,9 @@ public static class GeradorPdf
                         }
 
                         FigDRow("Resp. Subconsciente", mapa.RespostaSubconsciente.ToString());
-                        FigDRow("Mês", $"{mapa.DataNascimento.Month:00} ⇒ {mapa.MesNascimentoReduzido}");
-                        FigDRow("Dia", $"{mapa.DataNascimento.Day:00} ⇒ {mapa.DiaNascimentoReduzido}");
-                        FigDRow("Ano", $"{mapa.DataNascimento.Year} ⇒ {mapa.AnoNascimentoReduzido}");
+                        FigDRow("Mês", $"{mapa.DataNascimento.Month:00} =>{mapa.MesNascimentoReduzido}");
+                        FigDRow("Dia", $"{mapa.DataNascimento.Day:00} =>{mapa.DiaNascimentoReduzido}");
+                        FigDRow("Ano", $"{mapa.DataNascimento.Year} =>{mapa.AnoNascimentoReduzido}");
                     });
                 });
             });
