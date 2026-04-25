@@ -222,7 +222,7 @@ Numeróloga (usuária autenticada via Google OAuth)
 ### Fase 3 — PDF
 > Objetivo: gerar o Gráfico Numerológico preenchido em PDF para impressão.
 
-- [ ] **F3.1** — Geração de PDF
+- [x] **F3.1** — Geração de PDF
   - **Biblioteca:** QuestPDF (MIT) — geração server-side no backend
   - **Endpoint API:** `GET /consulentes/{id}/mapas/{mapaId}/pdf` → `application/pdf`
   - **Estrutura do PDF:**
