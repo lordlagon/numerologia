@@ -168,7 +168,7 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Botão Excluir com `confirm()` na `ListaMapas`
   - Página `EditarMapa.razor` em `/consulentes/{id}/mapas/{mapaId}/editar`
 
-- [ ] **F2.2** — Interpretações por número
+- [x] **F2.2** — Interpretações por número ✅
   - Para cada campo do mapa, exibir o significado do número calculado
   - Baseado no `docs/numerologia.md`
 
@@ -191,28 +191,29 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Substituiu o link "About" do template padrão
   - Controlado por Blazor (sem Bootstrap JS / Popper.js)
 
-- [ ] **F2.7** — Ajuste no Quadro Fig. F - Ciclos da vida:
+- [x] **F2.7** — Ajuste no Quadro Fig. F - Ciclos da vida: ✅
   - Incluir nova coluna para conter os anos respectivos
   - Incluir o ano do nascimento em cada ciclo por exemplo no mapa do André:
     ciclo 1 -> 7 -> até 33 anos. deve ficar ciclo 1 -> 7 -> de 1984 até 2017 -> até 33 anos
     ciclo 2 -> 1 -> até 60 anos. deve ficar ciclo 2 -> 1 -> de 2017 até 2044 -> até 60 anos
     ciclo 3 -> 7 -> em diante. deve ficar ciclo 3 -> 22 -> de 2044 em diante -> em diante
 
-- [ ] **F2.8** — Ajuste no Quadro Fig. G - Momentos decisivos:
+- [x] **F2.8** — Ajuste no Quadro Fig. G - Momentos decisivos: ✅
   - Incluir nova coluna para conter os anos respectivos, da mesma forma que o F2.7.
-    - incluir o ano do nascimento em cada momento por exemplo no mapa do André:
-      momento 1 -> 8. deve ficar momento 1 -> 8 -> de 1984 até 1992
-      momento 2 -> 5. deve ficar momento 2 -> 5 -> de 1992 até 2001
-      momento 3 -> 4. deve ficar momento 3 -> 4 -> de 2001 em 2010
-      momento 4 -> 11. deve ficar momento 3 -> 11 -> de 2010 em diante
+    - Duração: MD1 = igual ao 1º Ciclo de Vida (FimCiclo1Idade); MD2 e MD3 = 9 anos cada; MD4 = resto da vida (livro pág. 196)
+    - Exemplo no mapa do André (nascimento 28/07/1984, FimCiclo1=33):
+      momento 1 -> 8. deve ficar momento 1 -> 8 -> de 1984 até 2017
+      momento 2 -> 5. deve ficar momento 2 -> 5 -> de 2017 até 2026
+      momento 3 -> 4. deve ficar momento 3 -> 4 -> de 2026 até 2035
+      momento 4 -> 11. deve ficar momento 4 -> 11 -> de 2035 em diante
 
-- [ ] **F2.9** — Ajuste no Quadro Fig. 4 - Data nascimento:
+- [x] **F2.9** — Ajuste no Quadro Fig. 4 - Data nascimento: ✅
   - Incluir a soma dos valores da data de nascimento por exemplo no mapa do André:
       Mês -> 07 => 7
       Dia -> 28 => 1
       Ano -> 1984 => 22
 
-- [ ] **F2.10** — Verificação das interpretações:
+- [x] **F2.10** — Verificação das interpretações: ✅
   - Confirmar no livro se exitem interpretações para os outros quadros do mapa, 
   percebi isso no relações intervalores (pag. 203) que tem interpretação e não foi incluida na secção.     
 
