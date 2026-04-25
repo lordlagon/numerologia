@@ -10,13 +10,17 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using NetEscapades.AspNetCore.SecurityHeaders;
 using Npgsql;
+using QuestPDF.Infrastructure;
 using Scalar.AspNetCore;
+using Numerologia.Api.Pdf;
 using Numerologia.Core.Entities;
 using Numerologia.Core.Interfaces;
 using Numerologia.Core.Services;
 using Numerologia.Infrastructure.Data;
 using Numerologia.Infrastructure.Repositories;
 using MapasRepository = Numerologia.Infrastructure.Repositories.MapasRepository;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -398,6 +402,24 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
         var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
         return mapa is null ? Results.NotFound() : Results.Ok(ToDetalheResponse(mapa));
     }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/pdf",
+    async (int consulenteId, int mapaId, HttpContext ctx,
+           IMapasRepository mapaRepo, IConsulentesRepository consRepo, UsuarioService usuarioSvc) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioSvc);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await mapaRepo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        var consulente = await consRepo.ObterPorIdAsync(consulenteId, usuario.Id);
+        if (consulente is null) return Results.NotFound();
+
+        var bytes = GeradorPdf.Gerar(mapa, consulente.NomeCompleto, usuario.Nome);
+        var nomeArquivo = $"mapa-{consulente.NomeCompleto.Replace(" ", "-").ToLower()}.pdf";
+        return Results.File(bytes, "application/pdf", nomeArquivo);
+    }).RequireAuthorization();
 
 app.MapDelete("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
     async (int consulenteId, int mapaId, HttpContext ctx,
