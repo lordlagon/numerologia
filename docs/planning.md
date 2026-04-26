@@ -235,9 +235,61 @@ Numeróloga (usuária autenticada via Google OAuth)
 
 ---
 
+### Fase 4 — Refatoração UI para MudBlazor
+> Objetivo: substituir Bootstrap pelo MudBlazor, melhorando a UX (dialogs, toasts, componentes) sem regredir funcionalidade.
+> Ordem: componentes de suporte → layout → páginas simples → páginas complexas. GraficoNumerologico por último (validação local antes de subir).
+
+- [ ] **F4.2** — Setup MudBlazor
+  - Instalar pacote `MudBlazor` (MIT)
+  - Remover referências ao Bootstrap CSS/JS do `index.html`
+  - Adicionar `MudBlazorStyle`, `MudThemeProvider`, `MudDialogProvider`, `MudSnackbarProvider` no `App.razor`
+  - Atualizar `_Imports.razor` com `@using MudBlazor`
+  - Definir tema de cores customizado (tons que combinem com numerologia cabalística)
+  - Remover pacotes Bootstrap do `.csproj`
+
+- [ ] **F4.3** — Layout e navegação (`MainLayout.razor` + `NavMenu.razor`)
+  - `MainLayout` → `MudLayout` com `MudAppBar` e `MudDrawer`
+  - `NavMenu` → `MudNavMenu` com `MudNavLink`
+  - `UserMenu` → avatar + `MudMenu` com itens Perfil e Sair
+
+- [ ] **F4.4** — Dashboard (`Dashboard.razor`)
+  - Cards de estatísticas → `MudCard` + `MudCardContent`
+  - Lista de últimos mapas → `MudList`
+
+- [ ] **F4.5** — Lista e formulário de Consulentes (`ListaConsulentes.razor` + `FormConsulente.razor`)
+  - Tabela → `MudDataGrid` ou `MudTable`
+  - Busca → `MudTextField` com `AdornmentIcon`
+  - Botões de ação → `MudIconButton` com tooltip
+  - Confirmação de exclusão: substituir `confirm()` por `MudDialog`
+  - Formulário → `MudTextField`, `MudDatePicker`, `MudButton`
+  - Feedback de sucesso/erro → `MudSnackbar`
+
+- [ ] **F4.6** — Lista e formulários de Mapas (`ListaMapas.razor` + `FormMapa.razor` + `EditarMapa.razor`)
+  - Tabela de mapas → `MudTable`
+  - Confirmação de exclusão: substituir `confirm()` por `MudDialog`
+  - Formulários → `MudTextField`, `MudDatePicker`, `MudButton`
+  - Feedback → `MudSnackbar`
+
+- [ ] **F4.7** — Páginas residuais (`Home.razor`, `NotFound.razor`)
+  - Remover páginas de template não utilizadas (`Counter.razor`, `Weather.razor`)
+  - `NotFound` → layout MudBlazor consistente
+
+- [ ] **F4.8** — Gráfico Numerológico (`GraficoNumerologico.razor`) ⚠️ validar localmente antes de subir
+  - Container principal → `MudPaper` / `MudCard`
+  - Seção de interpretações → `MudExpansionPanel` (substitui `<details>`)
+  - Badges de cores → manter `BadgeCor.razor` adaptado
+  - Botões do rodapé → `MudButton`
+  - Grade de letras e Fig. A–H: manter HTML/CSS customizado interno (lógica visual específica não tem equivalente direto em MudBlazor)
+  - **Validar visual localmente antes do PR**
+
+- [ ] **F4.9** — Testes bUnit pós-refatoração
+  - Atualizar seletores nos testes existentes (ex: `btn btn-primary` → `mud-button`)
+  - Garantir 498+ testes passando após a refatoração completa
+
+---
+
 ### Fase 5 — Perfil, Administração e LGPD
 > Objetivo: página de perfil da numeróloga, painel administrativo e conformidade com a LGPD.
-> **Prioridade:** executada antes da Fase 4 (Pirâmides), que aguarda material de referência do cliente.
 
 - [ ] **F5.1** — Perfil da Numeróloga
   - **Campos novos em `Usuario`:** `NomeExibicao` (varchar 256, nullable — sobrescreve nome do Google se preenchido), `UrlAvatar` (varchar 512, nullable — sincronizado do Google no login)
@@ -285,22 +337,25 @@ Numeróloga (usuária autenticada via Google OAuth)
 
 ---
 
-### Fase 4 — Pirâmides da Vida
-> Objetivo: gerar as piramides da vida.
+### Fase 6 — Pirâmides da Vida
+> Objetivo: gerar as pirâmides da vida.
+> **Aguarda:** material de referência (sheets + imagem) do cliente.
 
-- [x] **F4.1** — Botão "Pirâmides" na lista de mapas ✅
+- [x] **F6.1** — Botão "Pirâmides" na lista de mapas ✅ (era F4.1)
   - Botão ao lado de "Ver Mapa" em cada linha da `ListaMapas`
-  - Inicialmente desabilitado (`disabled`) — telas das Pirâmides da Vida ainda não desenvolvidas
-  - Será habilitado quando a funcionalidade de Pirâmides estiver pronta
+  - Inicialmente desabilitado (`disabled`) — habilitado quando as telas estiverem prontas
 
-- [ ] **F4.2** — Inclusão do arquivo de referencia (sheets)
-  - Inclusão do arquivo de referencia (sheets)
-  - Informar como é a lógica da criação das pirâmides
+- [ ] **F6.2** — Inclusão do arquivo de referência (sheets)
+  - Receber planilha/documento com a lógica de cálculo das Pirâmides
+  - Documentar as regras em `docs/numerologia.md`
 
-- [ ] **F4.3** — Geração de PDF da piramides
-  - Incluir imagem de referencia (ainda não incluido)
-  - Layout idêntico ao gráfico 
+- [ ] **F6.3** — Tela e PDF das Pirâmides
+  - Imagem de referência do layout físico (a receber)
+  - Motor de cálculo das Pirâmides em `Numerologia.Core`
+  - Tela `/consulentes/{id}/mapas/{mapaId}/piramides`
+  - Endpoint `GET /api/consulentes/{id}/mapas/{mapaId}/piramides/pdf`
   - Download direto pelo sistema
+
 ---
 
 ## Ordem de Desenvolvimento (TDD — XP)

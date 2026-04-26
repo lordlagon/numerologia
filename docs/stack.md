@@ -6,6 +6,7 @@
 |--------|------------|
 | Backend | ASP.NET Core Web API (.NET 10) |
 | Frontend | Blazor WebAssembly (.NET 10) |
+| UI Components | MudBlazor (MIT) — substituiu Bootstrap na Fase 4 |
 | Banco de dados | PostgreSQL |
 | ORM | Entity Framework Core 10 + Npgsql 10 |
 | Auth | Google OAuth (`Microsoft.AspNetCore.Authentication.Google` v10.*) |
@@ -110,6 +111,7 @@ Sobe a API em `http://localhost:8080` e o PostgreSQL em `localhost:5432`.
 - Testes unitários em `Numerologia.UnitTests`, espelhando a estrutura dos projetos fonte.
 - Testes de integração usam `WebApplicationFactory<Program>` com SQLite in-memory (substitui PostgreSQL via `ConfigureTestServices`). A factory chama `EnsureCreated()` — **não chamar** `Database.Migrate()` em testes.
 - Testes de componentes Blazor usam `bUnit`; mockar `IJSRuntime` — bUnit não executa JavaScript.
+- **MudBlazor + bUnit:** registrar `ctx.Services.AddMudBlazorDialog()` e demais serviços MudBlazor no setup do teste. Seletores CSS mudam para classes `mud-*` (ex: `mud-button`, `mud-input`).
 - Usar `Bogus` para dados realistas com constraints explícitas; evitar magic strings.
 
 ---
@@ -188,6 +190,7 @@ feature/* ──PR──► staging ──PR──► main
 
 | Problema | Causa | Solução |
 |----------|-------|---------|
+| MudBlazor sem estilos | `MudThemeProvider` ausente ou CSS não incluído | Adicionar `<MudThemeProvider/>`, `<MudDialogProvider/>`, `<MudSnackbarProvider/>` no `App.razor`; referenciar `MudBlazor.min.css` no `index.html` |
 | Blazor travado em 100% / 404 em `_framework/*.dat` | `UseStaticFiles` não serve extensões desconhecidas | `ServeUnknownFileTypes = true` + mapear `.dat`, `.blat`, `.wasm` |
 | Redirect loop | `UseHttpsRedirection` conflita com proxy TLS do Railway | Remover `UseHttpsRedirection` |
 | Docker build falha "unable to find python in PATH" | `wasm-tools` requer Python + Emscripten | Não instalar `wasm-tools` — publish sem ele roda em modo interpretado |
