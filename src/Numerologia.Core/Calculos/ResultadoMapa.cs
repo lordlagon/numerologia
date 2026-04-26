@@ -9,5 +9,6 @@ public record ResultadoMapa(
     IReadOnlyDictionary<int, int> FiguraA,
     IReadOnlyList<int> LicoesCarmicas,
     IReadOnlyList<int> TendenciasOcultas,
-    int RespostaSubconsciente
+    int RespostaSubconsciente,
+    int RelacaoIntervalores
 );

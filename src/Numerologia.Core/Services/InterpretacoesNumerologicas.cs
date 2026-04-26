@@ -166,19 +166,21 @@ public static class InterpretacoesNumerologicas
     public static string DiaNascimento(int numero)         => _diaNascimento.GetValueOrDefault(numero, string.Empty);
     public static string AnoPessoal(int numero)            => _anoPessoal.GetValueOrDefault(numero, string.Empty);
 
-    // ── Relação Intervalores (pág. 203) ────────────────────────────────
-    /// <summary>
-    /// Interpreta o Grau de Ascensão = Impressão − Motivação.
-    /// Positivo: a pessoa projeta mais ao mundo do que sente por dentro (evolução).
-    /// Negativo: revela internamente mais do que projeta para fora.
-    /// Zero: equilíbrio entre o que sente e o que projeta.
-    /// </summary>
-    public static string RelacaoIntervalores(int diferenca)
+    // ── Relação Intervalores — RI (pág. 203) ──────────────────────────────
+    // Baseado no valor máximo entre as letras do primeiro nome (nome individual).
+    private static readonly Dictionary<int, string> _relacaoIntervalores = new()
     {
-        if (diferenca > 0)
-            return $"Grau de Ascensão positivo (+{diferenca}): a pessoa apresenta ao mundo mais do que sente por dentro — sinal de evolução espiritual. Quanto maior a diferença, maior o desenvolvimento.";
-        if (diferenca < 0)
-            return $"Grau de Ascensão negativo ({diferenca}): a pessoa revela internamente mais do que projeta para fora.";
-        return "Grau de Ascensão neutro (0): equilíbrio entre o que sente internamente e o que projeta ao mundo.";
-    }
+        { 1, "Indica independência, ambição e interesses próprios. Também mostra egoísmo e possessividade." },
+        { 2, "Indica que a pessoa é dotada de tato e diplomacia, possui grande amor à música e às artes de um modo geral. É harmônico e tem capacidade de cooperação. Por vezes, também indica insegurança e timidez." },
+        { 3, "Indica pessoa de rara capacidade de expressão, forte imaginação e senso de humor. Às vezes é sinal de irresponsabilidade e impaciência a uma atitude realista ou materialista." },
+        { 4, "Indica que a pessoa é econômica, honesta e tem tendência para o trabalho árduo. Porém, tem carência de concentração e julgamento imparcial; possibilidade de obstinação." },
+        { 5, "Indica pessoa impulsiva e nervosa, com grande desejo de sexo. As viagens e as mudanças lhe são altamente favoráveis." },
+        { 6, "Indica capacidade de assumir grandes responsabilidades. É de confiança, caseiro, pai e educador nato. Tem tendência a polêmicas, brigas e instabilidade emocional." },
+        { 7, "Indica poder de análise, agilidade mental, perfeccionismo, equilíbrio e cultura. Grande inclinação pelos assuntos metafísicos e a se retrair." },
+        { 8, "Indica capacidade para negócios, habilidade executiva, liderança, iniciativa, tato e grande senso de valores materiais. Tem tendência a se mostrar como dono da verdade." },
+        { 9, "Indica um modo de ver universal. Tem dons artísticos e literários. Adora viajar. Em muitos casos, também indica visão estreita e egocentrismo, ou demasiado desapego e afastamento da realidade." },
+    };
+
+    public static string RelacaoIntervalores(int ri) =>
+        _relacaoIntervalores.GetValueOrDefault(ri, string.Empty);
 }

@@ -46,7 +46,7 @@ public class GraficoNumerologicoTests : TestContext
         MomentoDecisivo1: 4, MomentoDecisivo2: 6, MomentoDecisivo3: 1, MomentoDecisivo4: 8,
         DiasMesFavoraveis: [1, 10, 19, 28],
         NumerosHarmonicos: [1, 2, 3, 5, 6, 8, 9],
-        RelacaoIntervalores: 1,
+        RelacaoIntervalores: 7,
         HarmoniaVibraCom: 1,
         HarmoniaAtrai: [2, 3, 5, 6],
         HarmoniaEOpostoA: [7],
@@ -185,6 +185,18 @@ public class GraficoNumerologicoTests : TestContext
     }
 
     [Fact]
+    public void Render_ExibeNumeroAmor()
+    {
+        // Número do Amor = Missão (Expressão + Destino reduzido) — pág. 205
+        // _mapaFake.Missao = 7
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='numero-amor']").TextContent.Should().Be("7"));
+    }
+
+    [Fact]
     public void Render_ExibeCoresFavoraveis()
     {
         ConfigurarServicos();
@@ -274,53 +286,54 @@ public class GraficoNumerologicoTests : TestContext
             cut.Find("[data-testid='md4-periodo']").TextContent.Should().Be("de 2030 em diante"));
     }
 
-    // ── F2.9 — Data de nascimento original => reduzido (Fig. D) ─────────────
+    // ── F2.9 — Data de nascimento sem redução (card "Data Natal") ───────────
+    // Pág. 135: o dia não se reduz; exibe-se dia, mês e ano brutos.
 
     [Fact]
     public void Render_ExibeDataNascimentoDia()
     {
-        // DataNascimento.Day=10, DiaNascimentoReduzido=1 → "10 => 1"
+        // DataNascimento.Day=10 → exibe "10" (sem redução)
         ConfigurarServicos();
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='data-dia']").TextContent.Should().Be("10 => 1"));
+            cut.Find("[data-testid='data-dia']").TextContent.Should().Be("10"));
     }
 
     [Fact]
     public void Render_ExibeDataNascimentoMes()
     {
-        // DataNascimento.Month=3, MesNascimentoReduzido=3 → "03 => 3"
+        // DataNascimento.Month=3 → exibe "3" (sem redução, sem zero à esquerda)
         ConfigurarServicos();
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='data-mes']").TextContent.Should().Be("03 => 3"));
+            cut.Find("[data-testid='data-mes']").TextContent.Should().Be("3"));
     }
 
     [Fact]
     public void Render_ExibeDataNascimentoAno()
     {
-        // DataNascimento.Year=1985, AnoNascimentoReduzido=5 → "1985 => 5"
+        // DataNascimento.Year=1985 → exibe "1985" (sem redução)
         ConfigurarServicos();
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='data-ano']").TextContent.Should().Be("1985 => 5"));
+            cut.Find("[data-testid='data-ano']").TextContent.Should().Be("1985"));
     }
 
     // ── F2.10 — Interpretação da Relação Intervalores ────────────────────────
 
     [Fact]
-    public void Render_ExibeInterpretacaoRelacaoIntervaloresPositiva()
+    public void Render_ExibeInterpretacaoRelacaoIntervalores()
     {
-        // RelacaoIntervalores = 1 (positivo) → deve conter texto de evolução
+        // RelacaoIntervalores = 7 (RI-7) → texto do livro contém "análise"
         ConfigurarServicos();
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
             cut.Find("[data-testid='interp-intervalores']").TextContent
-                .Should().Contain("positivo"));
+                .Should().Contain("análise"));
     }
 
     private void ConfigurarServicos()

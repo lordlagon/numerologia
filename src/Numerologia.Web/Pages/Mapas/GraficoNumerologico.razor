@@ -171,17 +171,30 @@ else if (_mapa is not null)
                                             <td>Resp. Subconsciente</td>
                                             <td class="fw-bold">@_mapa.RespostaSubconsciente</td>
                                         </tr>
-                                        <tr>
-                                            <td>Mês</td>
-                                            <td class="fw-bold" data-testid="data-mes">@_mapa.DataNascimento.Month.ToString("00") => @_mapa.MesNascimentoReduzido</td>
-                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data de Nascimento (sem redução — pág. 135) -->
+                    <div class="col-auto">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <div class="fw-bold text-center mb-1">Data Natal</div>
+                                <table class="table table-bordered table-sm text-center mb-0">
+                                    <tbody>
                                         <tr>
                                             <td>Dia</td>
-                                            <td class="fw-bold" data-testid="data-dia">@_mapa.DataNascimento.Day => @_mapa.DiaNascimentoReduzido</td>
+                                            <td class="fw-bold" data-testid="data-dia">@_mapa.DataNascimento.Day</td>
                                         </tr>
                                         <tr>
-                                            <td>Ano do Nascimento</td>
-                                            <td class="fw-bold" data-testid="data-ano">@_mapa.DataNascimento.Year => @_mapa.AnoNascimentoReduzido</td>
+                                            <td>Mês</td>
+                                            <td class="fw-bold" data-testid="data-mes">@_mapa.DataNascimento.Month</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ano</td>
+                                            <td class="fw-bold" data-testid="data-ano">@_mapa.DataNascimento.Year</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -306,19 +319,16 @@ else if (_mapa is not null)
                                         <td>1º Ciclo</td>
                                         <td class="fw-bold" data-testid="ciclo1">@_mapa.CicloVida1</td>
                                         <td style="font-size:0.7rem" data-testid="ciclo1-periodo">de @anoNasc até @anoFimCiclo1</td>
-                                        <td style="font-size:0.7rem">até @_mapa.FimCiclo1Idade anos</td>
                                     </tr>
                                     <tr>
                                         <td>2º Ciclo</td>
                                         <td class="fw-bold" data-testid="ciclo2">@_mapa.CicloVida2</td>
                                         <td style="font-size:0.7rem" data-testid="ciclo2-periodo">de @anoFimCiclo1 até @anoFimCiclo2</td>
-                                        <td style="font-size:0.7rem">até @_mapa.FimCiclo2Idade anos</td>
                                     </tr>
                                     <tr>
                                         <td>3º Ciclo</td>
                                         <td class="fw-bold" data-testid="ciclo3">@_mapa.CicloVida3</td>
                                         <td style="font-size:0.7rem" data-testid="ciclo3-periodo">de @anoFimCiclo2 em diante</td>
-                                        <td style="font-size:0.7rem">em diante</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -385,6 +395,10 @@ else if (_mapa is not null)
                             <div class="fw-bold text-center mb-1">Harmonia Conjugal</div>
                             <table class="table table-bordered table-sm mb-0">
                                 <tbody>
+                                    <tr>
+                                        <td>Número</td>
+                                        <td class="fw-bold text-center" data-testid="numero-amor">@_mapa.Missao</td>
+                                    </tr>
                                     <tr>
                                         <td>Vibra com</td>
                                         <td class="fw-bold text-center" data-testid="harmonia-vibra-com">@_mapa.HarmoniaVibraCom</td>

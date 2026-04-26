@@ -21,7 +21,8 @@ public class MapaNumerologicoTests
         FiguraA:              new Dictionary<int,int> { [1]=2,[2]=0,[3]=0,[4]=0,[5]=1,[6]=0,[7]=0,[8]=0,[9]=0 },
         LicoesCarmicas:       [2,3,4,6,7,8],
         TendenciasOcultas:    [1],
-        RespostaSubconsciente: 6
+        RespostaSubconsciente: 6,
+        RelacaoIntervalores:  5  // ANA: A(1) N(5) A(1) → max=5
     );
 
     private static readonly ResultadoDestino _destino = new(
@@ -58,7 +59,7 @@ public class MapaNumerologicoTests
         var data         = new DateOnly(1990, 8, 15);
 
         var mapa = MapaNumerologico.Criar(
-            consulenteId, nome, data, _mapa, _destino, _diasFavoraveis, _numerosHarmonicos, _cores, _harmonia);
+            consulenteId, nome, data, _mapa, _destino, [], _diasFavoraveis, _numerosHarmonicos, _cores, _harmonia);
 
         mapa.ConsulenteId.Should().Be(consulenteId);
         mapa.NomeUtilizado.Should().Be(nome);
@@ -113,7 +114,7 @@ public class MapaNumerologicoTests
         mapa.DiasMesFavoraveis.Should().BeEquivalentTo(_diasFavoraveis);
         mapa.NumerosHarmonicos.Should().BeEquivalentTo(_numerosHarmonicos);
         mapa.CoresFavoraveis.Should().BeEquivalentTo(_cores);
-        mapa.RelacaoIntervalores.Should().Be(_mapa.NumeroImpressao - _mapa.NumeroMotivacao);
+        mapa.RelacaoIntervalores.Should().Be(_mapa.RelacaoIntervalores);
         mapa.HarmoniaVibraCom.Should().Be(_harmonia.VibraCom);
         mapa.HarmoniaAtrai.Should().BeEquivalentTo(_harmonia.Atrai);
         mapa.HarmoniaEOpostoA.Should().BeEquivalentTo(_harmonia.EOpostoA);
@@ -132,7 +133,8 @@ public class MapaNumerologicoTests
         FiguraA:              new Dictionary<int,int> { [1]=1,[2]=0,[3]=0,[4]=0,[5]=1,[6]=2,[7]=0,[8]=0,[9]=0 },
         LicoesCarmicas:       [2,3,4,7,8,9],
         TendenciasOcultas:    [6],
-        RespostaSubconsciente: 6
+        RespostaSubconsciente: 6,
+        RelacaoIntervalores:  6  // EVA: E(5) V(6) A(1) → max=6
     );
 
     private static readonly ResultadoDestino _destinoAtualizado = new(
@@ -164,7 +166,7 @@ public class MapaNumerologicoTests
         var criadoEmOriginal = mapa.CriadoEm;
 
         mapa.Atualizar("EVA", new DateOnly(1990, 8, 15), _mapaAtualizado, _destinoAtualizado,
-            _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
+            [], _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
 
         mapa.NomeUtilizado.Should().Be("EVA");
     }
@@ -177,7 +179,7 @@ public class MapaNumerologicoTests
         var idOriginal       = mapa.Id;
 
         mapa.Atualizar("EVA", new DateOnly(1990, 8, 15), _mapaAtualizado, _destinoAtualizado,
-            _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
+            [], _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
 
         mapa.CriadoEm.Should().Be(criadoEmOriginal);
         mapa.Id.Should().Be(idOriginal);
@@ -189,7 +191,7 @@ public class MapaNumerologicoTests
         var mapa = CriarMapaPadrao();
 
         mapa.Atualizar("EVA", new DateOnly(1990, 8, 15), _mapaAtualizado, _destinoAtualizado,
-            _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
+            [], _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
 
         mapa.NumeroMotivacao.Should().Be(_mapaAtualizado.NumeroMotivacao);
         mapa.NumeroImpressao.Should().Be(_mapaAtualizado.NumeroImpressao);
@@ -202,12 +204,12 @@ public class MapaNumerologicoTests
         var mapa = CriarMapaPadrao();
 
         mapa.Atualizar("EVA", new DateOnly(1990, 8, 15), _mapaAtualizado, _destinoAtualizado,
-            _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
+            [], _diasFavoraveis, _numerosHarmonicos, _coresAtualizadas, _harmonia);
 
         mapa.CoresFavoraveis.Should().BeEquivalentTo(_coresAtualizadas);
     }
 
     private static MapaNumerologico CriarMapaPadrao() =>
         MapaNumerologico.Criar(1, "ANA", new DateOnly(1990, 8, 15),
-            _mapa, _destino, _diasFavoraveis, _numerosHarmonicos, _cores, _harmonia);
+            _mapa, _destino, [], _diasFavoraveis, _numerosHarmonicos, _cores, _harmonia);
 }

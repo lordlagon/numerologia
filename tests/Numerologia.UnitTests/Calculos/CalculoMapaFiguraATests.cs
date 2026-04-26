@@ -11,7 +11,7 @@ public class CalculoMapaFiguraATests
     // M(4) A(1) R(2) I(1) A(1)
     // FigA: {1→3, 2→1, 4→1} — valores 3,5,6,7,8,9 ausentes
     // Lições Cármicas: 3, 5, 6, 7, 8, 9  (ausentes de 1-9)
-    // Tendência Oculta: [1]  (aparece 3 vezes)
+    // Tendência Oculta: [] — o valor 1 aparece 3 vezes, mas regra exige MAIS de 3 (≥ 4)
     // Resposta Subconsciente: 9 − 6 = 3
 
     [Fact]
@@ -39,8 +39,9 @@ public class CalculoMapaFiguraATests
     [Fact]
     public void Calcular_Maria_TendenciaOculta()
     {
+        // 1 aparece 3 vezes — regra pág. 114 exige MAIS de 3 (≥ 4) → sem tendência
         var r = _sut.Calcular("MARIA");
-        r.TendenciasOcultas.Should().BeEquivalentTo([1]);
+        r.TendenciasOcultas.Should().BeEmpty();
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public class CalculoMapaFiguraATests
     // C(3) A(1) R(2) L(3) O(7) S(3)
     // FigA: {1→1, 2→1, 3→3, 7→1} — valores 4,5,6,8,9 ausentes
     // Lições Cármicas: 4, 5, 6, 8, 9  (ausentes de 1-9)
-    // Tendência Oculta: [3]
+    // Tendência Oculta: [] — 3 aparece 3 vezes, mas regra exige MAIS de 3 (≥ 4)
     // Resposta Subconsciente: 9 − 5 = 4
 
     [Fact]
@@ -81,8 +82,9 @@ public class CalculoMapaFiguraATests
     [Fact]
     public void Calcular_Carlos_TendenciaOculta()
     {
+        // 3 aparece 3 vezes — regra pág. 114 exige MAIS de 3 (≥ 4) → sem tendência
         var r = _sut.Calcular("CARLOS");
-        r.TendenciasOcultas.Should().BeEquivalentTo([3]);
+        r.TendenciasOcultas.Should().BeEmpty();
     }
 
     [Fact]
@@ -92,16 +94,15 @@ public class CalculoMapaFiguraATests
         r.RespostaSubconsciente.Should().Be(4);
     }
 
-    // ── Empate na Tendência Oculta ──────────────────────────────────────────
-    // ANA: A(1) N(5) A(1) → {1→2, 5→1}
-    // Tendência: [1] (única com maior contagem)
-    // NANA: N(5) A(1) N(5) A(1) → {1→2, 5→2} → empate → ambas são tendências
+    // ── Empate abaixo do limiar ─────────────────────────────────────────────
+    // NANA: N(5) A(1) N(5) A(1) → {1→2, 5→2} → max = 2 < 4 → sem tendência oculta
+    // Regra pág. 114: só conta quem aparece MAIS de 3 vezes (≥ 4)
 
     [Fact]
-    public void Calcular_Empate_TodasAsTendenciasRetornadas()
+    public void Calcular_Empate_AbaixoDoLimiar_RetornaVazio()
     {
         var r = _sut.Calcular("NANA");
-        r.TendenciasOcultas.Should().BeEquivalentTo([1, 5]);
+        r.TendenciasOcultas.Should().BeEmpty();
     }
 
     // ── Nome sem Lições Cármicas ────────────────────────────────────────────

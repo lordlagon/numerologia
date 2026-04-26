@@ -95,4 +95,53 @@ public class TabelaNumerosFavoraveisTests
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
+
+    // ── GerarDiasFavoraveis (pág. 202) ──────────────────────────────────────
+    // Algoritmo: a, b, 2b, depois alternando +a e +b até > 31.
+
+    [Fact]
+    public void GerarDiasFavoraveis_ExemploDoLivro_21Fevereiro()
+    {
+        // Base (21/fev) = [3, 6]
+        // 3, 6, 12(=6×2), 15(+3), 21(+6), 24(+3), 30(+6), 33>31
+        var r = TabelaNumerosFavoraveis.GerarDiasFavoraveis(21, 2);
+
+        r.Should().Equal([3, 6, 12, 15, 21, 24, 30]);
+    }
+
+    [Fact]
+    public void GerarDiasFavoraveis_Base2e7()
+    {
+        // 2, 7, 14(=7×2), 16(+2), 23(+7), 25(+2), 32>31
+        var r = TabelaNumerosFavoraveis.GerarDiasFavoraveis(1, 2); // base=[2,7]
+
+        r.Should().Equal([2, 7, 14, 16, 23, 25]);
+    }
+
+    [Fact]
+    public void GerarDiasFavoraveis_Base6e9()
+    {
+        // 6, 9, 18(=9×2), 24(+6), 33>31
+        var r = TabelaNumerosFavoraveis.GerarDiasFavoraveis(9, 1); // base=[6,9]
+
+        r.Should().Equal([6, 9, 18, 24]);
+    }
+
+    [Fact]
+    public void GerarDiasFavoraveis_Base1e5()
+    {
+        // 1, 5, 10(=5×2), 11(+1), 16(+5), 17(+1), 22(+5), 23(+1), 28(+5), 29(+1), 34>31
+        var r = TabelaNumerosFavoraveis.GerarDiasFavoraveis(13, 1); // base=[1,5]
+
+        r.Should().Equal([1, 5, 10, 11, 16, 17, 22, 23, 28, 29]);
+    }
+
+    [Fact]
+    public void GerarDiasFavoraveis_NaoUltrapassaDia31()
+    {
+        // Qualquer par de base deve gerar apenas dias ≤ 31
+        var r = TabelaNumerosFavoraveis.GerarDiasFavoraveis(28, 7); // base=[2,7]
+
+        r.Should().OnlyContain(d => d >= 1 && d <= 31);
+    }
 }

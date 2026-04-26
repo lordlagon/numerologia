@@ -41,8 +41,8 @@ public class GeradorMapaTests
     {
         var mapa = _gerador.Gerar(1, "JOSE", new DateOnly(1985, 3, 10));
 
-        // RelacaoIntervalores = Impressão - Motivação = 4 - 3 = 1
-        mapa.RelacaoIntervalores.Should().Be(1);
+        // RI = max do primeiro nome "JOSE": J(1) O(7) S(3) E(5) → max=7 → RI=7
+        mapa.RelacaoIntervalores.Should().Be(7);
     }
 
     [Fact]
@@ -74,6 +74,47 @@ public class GeradorMapaTests
         mapa.ConsulenteId.Should().Be(99);
         mapa.NomeUtilizado.Should().Be("JOSE");
         mapa.DataNascimento.Should().Be(new DateOnly(1985, 3, 10));
+    }
+
+    // ── Dívidas Cármicas — fontes completas (pág. 117) ──────────────────────
+    // Motivação e Expressão: verificadas no CalculoMapa (valores finais 4/5/7/1)
+    // Dia de nascimento: se 13/14/16/19 → dívida direta
+    // Destino: se 4/5/7/1 → dívida correspondente
+
+    [Fact]
+    public void Gerar_DiaNascimento13_GeraDivida13()
+    {
+        // Dia 13 → Dívida 13 direto pelo dia (independente do nome)
+        // Usar nome "ANA" (Motivação=2, Expressão=7→Dívida16) para isolar outras dívidas
+        // Resultado esperado: [13, 16]
+        var mapa = _gerador.Gerar(1, "ANA", new DateOnly(1990, 5, 13));
+        mapa.DividasCarmicas.Should().Contain(13);
+    }
+
+    [Fact]
+    public void Gerar_Destino4_GeraDivida13()
+    {
+        // Precisamos de uma data cujo Destino reduza para 4
+        // 01/01/1993 → 1+1+1+9+9+3=24 → 2+4=6. Não.
+        // 01/02/1991 → 1+2+1+9+9+1=23 → 5. Não.
+        // 04/04/1985 → 4+4+1+9+8+5=31 → 4. Sim!
+        // Usar "MARIA" (Motivação=3, Expressão=9 → sem dívidas do nome)
+        var mapa = _gerador.Gerar(1, "MARIA", new DateOnly(1985, 4, 4));
+        mapa.DividasCarmicas.Should().Contain(13);
+    }
+
+    // ── Harmonia Conjugal — deve usar Missão (= Expressão + Destino), não Expressão (pág. 205) ──
+
+    [Fact]
+    public void Gerar_HarmoniaUsaMissao_NaoExpressao()
+    {
+        // "ANA": Expressão=7, Data=15/08/1990 → Destino=6, Missão=Reduzir(7+6)=4
+        // Tabela[4].VibraCom = 6; Tabela[7].VibraCom = 3
+        // Se usar Expressão (errado) → VibraCom=3; se usar Missão (correto) → VibraCom=6
+        var mapa = _gerador.Gerar(1, "ANA", new DateOnly(1990, 8, 15));
+
+        mapa.Missao.Should().Be(4);
+        mapa.HarmoniaVibraCom.Should().Be(6); // tabela[Missão=4]
     }
 
     // ── Atualizar ────────────────────────────────────────────────────────────
