@@ -1,13 +1,15 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
 using NSubstitute;
+using Numerologia.UnitTests;
 using Numerologia.Web.Pages;
 using Numerologia.Web.Services;
 
 namespace Numerologia.UnitTests.Pages;
 
-public class DashboardTests : TestContext
+public class DashboardTests : MudBlazorTestBase
 {
     private readonly IDashboardService _dashboardService = Substitute.For<IDashboardService>();
 

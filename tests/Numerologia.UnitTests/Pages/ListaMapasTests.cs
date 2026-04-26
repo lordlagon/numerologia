@@ -1,19 +1,23 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
 using NSubstitute;
+using Numerologia.UnitTests;
 using Numerologia.Web.Pages.Mapas;
 using Numerologia.Web.Services;
 
 namespace Numerologia.UnitTests.Pages;
 
-public class ListaMapasTests : TestContext
+public class ListaMapasTests : MudBlazorTestBase
 {
     private readonly IMapasService _mapasService = Substitute.For<IMapasService>();
+    private readonly IDialogService _dialogMock   = Substitute.For<IDialogService>();
 
     public ListaMapasTests()
     {
         Services.AddSingleton(_mapasService);
+        Services.AddSingleton<IDialogService>(_dialogMock);
     }
 
     [Fact]
@@ -53,7 +57,7 @@ public class ListaMapasTests : TestContext
         var cut = RenderComponent<ListaMapas>(p => p.Add(c => c.ConsulenteId, 1));
 
         cut.WaitForAssertion(() =>
-            cut.FindAll("tr[data-testid^='mapa-']").Should().HaveCount(2));
+            cut.FindAll("td[data-testid^='mapa-']").Should().HaveCount(2));
     }
 
     [Fact]
@@ -108,13 +112,18 @@ public class ListaMapasTests : TestContext
     [Fact]
     public async Task BotaoExcluir_QuandoConfirmado_RemoveMapa()
     {
+        _dialogMock.ShowMessageBoxAsync(
+            Arg.Any<string?>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(),
+            Arg.Any<DialogOptions?>())
+            .Returns((bool?)true);
+
         var mapas = new List<MapaResumoDto>
         {
             new(1, "JOSE DA SILVA", new DateOnly(1985, 3, 10), 3, 5, 7, 9, DateTime.UtcNow),
         };
         _mapasService.ListarAsync(1).Returns(mapas, new List<MapaResumoDto>());
         _mapasService.RemoverAsync(1, 1).Returns(Task.CompletedTask);
-        JSInterop.Setup<bool>("confirm", _ => true).SetResult(true);
 
         var cut = RenderComponent<ListaMapas>(p => p.Add(c => c.ConsulenteId, 1));
         cut.WaitForAssertion(() => cut.FindAll("button").Should().NotBeEmpty());
@@ -128,12 +137,17 @@ public class ListaMapasTests : TestContext
     [Fact]
     public async Task BotaoExcluir_QuandoCancelado_NaoRemoveMapa()
     {
+        _dialogMock.ShowMessageBoxAsync(
+            Arg.Any<string?>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(),
+            Arg.Any<DialogOptions?>())
+            .Returns((bool?)null);
+
         var mapas = new List<MapaResumoDto>
         {
             new(1, "JOSE DA SILVA", new DateOnly(1985, 3, 10), 3, 5, 7, 9, DateTime.UtcNow),
         };
         _mapasService.ListarAsync(1).Returns(mapas);
-        JSInterop.Setup<bool>("confirm", _ => true).SetResult(false);
 
         var cut = RenderComponent<ListaMapas>(p => p.Add(c => c.ConsulenteId, 1));
         cut.WaitForAssertion(() => cut.FindAll("button").Should().NotBeEmpty());

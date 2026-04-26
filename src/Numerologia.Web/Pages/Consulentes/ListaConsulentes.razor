@@ -1,84 +1,91 @@
 @page "/consulentes"
 @inject IConsulentesService ConsulentesService
 @inject NavigationManager Nav
-@inject IJSRuntime JS
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Consulentes</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Consulentes</h1>
-    <a href="/consulentes/novo" class="btn btn-primary">+ Novo Consulente</a>
-</div>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h4">Consulentes</MudText>
+    <MudButton Href="/consulentes/novo"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.PersonAdd">
+        Novo Consulente
+    </MudButton>
+</MudStack>
 
 @if (_carregando)
 {
-    <p>Carregando...</p>
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" aria-label="Carregando" />
 }
 else
 {
-    <div class="mb-3">
-        <input type="search"
-               class="form-control"
-               placeholder="Buscar por nome..."
-               data-testid="busca-nome"
-               @bind="_busca"
-               @bind:event="oninput" />
-    </div>
+    <MudTextField @bind-Value="_busca"
+                  Placeholder="Buscar por nome..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Clearable="true"
+                  Immediate="true"
+                  Class="mb-4"
+                  UserAttributes='@(new Dictionary<string, object?> { ["data-testid"] = "busca-nome" })' />
 
     @if (_consultentsFiltrados.Count == 0 && _consulentes.Count > 0)
     {
-        <p class="text-muted">Nenhum consulente encontrado para "@_busca".</p>
+        <MudText Color="Color.Secondary">Nenhum consulente encontrado para "@_busca".</MudText>
     }
     else if (_consulentes.Count == 0)
     {
-        <p>Nenhum consulente cadastrado ainda.</p>
+        <MudText>Nenhum consulente cadastrado ainda.</MudText>
     }
     else
     {
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Data de Nascimento</th>
-                    <th>Email</th>
-                    <th>Telefone</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var c in _consultentsFiltrados)
-                {
-                    <tr>
-                        <td>@c.NomeCompleto</td>
-                        <td>@c.DataNascimento.ToString("dd/MM/yyyy")</td>
-                        <td>@(c.Email ?? "—")</td>
-                        <td>@(c.Telefone ?? "—")</td>
-                        <td class="text-end">
-                            <a href="/consulentes/@c.Id/mapas" class="btn btn-sm btn-outline-secondary me-1" aria-label="Mapas" title="Mapas">
-                                <i class="bi bi-file-text"></i>
-                                Mapas
-                            </a>
-                            <a href="/consulentes/@c.Id/editar" class="btn btn-sm btn-outline-primary me-1">Editar</a>
-                            <button class="btn btn-sm btn-outline-danger"
-                                    data-testid="excluir-@c.Id"
-                                    @onclick="() => Excluir(c.Id)">Excluir</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <MudTable Items="_consultentsFiltrados" Hover="true" Dense="true" Elevation="1">
+            <HeaderContent>
+                <MudTh>Nome</MudTh>
+                <MudTh>Data de Nascimento</MudTh>
+                <MudTh>Email</MudTh>
+                <MudTh>Telefone</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nome">@context.NomeCompleto</MudTd>
+                <MudTd DataLabel="Nascimento">@context.DataNascimento.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd DataLabel="Email">@(context.Email ?? "—")</MudTd>
+                <MudTd DataLabel="Telefone">@(context.Telefone ?? "—")</MudTd>
+                <MudTd Style="text-align:right; white-space:nowrap">
+                    <MudTooltip Text="Mapas">
+                        <MudIconButton Icon="@Icons.Material.Filled.Description"
+                                       Size="Size.Small"
+                                       Href="@($"/consulentes/{context.Id}/mapas")"
+                                       aria-label="Mapas" />
+                    </MudTooltip>
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       Color="Color.Primary"
+                                       Href="@($"/consulentes/{context.Id}/editar")" />
+                    </MudTooltip>
+                    <MudTooltip Text="Excluir">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Size="Size.Small"
+                                       Color="Color.Error"
+                                       data-testid="@($"excluir-{context.Id}")"
+                                       OnClick="() => Excluir(context.Id)" />
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>Nenhum consulente cadastrado ainda.</MudText>
+            </NoRecordsContent>
+        </MudTable>
     }
-}
-
-@if (_erro is not null)
-{
-    <div class="alert alert-danger mt-3">@_erro</div>
 }
 
 @code {
     private List<ConsulenteDto> _consulentes = [];
     private bool _carregando = true;
-    private string? _erro;
     private string _busca = "";
 
     private List<ConsulenteDto> _consultentsFiltrados =>
@@ -96,7 +103,7 @@ else
         }
         catch
         {
-            _erro = "Erro ao carregar consulentes.";
+            Snackbar.Add("Erro ao carregar consulentes.", Severity.Error);
         }
         finally
         {
@@ -106,18 +113,23 @@ else
 
     private async Task Excluir(int id)
     {
-        var confirmar = await JS.InvokeAsync<bool>("confirm",
-            "Excluir este consulente? Todos os seus mapas também serão excluídos.");
-        if (!confirmar) return;
+        var result = await DialogService.ShowMessageBoxAsync(
+            "Confirmar exclusão",
+            "Excluir este consulente? Todos os seus mapas também serão excluídos.",
+            yesText: "Excluir",
+            cancelText: "Cancelar");
+
+        if (result != true) return;
 
         try
         {
             await ConsulentesService.RemoverAsync(id);
             _consulentes = _consulentes.Where(c => c.Id != id).ToList();
+            Snackbar.Add("Consulente excluído.", Severity.Success);
         }
         catch
         {
-            _erro = "Erro ao excluir consulente.";
+            Snackbar.Add("Erro ao excluir consulente.", Severity.Error);
         }
     }
 }

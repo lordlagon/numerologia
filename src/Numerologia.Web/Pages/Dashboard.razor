@@ -3,46 +3,49 @@
 
 <PageTitle>Dashboard</PageTitle>
 
+<MudText Typo="Typo.h4" Class="mb-4">Dashboard</MudText>
+
 @if (_carregando)
 {
-    <p>Carregando...</p>
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" aria-label="Carregando" />
 }
 else
 {
-    <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <div class="fs-1 fw-bold text-primary">@_dados!.TotalConsulentes</div>
-                    <div class="text-muted">Consulentes</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <MudGrid Spacing="3" Class="mb-6">
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2">
+                <MudCardContent Class="text-center">
+                    <MudText Typo="Typo.h2" Color="Color.Primary">@_dados!.TotalConsulentes</MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Consulentes</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 
-    <h2 class="h5 mb-3">Últimos Mapas Criados</h2>
+    <MudText Typo="Typo.h6" Class="mb-3">Últimos Mapas Criados</MudText>
 
     @if (_dados!.UltimosMapas.Count == 0)
     {
-        <p class="text-muted">Nenhum mapa gerado ainda.</p>
+        <MudText Color="Color.Secondary">Nenhum mapa gerado ainda.</MudText>
     }
     else
     {
-        <div class="list-group">
+        <MudList T="UltimoMapaDto" Dense="true">
             @foreach (var m in _dados.UltimosMapas)
             {
-                <a href="/consulentes/@m.ConsulenteId/mapas/@m.MapaId"
-                   class="list-group-item list-group-item-action">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="fw-semibold">@m.NomeConsulente</div>
-                            <small class="text-muted">@m.NomeUtilizado</small>
-                        </div>
-                        <small class="text-muted">@m.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
-                    </div>
-                </a>
+                <MudListItem T="UltimoMapaDto" Href="@($"/consulentes/{m.ConsulenteId}/mapas/{m.MapaId}")">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Style="width:100%">
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.body1">@m.NomeConsulente</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@m.NomeUtilizado</MudText>
+                        </MudStack>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @m.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                        </MudText>
+                    </MudStack>
+                </MudListItem>
             }
-        </div>
+        </MudList>
     }
 }
 

@@ -2,20 +2,25 @@ using Bunit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
 using NSubstitute;
+using Numerologia.UnitTests;
 using Numerologia.Web.Pages.Consulentes;
 using Numerologia.Web.Services;
 
 namespace Numerologia.UnitTests.Pages;
 
-public class ListaConsulentesTests : TestContext
+public class ListaConsulentesTests : MudBlazorTestBase
 {
     private readonly IConsulentesService _serviceMock;
+    private readonly IDialogService _dialogMock;
 
     public ListaConsulentesTests()
     {
         _serviceMock = Substitute.For<IConsulentesService>();
+        _dialogMock  = Substitute.For<IDialogService>();
         Services.AddSingleton(_serviceMock);
+        Services.AddSingleton<IDialogService>(_dialogMock);
     }
 
     [Fact]
@@ -54,12 +59,18 @@ public class ListaConsulentesTests : TestContext
 
         cut.Markup.Should().Contain("Carregando");
         cut.Markup.Should().NotContain("<table");
+        tcs.SetResult([]);
     }
 
     [Fact]
     public async Task BotaoExcluir_QuandoConfirmado_ChamamRemoverERemoveDaLista()
     {
-        JSInterop.Setup<bool>("confirm", _ => true).SetResult(true);
+        _dialogMock.ShowMessageBoxAsync(
+            Arg.Any<string?>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(),
+            Arg.Any<DialogOptions?>())
+            .Returns((bool?)true);
+
         var consulentes = new List<ConsulenteDto>
         {
             new(1, "Para Excluir", new DateOnly(1990, 6, 15), null, null, DateTime.UtcNow),
@@ -79,7 +90,12 @@ public class ListaConsulentesTests : TestContext
     [Fact]
     public async Task BotaoExcluir_QuandoCancelado_NaoChamaRemoverEMantemNaLista()
     {
-        JSInterop.Setup<bool>("confirm", _ => true).SetResult(false);
+        _dialogMock.ShowMessageBoxAsync(
+            Arg.Any<string?>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(),
+            Arg.Any<DialogOptions?>())
+            .Returns((bool?)null);
+
         var consulentes = new List<ConsulenteDto>
         {
             new(1, "Nao Excluir", new DateOnly(1990, 6, 15), null, null, DateTime.UtcNow),
@@ -109,7 +125,7 @@ public class ListaConsulentesTests : TestContext
         var cut = RenderComponent<ListaConsulentes>();
         cut.WaitForAssertion(() => cut.Markup.Should().Contain("Maria Silva"));
 
-        cut.Find("input[data-testid='busca-nome']").Input("maria");
+        cut.Find("[data-testid='busca-nome']").Input("maria");
 
         cut.WaitForAssertion(() =>
         {
@@ -131,7 +147,7 @@ public class ListaConsulentesTests : TestContext
         var cut = RenderComponent<ListaConsulentes>();
         cut.WaitForAssertion(() => cut.Markup.Should().Contain("Carlos Mendes"));
 
-        cut.Find("input[data-testid='busca-nome']").Input("CARLOS");
+        cut.Find("[data-testid='busca-nome']").Input("CARLOS");
 
         cut.WaitForAssertion(() =>
             cut.Markup.Should().Contain("Carlos Mendes"));
@@ -150,8 +166,8 @@ public class ListaConsulentesTests : TestContext
         var cut = RenderComponent<ListaConsulentes>();
         cut.WaitForAssertion(() => cut.Markup.Should().Contain("Maria Silva"));
 
-        cut.Find("input[data-testid='busca-nome']").Input("joao");
-        cut.Find("input[data-testid='busca-nome']").Input("");
+        cut.Find("[data-testid='busca-nome']").Input("joao");
+        cut.Find("[data-testid='busca-nome']").Input("");
 
         cut.WaitForAssertion(() =>
         {
@@ -172,7 +188,7 @@ public class ListaConsulentesTests : TestContext
         var cut = RenderComponent<ListaConsulentes>();
         cut.WaitForAssertion(() => cut.Markup.Should().Contain("Maria Silva"));
 
-        cut.Find("input[data-testid='busca-nome']").Input("zzz");
+        cut.Find("[data-testid='busca-nome']").Input("zzz");
 
         cut.WaitForAssertion(() =>
             cut.Markup.Should().Contain("Nenhum consulente encontrado"));
@@ -203,7 +219,6 @@ public class ListaConsulentesTests : TestContext
         {
             var link = cut.Find("a[href='/consulentes/7/mapas']");
             link.GetAttribute("aria-label").Should().Be("Mapas");
-            link.QuerySelector("i.bi-file-text").Should().NotBeNull();
         });
     }
 }

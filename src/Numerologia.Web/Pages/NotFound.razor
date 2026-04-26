@@ -1,5 +1,15 @@
-﻿@page "/not-found"
+@page "/not-found"
 @layout MainLayout
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-16 text-center">
+    <MudText Typo="Typo.h4" Class="mb-4">Página não encontrada</MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">
+        O conteúdo que você procura não existe ou foi removido.
+    </MudText>
+    <MudButton Href="/"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Home">
+        Voltar ao início
+    </MudButton>
+</MudContainer>

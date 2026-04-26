@@ -2,13 +2,15 @@ using Bunit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
 using NSubstitute;
+using Numerologia.UnitTests;
 using Numerologia.Web.Pages.Mapas;
 using Numerologia.Web.Services;
 
 namespace Numerologia.UnitTests.Pages;
 
-public class FormMapaTests : TestContext
+public class FormMapaTests : MudBlazorTestBase
 {
     private readonly IMapasService _mapasService = Substitute.For<IMapasService>();
     private readonly IConsulentesService _consulentesService = Substitute.For<IConsulentesService>();

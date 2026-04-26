@@ -3,47 +3,52 @@
 @inject IMapasService MapasService
 @inject IConsulentesService ConsulentesService
 @inject NavigationManager Nav
+@inject ISnackbar Snackbar
 
 <PageTitle>Gerar Mapa Numerológico</PageTitle>
 
-<h1>Gerar Mapa Numerológico</h1>
+<MudText Typo="Typo.h4" Class="mb-4">Gerar Mapa Numerológico</MudText>
 
 @if (_carregando)
 {
-    <p>Carregando...</p>
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" aria-label="Carregando" />
 }
 else
 {
-    <EditForm Model="_form" OnValidSubmit="Gerar">
-        <DataAnnotationsValidator />
+    <MudPaper Elevation="1" Class="pa-6" Style="max-width:480px">
+        <EditForm Model="_form" OnValidSubmit="Gerar">
+            <DataAnnotationsValidator />
 
-        <div class="mb-3">
-            <label class="form-label">Nome utilizado *</label>
-            <InputText class="form-control" @bind-Value="_form.NomeUtilizado"
-                       data-testid="nome-utilizado" />
-            <ValidationMessage For="() => _form.NomeUtilizado" />
-            <div class="form-text">
-                Nome conforme certidão de nascimento (ou nome de casada, se alterado).
-            </div>
-        </div>
+            <MudStack Spacing="4">
+                <MudTextField @bind-Value="_form.NomeUtilizado"
+                              Label="Nome utilizado"
+                              Required="true"
+                              RequiredError="Nome utilizado é obrigatório"
+                              For="() => _form.NomeUtilizado"
+                              HelperText="Nome conforme certidão de nascimento (ou nome de casada, se alterado)."
+                              data-testid="nome-utilizado" />
 
-        <div class="mb-3">
-            <label class="form-label">Data de nascimento *</label>
-            <InputDate class="form-control" @bind-Value="_form.DataNascimento"
-                       data-testid="data-nascimento" />
-            <ValidationMessage For="() => _form.DataNascimento" />
-        </div>
+                <MudDatePicker @bind-Date="_dataNascimentoDt"
+                               Label="Data de nascimento"
+                               Required="true"
+                               DateFormat="dd/MM/yyyy"
+                               data-testid="data-nascimento" />
 
-        @if (_erro is not null)
-        {
-            <div class="alert alert-danger">@_erro</div>
-        }
-
-        <button type="submit" class="btn btn-primary" disabled="@_gerando">
-            @(_gerando ? "Gerando..." : "Gerar Mapa")
-        </button>
-        <a href="/consulentes/@ConsulenteId/mapas" class="btn btn-secondary ms-2">Cancelar</a>
-    </EditForm>
+                <MudStack Row="true" Spacing="2">
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Disabled="_gerando">
+                        @(_gerando ? "Gerando..." : "Gerar Mapa")
+                    </MudButton>
+                    <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas")"
+                               Variant="Variant.Outlined">
+                        Cancelar
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </EditForm>
+    </MudPaper>
 }
 
 @code {
@@ -52,7 +57,12 @@ else
     private readonly FormModel _form = new();
     private bool _carregando = true;
     private bool _gerando;
-    private string? _erro;
+
+    private DateTime? _dataNascimentoDt
+    {
+        get => _form.DataNascimento == default ? null : _form.DataNascimento.ToDateTime(TimeOnly.MinValue);
+        set => _form.DataNascimento = value.HasValue ? DateOnly.FromDateTime(value.Value) : DateOnly.FromDateTime(DateTime.Today);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,7 +82,6 @@ else
     private async Task Gerar()
     {
         _gerando = true;
-        _erro = null;
 
         try
         {
@@ -81,7 +90,7 @@ else
         }
         catch
         {
-            _erro = "Erro ao gerar mapa. Verifique o nome informado.";
+            Snackbar.Add("Erro ao gerar mapa. Verifique o nome informado.", Severity.Error);
             _gerando = false;
         }
     }

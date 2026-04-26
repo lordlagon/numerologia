@@ -3,55 +3,60 @@
 @using System.ComponentModel.DataAnnotations
 @inject IConsulentesService ConsulentesService
 @inject NavigationManager Nav
+@inject ISnackbar Snackbar
 
 <PageTitle>@(_id is null ? "Novo Consulente" : "Editar Consulente")</PageTitle>
 
-<h1>@(_id is null ? "Novo Consulente" : "Editar Consulente")</h1>
+<MudText Typo="Typo.h4" Class="mb-4">@(_id is null ? "Novo Consulente" : "Editar Consulente")</MudText>
 
 @if (_carregando)
 {
-    <p>Carregando...</p>
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" aria-label="Carregando" />
 }
 else
 {
-    <EditForm Model="_form" OnValidSubmit="Salvar">
-        <DataAnnotationsValidator />
+    <MudPaper Elevation="1" Class="pa-6" Style="max-width:520px">
+        <EditForm Model="_form" OnValidSubmit="Salvar">
+            <DataAnnotationsValidator />
 
-        <div class="mb-3">
-            <label class="form-label">Nome completo *</label>
-            <InputText class="form-control" @bind-Value="_form.NomeCompleto"
-                       data-testid="nome" />
-            <ValidationMessage For="() => _form.NomeCompleto" />
-        </div>
+            <MudStack Spacing="4">
+                <MudTextField @bind-Value="_form.NomeCompleto"
+                              Label="Nome completo"
+                              Required="true"
+                              RequiredError="Nome é obrigatório"
+                              For="() => _form.NomeCompleto"
+                              data-testid="nome" />
 
-        <div class="mb-3">
-            <label class="form-label">Data de nascimento *</label>
-            <InputDate class="form-control" @bind-Value="_form.DataNascimento"
-                       data-testid="data-nascimento" />
-        </div>
+                <MudDatePicker @bind-Date="_dataNascimentoDt"
+                               Label="Data de nascimento"
+                               Required="true"
+                               DateFormat="dd/MM/yyyy"
+                               data-testid="data-nascimento" />
 
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <InputText class="form-control" @bind-Value="_form.Email"
-                       data-testid="email" />
-        </div>
+                <MudTextField @bind-Value="_form.Email"
+                              Label="Email"
+                              InputType="InputType.Email"
+                              data-testid="email" />
 
-        <div class="mb-3">
-            <label class="form-label">Telefone</label>
-            <InputText class="form-control" @bind-Value="_form.Telefone"
-                       data-testid="telefone" />
-        </div>
+                <MudTextField @bind-Value="_form.Telefone"
+                              Label="Telefone"
+                              data-testid="telefone" />
 
-        @if (_erro is not null)
-        {
-            <div class="alert alert-danger">@_erro</div>
-        }
-
-        <button type="submit" class="btn btn-primary" disabled="@_salvando">
-            @(_salvando ? "Salvando..." : "Salvar")
-        </button>
-        <a href="/consulentes" class="btn btn-secondary ms-2">Cancelar</a>
-    </EditForm>
+                <MudStack Row="true" Spacing="2">
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Disabled="_salvando">
+                        @(_salvando ? "Salvando..." : "Salvar")
+                    </MudButton>
+                    <MudButton Href="/consulentes"
+                               Variant="Variant.Outlined">
+                        Cancelar
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </EditForm>
+    </MudPaper>
 }
 
 @code {
@@ -61,7 +66,12 @@ else
     private FormModel _form = new();
     private bool _carregando = true;
     private bool _salvando;
-    private string? _erro;
+
+    private DateTime? _dataNascimentoDt
+    {
+        get => _form.DataNascimento == default ? null : _form.DataNascimento.ToDateTime(TimeOnly.MinValue);
+        set => _form.DataNascimento = value.HasValue ? DateOnly.FromDateTime(value.Value) : DateOnly.FromDateTime(DateTime.Today);
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -86,7 +96,7 @@ else
             }
             catch
             {
-                _erro = "Erro ao carregar consulente.";
+                Snackbar.Add("Erro ao carregar consulente.", Severity.Error);
             }
         }
 
@@ -96,7 +106,6 @@ else
     private async Task Salvar()
     {
         _salvando = true;
-        _erro = null;
 
         try
         {
@@ -115,7 +124,7 @@ else
         }
         catch
         {
-            _erro = "Erro ao salvar consulente.";
+            Snackbar.Add("Erro ao salvar consulente.", Severity.Error);
             _salvando = false;
         }
     }

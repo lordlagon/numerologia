@@ -1,13 +1,15 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
 using NSubstitute;
+using Numerologia.UnitTests;
 using Numerologia.Web.Pages.Consulentes;
 using Numerologia.Web.Services;
 
 namespace Numerologia.UnitTests.Pages;
 
-public class FormConsulenteTests : TestContext
+public class FormConsulenteTests : MudBlazorTestBase
 {
     private readonly IConsulentesService _serviceMock;
 

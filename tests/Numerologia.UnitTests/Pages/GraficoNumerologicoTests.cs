@@ -2,12 +2,13 @@ using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using Numerologia.UnitTests;
 using Numerologia.Web.Pages.Mapas;
 using Numerologia.Web.Services;
 
 namespace Numerologia.UnitTests.Pages;
 
-public class GraficoNumerologicoTests : TestContext
+public class GraficoNumerologicoTests : MudBlazorTestBase
 {
     private readonly IMapasService _mapasService = Substitute.For<IMapasService>();
     private readonly ICalculosPessoaisService _pessoaisService = Substitute.For<ICalculosPessoaisService>();

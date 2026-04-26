@@ -108,3 +108,63 @@
 .grade-espaco {
     background-color: var(--mud-palette-background);
 }
+
+/* ── Grade de letras: estilo de tabela sem Bootstrap ──────────────────── */
+.grade-table {
+    border-collapse: collapse;
+}
+
+.grade-table td {
+    border: 1px solid var(--mud-palette-divider);
+    padding: 2px 4px;
+}
+
+/* ── Figuras numerológicas (A–H, Harmonia): tabelas compactas ─────────── */
+.figura-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.figura-table td {
+    border: 1px solid var(--mud-palette-divider);
+    padding: 3px 6px;
+    font-size: 0.85rem;
+}
+
+/* ── Badges numéricos (Lições, Tendências, Dias, Harmônicos, Dívidas) ─── */
+.num-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.num-badge-warning {
+    background-color: var(--mud-palette-warning);
+    color: var(--mud-palette-warning-text);
+}
+
+.num-badge-info {
+    background-color: var(--mud-palette-info);
+    color: var(--mud-palette-info-text);
+}
+
+.num-badge-error {
+    background-color: var(--mud-palette-error);
+    color: var(--mud-palette-error-text);
+}
+
+.num-badge-success {
+    background-color: var(--mud-palette-success);
+    color: var(--mud-palette-success-text);
+}
+
+.num-badge-primary {
+    background-color: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+}

@@ -1,70 +1,89 @@
 @page "/consulentes/{ConsulenteId:int}/mapas"
 @inject IMapasService MapasService
 @inject NavigationManager Nav
-@inject IJSRuntime JS
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Mapas Numerológicos</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Mapas Numerológicos</h1>
-    <a href="/consulentes/@ConsulenteId/mapas/novo" class="btn btn-primary">+ Gerar Mapa</a>
-</div>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h4">Mapas Numerológicos</MudText>
+    <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/novo")"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">
+        Gerar Mapa
+    </MudButton>
+</MudStack>
 
 @if (_carregando)
 {
-    <p>Carregando...</p>
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" aria-label="Carregando" />
 }
 else if (_mapas.Count == 0)
 {
-    <p>Nenhum mapa gerado ainda.</p>
+    <MudText Color="Color.Secondary">Nenhum mapa gerado ainda.</MudText>
 }
 else
 {
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Nome Utilizado</th>
-                <th>Data de Nascimento</th>
-                <th>Criado em</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var m in _mapas)
-            {
-                <tr data-testid="mapa-@m.Id">
-                    <td>@m.NomeUtilizado</td>
-                    <td>@m.DataNascimento.ToString("dd/MM/yyyy")</td>
-                    <td>@m.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                    <td class="text-end">
-                        <a href="/consulentes/@ConsulenteId/mapas/@m.Id"
-                           class="btn btn-sm btn-outline-primary">Ver Mapa</a>
-                        <a href="/consulentes/@ConsulenteId/mapas/@m.Id/editar"
-                           class="btn btn-sm btn-outline-secondary ms-1">Editar</a>
-                        <button class="btn btn-sm btn-outline-danger ms-1"
-                                @onclick="() => Excluir(m.Id, m.NomeUtilizado)">Excluir</button>
-                        <button class="btn btn-sm btn-outline-secondary ms-1" disabled
-                                title="Em breve">Pirâmides</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="_mapas" Hover="true" Dense="true" Elevation="1">
+        <HeaderContent>
+            <MudTh>Nome Utilizado</MudTh>
+            <MudTh>Data de Nascimento</MudTh>
+            <MudTh>Criado em</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nome" data-testid="@($"mapa-{context.Id}")">
+                @context.NomeUtilizado
+            </MudTd>
+            <MudTd DataLabel="Nascimento">@context.DataNascimento.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Criado em">@context.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</MudTd>
+            <MudTd Style="text-align:right; white-space:nowrap">
+                <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/{context.Id}")"
+                           Size="Size.Small"
+                           Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Class="mr-1">
+                    Ver Mapa
+                </MudButton>
+                <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/{context.Id}/editar")"
+                           Size="Size.Small"
+                           Variant="Variant.Outlined"
+                           Class="mr-1">
+                    Editar
+                </MudButton>
+                <MudButton Size="Size.Small"
+                           Variant="Variant.Outlined"
+                           Color="Color.Error"
+                           Class="mr-1"
+                           OnClick="() => Excluir(context.Id, context.NomeUtilizado)">
+                    Excluir
+                </MudButton>
+                <MudTooltip Text="Em breve">
+                    <MudButton Size="Size.Small"
+                               Variant="Variant.Outlined"
+                               Disabled="true">
+                        Pirâmides
+                    </MudButton>
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
-@if (_erro is not null)
-{
-    <div class="alert alert-danger mt-3">@_erro</div>
-}
-
-<a href="/consulentes" class="btn btn-secondary mt-2">Voltar</a>
+<MudButton Href="/consulentes"
+           Variant="Variant.Outlined"
+           Class="mt-4"
+           StartIcon="@Icons.Material.Filled.ArrowBack">
+    Voltar
+</MudButton>
 
 @code {
     [Parameter] public int ConsulenteId { get; set; }
 
     private List<MapaResumoDto> _mapas = [];
     private bool _carregando = true;
-    private string? _erro;
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,7 +93,7 @@ else
         }
         catch
         {
-            _erro = "Erro ao carregar mapas.";
+            Snackbar.Add("Erro ao carregar mapas.", Severity.Error);
         }
         finally
         {
@@ -84,19 +103,23 @@ else
 
     private async Task Excluir(int mapaId, string nomeUtilizado)
     {
-        var confirmado = await JS.InvokeAsync<bool>("confirm",
-            $"Excluir o mapa de \"{nomeUtilizado}\"? Esta ação não pode ser desfeita.");
+        var result = await DialogService.ShowMessageBoxAsync(
+            "Confirmar exclusão",
+            $"Excluir o mapa de \"{nomeUtilizado}\"? Esta ação não pode ser desfeita.",
+            yesText: "Excluir",
+            cancelText: "Cancelar");
 
-        if (!confirmado) return;
+        if (result != true) return;
 
         try
         {
             await MapasService.RemoverAsync(ConsulenteId, mapaId);
             _mapas = await MapasService.ListarAsync(ConsulenteId);
+            Snackbar.Add("Mapa excluído.", Severity.Success);
         }
         catch
         {
-            _erro = "Erro ao excluir mapa.";
+            Snackbar.Add("Erro ao excluir mapa.", Severity.Error);
         }
     }
 }
