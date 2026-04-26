@@ -477,8 +477,8 @@ else if (_mapa is not null)
             <div class="col-md-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="card-title">Dia do Nascimento — @_mapa.DiaNascimentoReduzido</h6>
-                        <p class="card-text text-muted">@InterpretacoesNumerologicas.DiaNascimento(_mapa.DiaNascimentoReduzido)</p>
+                        <h6 class="card-title" data-testid="interp-dia-nascimento-titulo">Dia do Nascimento — @_mapa.DataNascimento.Day</h6>
+                        <p class="card-text text-muted" data-testid="interp-dia-nascimento">@InterpretacoesNumerologicas.DiaNascimento(_mapa.DataNascimento.Day)</p>
                     </div>
                 </div>
             </div>

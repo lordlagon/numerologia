@@ -322,6 +322,32 @@ public class GraficoNumerologicoTests : TestContext
             cut.Find("[data-testid='data-ano']").TextContent.Should().Be("1985"));
     }
 
+    // ── Dia do Nascimento — sem redução, com positivos e negativos (pág. 135–175) ──
+
+    [Fact]
+    public void Render_ExibeDiaDoNascimentoSemReducao()
+    {
+        // DataNascimento.Day=10 → título deve conter "10", NÃO usa DiaNascimentoReduzido=1
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='interp-dia-nascimento-titulo']").TextContent
+                .Should().Contain("10"));
+    }
+
+    [Fact]
+    public void Render_ExibeInterpretacaoDiaDoNascimento()
+    {
+        // Day 10 = DIA DA AUTOCONFIANÇA → texto deve conter "autoconfiança"
+        ConfigurarServicos();
+        var cut = RenderGrafico();
+
+        cut.WaitForAssertion(() =>
+            cut.Find("[data-testid='interp-dia-nascimento']").TextContent
+                .Should().Contain("autoconfiança"));
+    }
+
     // ── F2.10 — Interpretação da Relação Intervalores ────────────────────────
 
     [Fact]
