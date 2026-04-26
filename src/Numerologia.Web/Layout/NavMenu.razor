@@ -1,51 +1,29 @@
 @inject IAuthService AuthService
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Numerologia Cabalística</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
+<MudNavMenu>
+    <MudNavLink Href="" Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.Home">
+        Início
+    </MudNavLink>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Início
-            </NavLink>
-        </div>
-
-        @if (_usuario is not null)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="dashboard" Match="NavLinkMatch.All">
-                    <span class="bi bi-speedometer2" aria-hidden="true"></span> Dashboard
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="consulentes">
-                    <span class="bi bi-people-fill" aria-hidden="true"></span> Consulentes
-                </NavLink>
-            </div>
-        }
-    </nav>
-</div>
+    @if (_usuario is not null)
+    {
+        <MudNavLink Href="dashboard"
+                    Icon="@Icons.Material.Filled.Dashboard">
+            Dashboard
+        </MudNavLink>
+        <MudNavLink Href="consulentes"
+                    Icon="@Icons.Material.Filled.People">
+            Consulentes
+        </MudNavLink>
+    }
+</MudNavMenu>
 
 @code {
-    private bool collapseNavMenu = true;
     private UsuarioInfo? _usuario;
-
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     protected override async Task OnInitializedAsync()
     {
         _usuario = await AuthService.GetCurrentUserAsync();
-    }
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
     }
 }

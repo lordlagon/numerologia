@@ -1,6 +1,34 @@
-﻿<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+<MudThemeProvider Theme="_theme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
 </Router>
+
+@code {
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary        = "#5B21B6",   // violeta profundo
+            PrimaryDarken  = "#3B0E8C",
+            PrimaryLighten = "#7C3AED",
+            Secondary      = "#D97706",   // âmbar dourado
+            SecondaryDarken  = "#B45309",
+            SecondaryLighten = "#F59E0B",
+            AppbarBackground = "#3B0E8C",
+            AppbarText     = Colors.Shades.White,
+            DrawerBackground = "#1E0059",
+            DrawerText     = "#E9D5FF",
+            DrawerIcon     = "#C4B5FD",
+            Background     = "#F9FAFB",
+            Surface        = Colors.Shades.White,
+            TextPrimary    = "#111827",
+            TextSecondary  = "#6B7280",
+        }
+    };
+}
