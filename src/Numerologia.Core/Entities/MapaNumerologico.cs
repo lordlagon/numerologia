@@ -15,6 +15,11 @@ public class MapaNumerologico
     public int                  NumeroMotivacao      { get; private set; }
     public int                  NumeroImpressao      { get; private set; }
     public int                  NumeroExpressao      { get; private set; }
+
+    // Somas brutas (derivadas de GradeLetras — não persistidas)
+    public int SomaMotivacao  => GradeLetras.Where(e => e.Tipo == TipoLetra.Vogal).Sum(e => e.ValorCabalistico);
+    public int SomaImpressao  => GradeLetras.Where(e => e.Tipo == TipoLetra.Consoante).Sum(e => e.ValorCabalistico);
+    public int SomaExpressao  => GradeLetras.Where(e => e.Tipo != TipoLetra.Espaco).Sum(e => e.ValorCabalistico);
     public int[]                DividasCarmicas      { get; private set; }
     public Dictionary<int, int> FiguraA              { get; private set; }
     public int[]                LicoesCarmicas       { get; private set; }

@@ -1,4 +1,4 @@
-namespace Numerologia.Web.Services;
+namespace Numerologia.Core.Services;
 
 /// <summary>
 /// Textos interpretativos por número, extraídos do livro
