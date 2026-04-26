@@ -80,6 +80,7 @@ public class MapaNumerologico
         DateOnly dataNascimento,
         ResultadoMapa mapa,
         ResultadoDestino destino,
+        int[] dividasCarmicas,
         int[] diasFavoraveis,
         int[] numerosHarmonicos,
         string[] coresFavoraveis,
@@ -96,7 +97,7 @@ public class MapaNumerologico
             NumeroMotivacao       = mapa.NumeroMotivacao,
             NumeroImpressao       = mapa.NumeroImpressao,
             NumeroExpressao       = mapa.NumeroExpressao,
-            DividasCarmicas       = [.. mapa.DividasCarmicas],
+            DividasCarmicas       = dividasCarmicas,
             FiguraA               = new Dictionary<int, int>(mapa.FiguraA),
             LicoesCarmicas        = [.. mapa.LicoesCarmicas],
             TendenciasOcultas     = [.. mapa.TendenciasOcultas],
@@ -123,7 +124,7 @@ public class MapaNumerologico
             DiasMesFavoraveis = diasFavoraveis,
             NumerosHarmonicos = numerosHarmonicos,
 
-            RelacaoIntervalores          = mapa.NumeroImpressao - mapa.NumeroMotivacao,
+            RelacaoIntervalores          = mapa.RelacaoIntervalores,
             HarmoniaVibraCom             = harmonia.VibraCom,
             HarmoniaAtrai                = [.. harmonia.Atrai],
             HarmoniaEOpostoA             = [.. harmonia.EOpostoA],
@@ -138,6 +139,7 @@ public class MapaNumerologico
         DateOnly dataNascimento,
         ResultadoMapa mapa,
         ResultadoDestino destino,
+        int[] dividasCarmicas,
         int[] diasFavoraveis,
         int[] numerosHarmonicos,
         string[] coresFavoraveis,
@@ -150,7 +152,7 @@ public class MapaNumerologico
         NumeroMotivacao       = mapa.NumeroMotivacao;
         NumeroImpressao       = mapa.NumeroImpressao;
         NumeroExpressao       = mapa.NumeroExpressao;
-        DividasCarmicas       = [.. mapa.DividasCarmicas];
+        DividasCarmicas       = dividasCarmicas;
         FiguraA               = new Dictionary<int, int>(mapa.FiguraA);
         LicoesCarmicas        = [.. mapa.LicoesCarmicas];
         TendenciasOcultas     = [.. mapa.TendenciasOcultas];

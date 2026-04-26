@@ -31,7 +31,7 @@ namespace Numerologia.UnitTests.Calculos;
 /// 9 → 0
 ///
 /// Lições Cármicas:       [8, 9]  (ausentes de 1–9)
-/// Tendências Ocultas:    [1]     (aparece 5 vezes — máximo)
+/// Tendências Ocultas:    [1, 4, 5] (1→5x, 4→4x, 5→4x — todos aparecem mais de 3 vezes)
 /// Resposta Subconsciente: 9 − 2 = 7
 /// Dívidas Cármicas:      []
 /// </summary>
@@ -138,10 +138,12 @@ public class CalculoMapaAndreTests
     // ── Dívidas Cármicas ──────────────────────────────────────────────────────
 
     [Fact]
-    public void DividasCarmicas_SemDividas()
+    public void DividasCarmicas_MotivacaoQuatro_GeraDivida13()
     {
-        // Vogais=40, Consoantes=50, Total=90 — nenhum é 13/14/16/19
-        _r.DividasCarmicas.Should().BeEmpty();
+        // Motivação = 4 → Dívida 13 (pág. 117: valor final 4 é indicador de Dívida 13)
+        // Expressão = 9 → sem dívida (9 não é 4/5/7/1)
+        // Dia e Destino são verificados no GeradorMapa, não no CalculoMapa
+        _r.DividasCarmicas.Should().BeEquivalentTo([13]);
     }
 
     // ── Fig. A ────────────────────────────────────────────────────────────────
@@ -172,10 +174,10 @@ public class CalculoMapaAndreTests
     // ── Tendências Ocultas ────────────────────────────────────────────────────
 
     [Fact]
-    public void TendenciasOcultas_DeveSerUm()
+    public void TendenciasOcultas_RetornaTodosComMaisDeTresOcorrencias()
     {
-        // Valor 1 aparece 5 vezes — máximo entre todos os valores
-        _r.TendenciasOcultas.Should().BeEquivalentTo([1]);
+        // 1→5x, 4→4x, 5→4x — todos aparecem mais de 3 vezes (pág. 114)
+        _r.TendenciasOcultas.Should().BeEquivalentTo([1, 4, 5]);
     }
 
     // ── Resposta Subconsciente ────────────────────────────────────────────────
@@ -185,5 +187,14 @@ public class CalculoMapaAndreTests
     {
         // 9 − 2 lições cármicas = 7
         _r.RespostaSubconsciente.Should().Be(7);
+    }
+
+    // ── Relação Intervalores (pág. 203) ───────────────────────────────────────
+
+    [Fact]
+    public void RelacaoIntervalores_PrimeiroNomeAndre_DeveSerSete()
+    {
+        // Primeiro nome: A(1) N(5) D(4) R(2) É(7) → max=7 → RI=7
+        _r.RelacaoIntervalores.Should().Be(7);
     }
 }

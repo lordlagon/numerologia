@@ -2,7 +2,11 @@ namespace Numerologia.Core.Calculos;
 
 public class CalculoMapa
 {
-    private static readonly HashSet<int> _numerosComDivida = [13, 14, 16, 19];
+    // Pág. 117: valor final reduzido → dívida correspondente
+    private static readonly Dictionary<int, int> _reducaoParaDivida = new()
+    {
+        { 4, 13 }, { 5, 14 }, { 7, 16 }, { 1, 19 }
+    };
 
     public ResultadoMapa Calcular(string nome)
     {
@@ -14,20 +18,23 @@ public class CalculoMapa
         var somaConsoantes = letrasEfetivas.Where(e => e.Tipo == TipoLetra.Consoante).Sum(e => e.ValorCabalistico);
         var somaTotal      = somaVogais + somaConsoantes;
 
+        var motivacao = ReducaoNumerologica.Reduzir(somaVogais);
+        var expressao = ReducaoNumerologica.Reduzir(somaTotal);
         var figuraA           = CalcularFiguraA(letrasEfetivas);
         var licoesCarmicas    = CalcularLicoes(figuraA);
         var tendenciasOcultas = CalcularTendencias(figuraA);
 
         return new ResultadoMapa(
             GradeLetras:          grade,
-            NumeroMotivacao:      ReducaoNumerologica.Reduzir(somaVogais),
+            NumeroMotivacao:      motivacao,
             NumeroImpressao:      ReducaoNumerologica.Reduzir(somaConsoantes),
-            NumeroExpressao:      ReducaoNumerologica.Reduzir(somaTotal),
-            DividasCarmicas:      DetectarDividas(somaVogais, somaConsoantes, somaTotal),
+            NumeroExpressao:      expressao,
+            DividasCarmicas:      DetectarDividas(motivacao, expressao),
             FiguraA:              figuraA,
             LicoesCarmicas:       licoesCarmicas,
             TendenciasOcultas:    tendenciasOcultas,
-            RespostaSubconsciente: 9 - licoesCarmicas.Count
+            RespostaSubconsciente: 9 - licoesCarmicas.Count,
+            RelacaoIntervalores:  CalcularRelacaoIntervalores(grade)
         );
     }
 
@@ -74,17 +81,35 @@ public class CalculoMapa
 
     private static IReadOnlyList<int> CalcularTendencias(IReadOnlyDictionary<int, int> figuraA)
     {
-        var maximo = figuraA.Values.Max();
-        if (maximo == 0) return [];
-        return figuraA.Where(kv => kv.Value == maximo).Select(kv => kv.Key).Order().ToList();
-    }
-
-    private static IReadOnlyList<int> DetectarDividas(int somaVogais, int somaConsoantes, int somaTotal)
-    {
-        return new[] { somaVogais, somaConsoantes, somaTotal }
-            .Where(s => _numerosComDivida.Contains(s))
-            .Distinct()
+        // Pág. 114: Tendência Oculta existe apenas quando um número aparece MAIS de 3 vezes (≥ 4).
+        // Se nenhum número atingir esse limiar → lista vazia.
+        return figuraA
+            .Where(kv => kv.Value >= 4)
+            .Select(kv => kv.Key)
             .Order()
             .ToList();
+    }
+
+    // Pág. 203: RI = valor máximo entre as letras do primeiro nome (nome individual).
+    // Regra: dobrar cada valor e o maior dobrado vence (equivalente a max).
+    private static int CalcularRelacaoIntervalores(IReadOnlyList<EntradaLetra> grade)
+    {
+        var primeiroNome = grade.TakeWhile(e => e.Tipo != TipoLetra.Espaco).ToList();
+        if (primeiroNome.Count == 0) return 0;
+        return primeiroNome.Max(e => e.ValorCabalistico);
+    }
+
+    // Pág. 117: Motivação e Expressão com valor final 4/5/7/1 indicam Dívidas 13/14/16/19.
+    // Dia de nascimento e Destino são verificados no GeradorMapa (requerem data).
+    private static IReadOnlyList<int> DetectarDividas(int motivacao, int expressao)
+    {
+        var dividas = new HashSet<int>();
+
+        if (_reducaoParaDivida.TryGetValue(motivacao, out var dMotivacao))
+            dividas.Add(dMotivacao);
+        if (_reducaoParaDivida.TryGetValue(expressao, out var dExpressao))
+            dividas.Add(dExpressao);
+
+        return dividas.Order().ToList();
     }
 }

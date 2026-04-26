@@ -95,6 +95,25 @@ Blue  → refatorar sem quebrar os testes
 - PR deve ter pelo menos 1 aprovação.
 - PRs pequenos: uma user story ou um bug fix por PR.
 
+### Ritual pós-merge em `main`
+
+Após qualquer merge de `staging` → `main`, e **antes de iniciar nova feature**:
+
+1. **Atualizar `staging`** com o estado de `main`:
+   ```bash
+   git checkout staging && git merge main && git push origin staging
+   ```
+2. **Apagar branches já mergeadas em `main`** (local e remoto):
+   ```bash
+   # listar candidatas
+   git branch --merged main | grep -v "main\|staging"
+   # apagar local
+   git branch -d <branch>
+   # apagar remoto
+   git push origin --delete <branch>
+   ```
+3. **Manter** qualquer branch em que ainda haja trabalho em andamento.
+
 ### Vertical Slice Rule
 
 Um PR só vai para `staging` quando estiver completo em todas as camadas:

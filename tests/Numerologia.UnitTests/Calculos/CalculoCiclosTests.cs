@@ -11,8 +11,8 @@ public class CalculoCiclosTests
     // 1º Ciclo = mês reduzido           → 6
     // 2º Ciclo = dia reduzido           → 11→2
     // 3º Ciclo = ano reduzido           → 1960→16→7
-    // Fim 1º Ciclo (idade) = 36−6 = 30
-    // Fim 2º Ciclo (idade) = 30+27 = 57
+    // Fim 1º Ciclo (idade) = 37−6 = 31
+    // Fim 2º Ciclo (idade) = 31+27 = 58
 
     [Fact]
     public void Calcular_CicloVida1_EhMesReduzido()
@@ -36,19 +36,19 @@ public class CalculoCiclosTests
     }
 
     [Fact]
-    public void Calcular_FimCiclo1_TrintaAnos()
+    public void Calcular_FimCiclo1_TrintaEUmAnos()
     {
-        // Destino=6 → 36−6=30
+        // Destino=6 → 37−6=31
         var r = _sut.Calcular(new DateOnly(1960, 6, 11), numeroExpressao: 1);
-        r.FimCiclo1Idade.Should().Be(30);
+        r.FimCiclo1Idade.Should().Be(31);
     }
 
     [Fact]
-    public void Calcular_FimCiclo2_CinquentaESetaAnos()
+    public void Calcular_FimCiclo2_CinquentaEOitoAnos()
     {
-        // 30+27=57
+        // 31+27=58
         var r = _sut.Calcular(new DateOnly(1960, 6, 11), numeroExpressao: 1);
-        r.FimCiclo2Idade.Should().Be(57);
+        r.FimCiclo2Idade.Should().Be(58);
     }
 
     [Fact]
@@ -62,8 +62,8 @@ public class CalculoCiclosTests
     [Fact]
     public void Calcular_FimCiclo1_DestinoMestre()
     {
-        // Destino=11 → 36−11=25
+        // Destino=11 → 37−11=26
         var r = _sut.Calcular(new DateOnly(1947, 6, 29), numeroExpressao: 1);
-        r.FimCiclo1Idade.Should().Be(25);
+        r.FimCiclo1Idade.Should().Be(26);
     }
 }

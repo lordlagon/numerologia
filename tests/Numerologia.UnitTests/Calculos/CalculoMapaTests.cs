@@ -140,23 +140,75 @@ public class CalculoMapaTests
         comEspaco.NumeroImpressao.Should().Be(semEspaco.NumeroImpressao);
     }
 
-    // ── Dívidas Cármicas ────────────────────────────────────────────────────
-    // Detectadas quando a soma intermediária (antes da redução final) é 13, 14, 16 ou 19
+    // ── Relação Intervalores (pág. 203) ─────────────────────────────────────
+
+    [Fact]
+    public void Calcular_Maria_RelacaoIntervalores()
+    {
+        // MARIA: M(4) A(1) R(2) I(1) A(1) → max=4 → RI=4
+        var resultado = _sut.Calcular("MARIA");
+        resultado.RelacaoIntervalores.Should().Be(4);
+    }
+
+    [Fact]
+    public void Calcular_NomeComposto_RelacaoIntervaloresUsaPrimeiroNome()
+    {
+        // "JOSE DA SILVA": primeiro nome JOSE → J(1) O(7) S(3) E(5) → max=7 → RI=7
+        // Ignora DA(4,1) e SILVA(3,1,3,6,1) que são sobrenomes
+        var resultado = _sut.Calcular("JOSE DA SILVA");
+        resultado.RelacaoIntervalores.Should().Be(7);
+    }
+
+    // ── Dívidas Cármicas (pág. 117) ─────────────────────────────────────────
+    // Regra do livro: verificar os valores FINAIS REDUZIDOS de Motivação e Expressão.
+    // Se forem 4, 5, 7 ou 1 → indicadores de Dívidas 13, 14, 16 e 19 respectivamente.
+    // Dia de nascimento e Destino são verificados no GeradorMapa (requerem data).
 
     [Fact]
     public void Calcular_SemDividaCármica_ListaVazia()
     {
-        var resultado = _sut.Calcular("MARIA"); // soma=9, sem intermediário problemático
+        // MARIA: Motivação=3, Expressão=9 — nenhum é 4/5/7/1
+        var resultado = _sut.Calcular("MARIA");
         resultado.DividasCarmicas.Should().BeEmpty();
     }
 
     [Fact]
     public void Calcular_ComDividaCármica13_Detectada()
     {
-        // Precisamos de um nome cuja soma bruta seja 13
-        // S(3) O(7) L(3) = 13 → Dívida 13 → reduz para 4
+        // SOL: S(3)+O(7)+L(3)=13 → Expressão=4 → Dívida 13
         var resultado = _sut.Calcular("SOL");
         resultado.DividasCarmicas.Should().Contain(13);
         resultado.NumeroExpressao.Should().Be(4);
+    }
+
+    // ── Tendências Ocultas ──────────────────────────────────────────────────
+    // Regra pág. 114: só há Tendência Oculta se o valor aparecer MAIS de 3 vezes (≥ 4).
+    // Se nenhum número atingir esse limiar → lista vazia (sem fallback para o máximo).
+
+    [Fact]
+    public void TendenciasOcultas_SemNumeroAcimaDe3_RetornaVazio()
+    {
+        // MARIA: M(4)×1, A(1)×3, R(2)×1, I(1)×1 → máx = 3 (valor 1), mas 3 < 4
+        // Resultado esperado: [] (nenhuma tendência oculta)
+        var resultado = _sut.Calcular("MARIA");
+        resultado.TendenciasOcultas.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void TendenciasOcultas_ComUmNumeroExatamenteCincoVezes_RetornaEsseNumero()
+    {
+        // Joaquim Cardoso (exemplo do livro): número 1 aparece 5x (J,A,Q,I,A) → Tendência = 1
+        // J(1) O(7) A(1) Q(1) U(6) I(1) M(4)  C(3) A(1) R(2) D(4) O(7) S(3) O(7)
+        // valor 1: J,A,Q,I,A = 5x → Tendência Oculta 1
+        var resultado = _sut.Calcular("JOAQUIM CARDOSO");
+        resultado.TendenciasOcultas.Should().Contain(1);
+    }
+
+    [Fact]
+    public void TendenciasOcultas_ComMultiplosNumerosAcimaDe3_RetornaTodos()
+    {
+        // André Luiz Xavier de Macedo: 1→5x, 4→4x, 5→4x → todos ≥ 4
+        var resultado = _sut.Calcular("André Luiz Xavier de Macedo");
+        resultado.TendenciasOcultas.Should().BeEquivalentTo([1, 4, 5]);
     }
 }

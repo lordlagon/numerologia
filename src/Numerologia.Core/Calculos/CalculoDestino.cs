@@ -15,9 +15,14 @@ public class CalculoDestino
         var diaReduzido = ReducaoNumerologica.Reduzir(SomarDigitos(dia));
         var anoReduzido = ReducaoNumerologica.Reduzir(SomarDigitos(ano));
 
-        var fimCiclo1 = 36 - destino;
-        var desafio1  = Math.Abs(mesReduzido - diaReduzido);
-        var desafio2  = Math.Abs(anoReduzido - diaReduzido);
+        var fimCiclo1 = 37 - destino;
+
+        // Fig. H — Desafios: 11 e 22 são reduzidos a 2 e 4 respectivamente
+        var diaParaDesafio = ReducirMestre(diaReduzido);
+        var mesParaDesafio = ReducirMestre(mesReduzido);
+        var anoParaDesafio = ReducirMestre(anoReduzido);
+        var desafio1 = Math.Abs(mesParaDesafio - diaParaDesafio);
+        var desafio2 = Math.Abs(anoParaDesafio - diaParaDesafio);
 
         var md1 = ReducaoNumerologica.Reduzir(diaReduzido + mesReduzido);
         var md2 = ReducaoNumerologica.Reduzir(diaReduzido + anoReduzido);
@@ -61,4 +66,7 @@ public class CalculoDestino
         }
         return soma;
     }
+
+    // Para Fig. H: reduz números mestres (11→2, 22→4) — os ciclos preservam, os desafios não.
+    private static int ReducirMestre(int n) => n switch { 11 => 2, 22 => 4, _ => n };
 }
