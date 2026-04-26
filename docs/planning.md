@@ -235,6 +235,56 @@ Numeróloga (usuária autenticada via Google OAuth)
 
 ---
 
+### Fase 5 — Perfil, Administração e LGPD
+> Objetivo: página de perfil da numeróloga, painel administrativo e conformidade com a LGPD.
+> **Prioridade:** executada antes da Fase 4 (Pirâmides), que aguarda material de referência do cliente.
+
+- [ ] **F5.1** — Perfil da Numeróloga
+  - **Campos novos em `Usuario`:** `NomeExibicao` (varchar 256, nullable — sobrescreve nome do Google se preenchido), `UrlAvatar` (varchar 512, nullable — sincronizado do Google no login)
+  - **Migration:** `AddPerfilCampos`
+  - **Backend:**
+    - `GET /api/perfil` → retorna `{ nomeExibicao, urlAvatar }`
+    - `PUT /api/perfil` → atualiza `NomeExibicao`
+    - No login OAuth, sincronizar claim `picture` → `UrlAvatar` automaticamente
+    - PDF: capa usa `NomeExibicao` (com fallback para `Usuario.Nome`)
+  - **Frontend:**
+    - Página `/perfil` com avatar do Google, campo de nome editável e botão Salvar
+    - Avatar exibido no `UserMenu` da barra superior
+  - **Testes:** unit (entidade), integração (GET + PUT /api/perfil), bUnit (componente Perfil)
+
+- [ ] **F5.2** — Área de Administração
+  - Acesso restrito por policy `Admin` (email configurado via env var `ADMIN_EMAIL`)
+  - **Backend:**
+    - `GET /api/admin/stats` → total de numerólogos, consulentes, mapas, mapas nos últimos 30 dias
+    - `GET /api/admin/health` → status do banco, versão da app, uptime
+    - Endpoints retornam 403 para qualquer usuário não-admin
+  - **Frontend:**
+    - Rota `/admin` com layout dedicado (sem acesso via menu de numeróloga)
+    - Dashboard com cards: total de numerólogos, consulentes, mapas, crescimento mensal
+    - Tabela de numerólogos cadastrados (sem dados sensíveis — só nome e data de cadastro)
+    - Indicadores de saúde do banco e da aplicação
+  - **Testes:** integração (403 para não-admin, 200 para admin, dados corretos)
+
+- [ ] **F5.3** — LGPD e Privacidade
+  - **Documentos legais:**
+    - Página `/privacidade` — Política de Privacidade
+    - Página `/termos` — Termos de Uso
+    - Link no footer em todas as páginas
+    - Exibidos no fluxo de primeiro acesso (antes de usar o sistema)
+  - **Consentimento LGPD:**
+    - Campos `ConsentimentoAceito` (bool) e `DataConsentimento` (DateTime?) em `Usuario`
+    - Migration `AddConsentimentoLgpd`
+    - Primeiro login redireciona para tela de aceite dos Termos + Política
+    - Sem aceite, acesso bloqueado (middleware de redirecionamento)
+  - **Criptografia de dados sensíveis (AES-256 via ASP.NET Core Data Protection):**
+    - Campos criptografados: `Consulente.Email`, `Consulente.Telefone`, `Usuario.Email`
+    - Implementação via **EF Core Value Converters** — transparente para o resto da aplicação
+    - Chave de criptografia provisionada via env var / Railway secret (nunca no banco)
+    - Migration `AddCriptografiaConsulente` (colunas permanecem varchar — dados em base64 cifrado)
+  - **Testes:** unit (criptografia/descriptografia), integração (email não aparece em texto claro no banco)
+
+---
+
 ### Fase 4 — Pirâmides da Vida
 > Objetivo: gerar as piramides da vida.
 
