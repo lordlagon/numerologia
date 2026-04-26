@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Numerologia.Web.Services;
+using Numerologia.Core.Services;
 
 namespace Numerologia.UnitTests.Services;
 
