@@ -135,11 +135,8 @@ else if (_mapa is not null)
                 <!-- Fig. D — Resp. Subconsciente -->
                 <MudItem xs="6" sm="4">
                     <MudCard Elevation="2"><MudCardContent Class="pa-2">
-                        <MudText Typo="Typo.subtitle2" Align="Align.Center">Fig. D</MudText>
+                        <MudText Typo="Typo.subtitle2" Align="Align.Center">Fig. D — Resp. Subconsciente</MudText>
                         <div class="d-flex flex-wrap gap-1 mt-1 justify-center">
-                            <MudText Typo="Typo.caption">Resp. Subconsciente</MudText>
-                        </div>
-                        <div class="d-flex justify-center mt-1">
                             <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@_mapa.RespostaSubconsciente</MudChip>
                         </div>
                     </MudCardContent></MudCard>
@@ -149,11 +146,18 @@ else if (_mapa is not null)
                 <MudItem xs="6" sm="4">
                     <MudCard Elevation="2"><MudCardContent Class="pa-2">
                         <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Data Natal</MudText>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;font-size:0.78rem">
-                            <div>Dia</div><div class="fw-bold" data-testid="data-dia">@_mapa.DataNascimento.Day</div>
-                            <div>Mês</div><div class="fw-bold" data-testid="data-mes">@_mapa.DataNascimento.Month</div>
-                            <div>Ano</div><div class="fw-bold" data-testid="data-ano">@_mapa.DataNascimento.Year</div>
-                        </div>
+                        @foreach (var (label, valor, testId) in new[]
+                        {
+                            ("Dia", _mapa.DataNascimento.Day.ToString(),   "data-dia"),
+                            ("Mês", _mapa.DataNascimento.Month.ToString(), "data-mes"),
+                            ("Ano", _mapa.DataNascimento.Year.ToString(),  "data-ano"),
+                        })
+                        {
+                            <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #eee;font-size:0.78rem;align-items:center">
+                                <div style="background:#f3e5f5;font-weight:bold;text-align:center;padding:2px 4px">@label</div>
+                                <div style="text-align:center;padding:2px 4px" data-testid="@testId">@valor</div>
+                            </div>
+                        }
                     </MudCardContent></MudCard>
                 </MudItem>
 
