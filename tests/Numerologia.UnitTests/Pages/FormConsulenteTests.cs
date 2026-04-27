@@ -1,6 +1,8 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using NSubstitute;
 using Numerologia.Web.Pages.Consulentes;
 using Numerologia.Web.Services;
@@ -13,6 +15,8 @@ public class FormConsulenteTests : TestContext
 
     public FormConsulenteTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
         _serviceMock = Substitute.For<IConsulentesService>();
         Services.AddSingleton(_serviceMock);
     }
@@ -34,7 +38,7 @@ public class FormConsulenteTests : TestContext
 
         var cut = RenderComponent<FormConsulente>();
 
-        cut.Find("[data-testid='nome']").Change("Ana Teste");
+        cut.Find("[data-testid='nome']").Input("Ana Teste");
         await cut.Find("form").SubmitAsync();
 
         await _serviceMock.Received(1).CriarAsync(Arg.Is<SalvarConsulenteDto>(
@@ -79,7 +83,7 @@ public class FormConsulenteTests : TestContext
         cut.WaitForAssertion(() => cut.Find("[data-testid='nome']")
             .GetAttribute("value").Should().Be("Carlos Original"));
 
-        cut.Find("[data-testid='nome']").Change("Carlos Atualizado");
+        cut.Find("[data-testid='nome']").Input("Carlos Atualizado");
         await cut.Find("form").SubmitAsync();
 
         await _serviceMock.Received(1).AtualizarAsync(5, Arg.Is<SalvarConsulenteDto>(

@@ -4,54 +4,53 @@
 
 <PageTitle>Perfil</PageTitle>
 
-<div class="container" style="max-width: 480px;">
-    <h1 class="h3 mb-4">Perfil</h1>
+<MudText Typo="Typo.h5" Class="mb-4">Perfil</MudText>
 
-    @if (_carregando)
-    {
-        <p>Carregando...</p>
-    }
-    else
-    {
-        <div class="mb-3">
-            <label class="form-label fw-semibold">E-mail</label>
-            <p class="form-control-plaintext">@_perfil!.Email</p>
-        </div>
+@if (_carregando)
+{
+    <MudProgressLinear Indeterminate="true" />
+    <MudText>Carregando...</MudText>
+}
+else
+{
+    <MudPaper Elevation="2" Class="pa-4" Style="max-width:480px">
+        <MudTextField Value="@_perfil!.Email"
+                      Label="E-mail"
+                      ReadOnly="true"
+                      Class="mb-3" />
 
-        <div class="mb-3">
-            <label class="form-label fw-semibold">Nome (Google)</label>
-            <p class="form-control-plaintext">@_perfil.Nome</p>
-        </div>
+        <MudTextField Value="@_perfil.Nome"
+                      Label="Nome (Google)"
+                      ReadOnly="true"
+                      Class="mb-3" />
 
         <form @onsubmit="SalvarAsync" @onsubmit:preventDefault>
-            <div class="mb-3">
-                <label for="nomeExibicao" class="form-label">Nome de Exibição</label>
-                <input id="nomeExibicao"
-                       data-testid="nomeExibicao"
-                       class="form-control"
-                       @bind="_nomeExibicao"
-                       placeholder="Nome para a capa do PDF (opcional)" />
-                <div class="form-text text-muted">
-                    Usado na capa do PDF. Se vazio, será usado o nome do Google.
-                </div>
-            </div>
+            <MudTextField @bind-Value="_nomeExibicao"
+                          Label="Nome de Exibição"
+                          HelperText="Usado na capa do PDF. Se vazio, será usado o nome do Google."
+                          Placeholder="Nome para a capa do PDF (opcional)"
+                          Class="mb-3"
+                          data-testid="nomeExibicao" />
 
             @if (!string.IsNullOrEmpty(_erro))
             {
-                <div class="alert alert-danger" role="alert">@_erro</div>
+                <MudAlert Severity="Severity.Error" Class="mb-3">@_erro</MudAlert>
             }
 
             @if (_salvoComSucesso)
             {
-                <div class="alert alert-success" role="alert">Perfil atualizado com sucesso.</div>
+                <MudAlert Severity="Severity.Success" Class="mb-3">Perfil atualizado com sucesso.</MudAlert>
             }
 
-            <button type="submit" class="btn btn-primary" disabled="@_salvando">
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Disabled="_salvando">
                 @(_salvando ? "Salvando..." : "Salvar")
-            </button>
+            </MudButton>
         </form>
-    }
-</div>
+    </MudPaper>
+}
 
 @code {
     private PerfilDto? _perfil;

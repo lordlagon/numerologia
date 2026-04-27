@@ -2,6 +2,8 @@ using Bunit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using NSubstitute;
 using Numerologia.Web.Pages.Mapas;
 using Numerologia.Web.Services;
@@ -21,6 +23,8 @@ public class FormMapaTests : TestContext
 
     public FormMapaTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
         Services.AddSingleton(_mapasService);
         Services.AddSingleton(_consulentesService);
         _nav = Services.GetRequiredService<NavigationManager>();
@@ -96,7 +100,7 @@ public class FormMapaTests : TestContext
         var cut = RenderComponent<FormMapa>(p => p.Add(c => c.ConsulenteId, 1));
 
         cut.WaitForState(() => !cut.Markup.Contains("Carregando"));
-        cut.Find("[data-testid='nome-utilizado']").Change("JOSE");
+        cut.Find("[data-testid='nome-utilizado']").Input("JOSE");
         await cut.Find("form").SubmitAsync();
 
         await _mapasService.Received(1).CriarAsync(1, "JOSE", Arg.Any<DateOnly>());
@@ -111,7 +115,7 @@ public class FormMapaTests : TestContext
         var cut = RenderComponent<FormMapa>(p => p.Add(c => c.ConsulenteId, 1));
 
         cut.WaitForState(() => !cut.Markup.Contains("Carregando"));
-        cut.Find("[data-testid='nome-utilizado']").Change("JOSE");
+        cut.Find("[data-testid='nome-utilizado']").Input("JOSE");
         await cut.Find("form").SubmitAsync();
 
         _nav.Uri.Should().Contain("/consulentes/1/mapas");

@@ -5,74 +5,85 @@
 
 <PageTitle>Consulentes</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Consulentes</h1>
-    <a href="/consulentes/novo" class="btn btn-primary">+ Novo Consulente</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <MudText Typo="Typo.h5">Consulentes</MudText>
+    <MudButton Href="/consulentes/novo"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">
+        Novo Consulente
+    </MudButton>
 </div>
 
 @if (_carregando)
 {
-    <p>Carregando...</p>
+    <MudProgressLinear Indeterminate="true" Class="mb-2" />
+    <MudText>Carregando...</MudText>
 }
 else
 {
-    <div class="mb-3">
-        <input type="search"
-               class="form-control"
-               placeholder="Buscar por nome..."
-               data-testid="busca-nome"
-               @bind="_busca"
-               @bind:event="oninput" />
-    </div>
+    <MudTextField @bind-Value="_busca"
+                  Placeholder="Buscar por nome..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Immediate="true"
+                  Class="mb-4"
+                  data-testid="busca-nome" />
 
     @if (_consultentsFiltrados.Count == 0 && _consulentes.Count > 0)
     {
-        <p class="text-muted">Nenhum consulente encontrado para "@_busca".</p>
+        <MudText Color="Color.Secondary">Nenhum consulente encontrado para "@_busca".</MudText>
     }
     else if (_consulentes.Count == 0)
     {
-        <p>Nenhum consulente cadastrado ainda.</p>
+        <MudText>Nenhum consulente cadastrado ainda.</MudText>
     }
     else
     {
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Data de Nascimento</th>
-                    <th>Email</th>
-                    <th>Telefone</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var c in _consultentsFiltrados)
-                {
-                    <tr>
-                        <td>@c.NomeCompleto</td>
-                        <td>@c.DataNascimento.ToString("dd/MM/yyyy")</td>
-                        <td>@(c.Email ?? "—")</td>
-                        <td>@(c.Telefone ?? "—")</td>
-                        <td class="text-end">
-                            <a href="/consulentes/@c.Id/mapas" class="btn btn-sm btn-outline-secondary me-1" aria-label="Mapas" title="Mapas">
-                                <i class="bi bi-file-text"></i>
-                                Mapas
-                            </a>
-                            <a href="/consulentes/@c.Id/editar" class="btn btn-sm btn-outline-primary me-1">Editar</a>
-                            <button class="btn btn-sm btn-outline-danger"
-                                    data-testid="excluir-@c.Id"
-                                    @onclick="() => Excluir(c.Id)">Excluir</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <MudTable Items="@_consultentsFiltrados" Hover="true" Elevation="2" Dense="true">
+            <HeaderContent>
+                <MudTh>Nome</MudTh>
+                <MudTh>Nascimento</MudTh>
+                <MudTh>Email</MudTh>
+                <MudTh>Telefone</MudTh>
+                <MudTh Style="text-align:right"></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nome">@context.NomeCompleto</MudTd>
+                <MudTd DataLabel="Nascimento">@context.DataNascimento.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd DataLabel="Email">@(context.Email ?? "—")</MudTd>
+                <MudTd DataLabel="Telefone">@(context.Telefone ?? "—")</MudTd>
+                <MudTd Style="text-align:right">
+                    <MudIconButton Icon="@Icons.Material.Filled.Description"
+                                   Href="@($"/consulentes/{context.Id}/mapas")"
+                                   aria-label="Mapas"
+                                   title="Mapas"
+                                   Color="Color.Default"
+                                   Size="Size.Small" />
+                    <MudButton Href="@($"/consulentes/{context.Id}/editar")"
+                               Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Class="ml-1">Editar</MudButton>
+                    @{var cId = context.Id;}
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               Class="ml-1"
+                               OnClick="@(async () => await Excluir(cId))"
+                               data-testid="@($"excluir-{context.Id}")">Excluir</MudButton>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Class="pa-4">Nenhum consulente encontrado.</MudText>
+            </NoRecordsContent>
+        </MudTable>
     }
 }
 
 @if (_erro is not null)
 {
-    <div class="alert alert-danger mt-3">@_erro</div>
+    <MudAlert Severity="Severity.Error" Class="mt-3">@_erro</MudAlert>
 }
 
 @code {
