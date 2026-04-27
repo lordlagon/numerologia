@@ -256,14 +256,19 @@ Numeróloga (usuária autenticada via Google OAuth)
 ### Fase 5 — Perfil da Numeróloga
 > Objetivo: numeróloga edita seu nome de exibição (usado na capa do PDF).
 
-- [ ] **F5.1** — Tela de Perfil
-  - Adicionar campo `NomeExibicao` (nullable) na entidade `Usuario` + migration
-  - Adicionar `AtualizarAsync` em `IUsuarioRepository` / `UsuarioRepository`
+- [x] **F5.1** — Tela de Perfil ✅
+  - Campo `NomeExibicao` (nullable) em `Usuario` + migration
+  - `AtualizarAsync` em `IUsuarioRepository` / `UsuarioRepository`
   - Endpoints: `GET /api/perfil` e `PUT /api/perfil`
   - `IPerfilService` + `PerfilService` no projeto Web
   - `Perfil.razor` em `/perfil` — email somente leitura, campo editável `NomeExibicao`
   - Testes: unit (`Usuario`), integração (endpoints), bUnit (`Perfil.razor`)
-  - **Motivação:** `NomeExibicao` é separado de `Nome` (que vem do Google OAuth); será usado na capa do PDF
+
+- [ ] **F5.2** — Usar NomeExibicao no menu e no PDF
+  - `/auth/me` passa a retornar `NomeExibicao` (além de `Email` e `Nome`)
+  - `UsuarioInfo` recebe campo `NomeExibicao` (nullable)
+  - `UserMenu` exibe `NomeExibicao ?? Nome` no botão do dropdown
+  - Endpoint PDF usa `usuario.NomeExibicao ?? usuario.Nome` na capa
 
 ---
 

@@ -239,7 +239,7 @@ app.MapGet("/auth/me", async (HttpContext context, UsuarioService usuarioService
 
     var usuario = await usuarioService.ObterOuCriarAsync(googleId, email ?? "", nome ?? "");
 
-    return Results.Ok(new { usuario.Email, usuario.Nome });
+    return Results.Ok(new { usuario.Email, usuario.Nome, usuario.NomeExibicao });
 }).RequireAuthorization();
 
 app.MapPost("/auth/logout", async (HttpContext context) =>
@@ -416,7 +416,7 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/pdf",
         var consulente = await consRepo.ObterPorIdAsync(consulenteId, usuario.Id);
         if (consulente is null) return Results.NotFound();
 
-        var bytes = GeradorPdf.Gerar(mapa, consulente.NomeCompleto, usuario.Nome);
+        var bytes = GeradorPdf.Gerar(mapa, consulente.NomeCompleto, usuario.NomeExibicao ?? usuario.Nome);
         var nomeArquivo = $"mapa-{consulente.NomeCompleto.Replace(" ", "-").ToLower()}.pdf";
         return Results.File(bytes, "application/pdf", nomeArquivo);
     }).RequireAuthorization();
