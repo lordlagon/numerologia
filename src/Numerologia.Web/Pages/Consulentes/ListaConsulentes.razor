@@ -5,7 +5,7 @@
 
 <PageTitle>Consulentes</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-space-between align-center mb-4">
     <MudText Typo="Typo.h5">Consulentes</MudText>
     <MudButton Href="/consulentes/novo"
                Variant="Variant.Filled"
@@ -54,7 +54,7 @@ else
                 <MudTd DataLabel="Email">@(context.Email ?? "—")</MudTd>
                 <MudTd DataLabel="Telefone">@(context.Telefone ?? "—")</MudTd>
                 <MudTd Style="text-align:right">
-                    <MudIconButton Icon="@Icons.Material.Filled.Description"
+                    <MudIconButton Icon="@Icons.Material.Filled.Map"
                                    Href="@($"/consulentes/{context.Id}/mapas")"
                                    aria-label="Mapas"
                                    title="Mapas"
