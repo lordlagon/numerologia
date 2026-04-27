@@ -1,0 +1,155 @@
+@page "/grafico-framework"
+@rendermode InteractiveServer
+
+<PageTitle>Gráfico — Blazor Bootstrap Components</PageTitle>
+
+@{
+    var mapa    = MockDataService.MapaAndre;
+    var pessoal = MockDataService.PessoalAndre();
+    var anoNasc      = mapa.DataNascimento.Year;
+    var anoFimCiclo1 = anoNasc + mapa.FimCiclo1Idade;
+    var anoFimCiclo2 = anoNasc + mapa.FimCiclo2Idade;
+    var anoFimMD1    = anoFimCiclo1;
+    var anoFimMD2    = anoFimMD1 + 9;
+    var anoFimMD3    = anoFimMD2 + 9;
+}
+
+<div class="alert alert-warning py-1 mb-3">
+    Grade de letras com <strong>Bootstrap Cards por célula via CSS Grid</strong>.
+    Observe o alinhamento entre as linhas vs. a versão HTML puro.
+</div>
+
+<h5 class="text-center fw-bold mb-1">GRÁFICO NUMEROLÓGICO</h5>
+<p class="text-center text-muted mb-4">@mapa.NomeUtilizado — @mapa.DataNascimento.ToString("dd/MM/yyyy")</p>
+
+<!-- GRADE DE LETRAS — versão Blazor Bootstrap: CSS Grid com Bootstrap cards por célula -->
+<div class="card mb-3">
+    <div class="card-body p-2 overflow-auto">
+        @{
+            var nCols = mapa.GradeLetras.Length;
+            var gridStyle = $"display:grid;grid-template-columns:auto repeat({nCols},22px) auto auto;gap:1px;font-size:0.75rem";
+        }
+        <div style="@gridStyle">
+            @foreach (var (rotulo, getLinha, labelDir, valorDir) in new (string, Func<Numerologia.Core.Calculos.EntradaLetra, string>, string, string)[]
+            {
+                ("Vogais",    e => e.Tipo == TipoLetra.Vogal     ? e.ValorCabalistico.ToString() : "",
+                 "Nº Motivação", $"{mapa.SomaMotivacao} ⇒ {mapa.NumeroMotivacao}"),
+                ("Nome",      e => e.Tipo != TipoLetra.Espaco    ? e.Letra.ToString()            : "",
+                 "", ""),
+                ("Consoante", e => e.Tipo == TipoLetra.Consoante ? e.ValorCabalistico.ToString() : "",
+                 "Nº Impressão", $"{mapa.SomaImpressao} ⇒ {mapa.NumeroImpressao}"),
+                ("TOTAL",     e => e.Tipo != TipoLetra.Espaco    ? e.ValorCabalistico.ToString() : "",
+                 "Nº Expressão", $"{mapa.SomaExpressao} ⇒ {mapa.NumeroExpressao}"),
+            })
+            {
+                <div style="padding:2px 6px;background:#d1e7dd;font-weight:bold;white-space:nowrap;display:flex;align-items:center;border:1px solid #a3cfbb">
+                    @rotulo
+                </div>
+                @foreach (var e in mapa.GradeLetras)
+                {
+                    var bg = e.Tipo == TipoLetra.Espaco ? "#a3cfbb" : "white";
+                    <div style="@($"background:{bg};display:flex;align-items:center;justify-content:center;min-height:24px;border:1px solid #dee2e6")">
+                        @getLinha(e)
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(labelDir))
+                {
+                    <div style="padding:2px 6px;background:#d1e7dd;font-size:0.72rem;white-space:nowrap;display:flex;align-items:center;border:1px solid #a3cfbb">
+                        @labelDir
+                    </div>
+                    <div style="padding:2px 6px;font-weight:bold;background:#d1e7dd;white-space:nowrap;display:flex;align-items:center;border:1px solid #a3cfbb">
+                        @valorDir
+                    </div>
+                }
+                else
+                {
+                    <div style="grid-column:span 2"></div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Figuras -->
+<div class="row g-3">
+    <div class="col-auto">
+        <div class="card"><div class="card-body p-2">
+            <div class="text-center fw-bold mb-1">Fig. "A"</div>
+            @foreach (var kv in mapa.FiguraA.OrderBy(x => x.Key))
+            {
+                <div class="d-flex justify-content-between border-bottom px-1" style="font-size:0.78rem">
+                    <strong>@kv.Key</strong><span>@kv.Value</span>
+                </div>
+            }
+        </div></div>
+    </div>
+
+    <div class="col">
+        <div class="row g-2">
+            <div class="col-12">
+                <div class="card"><div class="card-body p-2">
+                    <div class="fw-bold text-center mb-1">Fig. E</div>
+                    <div class="d-flex flex-wrap gap-3 align-items-center">
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Dívidas Cármicas</div>
+                            @foreach (var n in mapa.DividasCarmicas)
+                            { <Badge Color="BadgeColor.Danger">@n</Badge> }
+                            @if (!mapa.DividasCarmicas.Any()) { <span class="text-muted">—</span> }
+                        </div>
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Nº Destino</div>
+                            <strong style="font-size:1.3rem;color:#198754">@mapa.NumeroDestino</strong>
+                        </div>
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Missão</div>
+                            <strong style="font-size:1.3rem;color:#198754">@mapa.Missao</strong>
+                        </div>
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Ano Pessoal</div>
+                            <strong style="font-size:1.3rem;color:#198754">@pessoal.AnoPessoal</strong>
+                        </div>
+                    </div>
+                </div></div>
+            </div>
+            <div class="col-12">
+                <div class="card"><div class="card-body p-2">
+                    <div style="font-size:0.82rem;font-weight:bold;margin-bottom:4px">Dias do Mês Favoráveis</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        @foreach (var n in mapa.DiasMesFavoraveis)
+                        { <Badge Color="BadgeColor.Success">@n</Badge> }
+                    </div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-auto">
+        <div class="d-flex flex-column gap-2">
+            <div class="card"><div class="card-body p-2">
+                <div class="fw-bold text-center mb-1">Fig. F — Ciclos de Vida</div>
+                @foreach (var (ciclo, valor, de, ate) in new[]
+                {
+                    ("1º", mapa.CicloVida1, anoNasc, anoFimCiclo1),
+                    ("2º", mapa.CicloVida2, anoFimCiclo1, anoFimCiclo2),
+                    ("3º", mapa.CicloVida3, anoFimCiclo2, 0),
+                })
+                {
+                    <div class="d-flex justify-content-between align-items-center border-bottom px-1" style="font-size:0.75rem">
+                        <span>@ciclo</span>
+                        <Badge Color="BadgeColor.Success">@valor</Badge>
+                        <span class="text-muted">@(ate > 0 ? $"{de}–{ate}" : $"{de}→")</span>
+                    </div>
+                }
+            </div></div>
+            <div class="card"><div class="card-body p-2">
+                <div class="fw-bold text-center mb-1">Harmonia Conjugal</div>
+                <div style="font-size:0.75rem">
+                    <div><strong>Vibra com:</strong> @mapa.HarmoniaVibraCom</div>
+                    <div><strong>Atrai:</strong> @string.Join(", ", mapa.HarmoniaAtrai)</div>
+                    <div><strong>É oposto a:</strong> @string.Join(", ", mapa.HarmoniaEOpostoA)</div>
+                    <div><strong>É passivo:</strong> @string.Join(", ", mapa.HarmoniaEPassivoEm)</div>
+                </div>
+            </div></div>
+        </div>
+    </div>
+</div>

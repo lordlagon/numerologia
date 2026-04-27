@@ -1,0 +1,49 @@
+@page "/consulentes"
+@rendermode InteractiveServer
+
+<PageTitle>Consulentes — MudBlazor POC</PageTitle>
+
+<MudText Typo="Typo.h5" Class="mb-4">Consulentes</MudText>
+
+<MudTextField @bind-Value="_busca" Placeholder="Buscar por nome..." Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="mb-4" />
+
+<MudTable Items="@Filtrados" Hover="true" Striped="true" Elevation="2" Dense="true">
+    <HeaderContent>
+        <MudTh>Nome</MudTh>
+        <MudTh>Data de Nascimento</MudTh>
+        <MudTh Style="text-align:center">Mapas</MudTh>
+        <MudTh>Ações</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Nome">@context.Nome</MudTd>
+        <MudTd DataLabel="Data de Nascimento">@context.DataNascimento.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="Mapas" Style="text-align:center">
+            <MudChip T="string" Size="Size.Small"
+                     Color="@(context.TotalMapas > 0 ? Color.Primary : Color.Default)">
+                @context.TotalMapas
+            </MudChip>
+        </MudTd>
+        <MudTd>
+            @if (context.Id == 1)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                           Href="/grafico-html" StartIcon="@Icons.Material.Filled.TableChart">
+                    Ver Mapa
+                </MudButton>
+            }
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="pa-4">Nenhum consulente encontrado.</MudText>
+    </NoRecordsContent>
+</MudTable>
+
+@code {
+    private string _busca = "";
+
+    private IEnumerable<(int Id, string Nome, DateOnly DataNascimento, int TotalMapas)> Filtrados =>
+        MockDataService.Consulentes
+            .Where(c => string.IsNullOrWhiteSpace(_busca) ||
+                        c.Nome.Contains(_busca, StringComparison.OrdinalIgnoreCase));
+}

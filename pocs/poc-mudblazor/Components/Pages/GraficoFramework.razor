@@ -1,0 +1,228 @@
+@page "/grafico-framework"
+@rendermode InteractiveServer
+
+<PageTitle>Gráfico — MudBlazor Components</PageTitle>
+
+@{
+    var mapa    = MockDataService.MapaAndre;
+    var pessoal = MockDataService.PessoalAndre();
+    var anoNasc      = mapa.DataNascimento.Year;
+    var anoFimCiclo1 = anoNasc + mapa.FimCiclo1Idade;
+    var anoFimCiclo2 = anoNasc + mapa.FimCiclo2Idade;
+    var anoFimMD1    = anoFimCiclo1;
+    var anoFimMD2    = anoFimMD1 + 9;
+    var anoFimMD3    = anoFimMD2 + 9;
+}
+
+<MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3" Icon="@Icons.Material.Filled.GridView">
+    Grade de letras com <strong>componentes MudBlazor</strong> (MudPaper por célula via CSS flex).
+    Observe o alinhamento entre as linhas vs. a versão HTML puro.
+</MudAlert>
+
+<MudText Typo="Typo.h5" Align="Align.Center" Class="mb-1 fw-bold">GRÁFICO NUMEROLÓGICO</MudText>
+<MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary" Class="mb-4">
+    @mapa.NomeUtilizado — @mapa.DataNascimento.ToString("dd/MM/yyyy")
+</MudText>
+
+<!-- GRADE DE LETRAS — versão MudBlazor (flex + MudPaper por célula) -->
+<MudPaper Elevation="2" Class="mb-3 pa-2 overflow-auto">
+    <div style="display:flex;flex-direction:column;gap:2px;font-size:0.78rem">
+
+        @foreach (var (rotulo, tipo, labelDir, valorDir) in new[]
+        {
+            ("Vogais",    TipoLetra.Vogal,      "Nº Motivação",  $"{mapa.SomaMotivacao} ⇒ {mapa.NumeroMotivacao}"),
+            ("Nome",      TipoLetra.Espaco,      "",              ""),
+            ("Consoante", TipoLetra.Consoante,  "Nº Impressão",  $"{mapa.SomaImpressao} ⇒ {mapa.NumeroImpressao}"),
+            ("TOTAL",     (TipoLetra)(-1),       "Nº Expressão",  $"{mapa.SomaExpressao} ⇒ {mapa.NumeroExpressao}"),
+        })
+        {
+            <div style="display:flex;align-items:stretch;gap:2px">
+                <!-- Rótulo fixo -->
+                <MudPaper Elevation="0" Style="width:70px;flex-shrink:0;padding:2px 6px;background:#f3e5f5;font-weight:bold;font-size:0.75rem;text-align:right;white-space:nowrap;display:flex;align-items:center;justify-content:flex-end">
+                    @rotulo
+                </MudPaper>
+
+                <!-- Células da grade — flex:1 para preencher todo o espaço -->
+                <div style="flex:1;display:flex;gap:2px">
+                    @foreach (var e in mapa.GradeLetras)
+                    {
+                        var valor = rotulo == "Vogais"    ? (e.Tipo == TipoLetra.Vogal      ? e.ValorCabalistico.ToString() : "")
+                                  : rotulo == "Nome"      ? (e.Tipo != TipoLetra.Espaco     ? e.Letra.ToString()             : "")
+                                  : rotulo == "Consoante" ? (e.Tipo == TipoLetra.Consoante  ? e.ValorCabalistico.ToString() : "")
+                                  :                         (e.Tipo != TipoLetra.Espaco     ? e.ValorCabalistico.ToString() : "");
+                        var bgColor = e.Tipo == TipoLetra.Espaco ? "#ede7f6" : "white";
+                        <MudPaper Elevation="1"
+                                  Style="@($"flex:1;min-width:0;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.82rem;background:{bgColor}")">
+                            @valor
+                        </MudPaper>
+                    }
+                </div>
+
+                <!-- Rótulo direito + resultado -->
+                @if (!string.IsNullOrEmpty(labelDir))
+                {
+                    <MudPaper Elevation="0" Style="width:110px;flex-shrink:0;padding:2px 6px;background:#f3e5f5;font-size:0.72rem;white-space:nowrap;display:flex;align-items:center;margin-left:4px">
+                        @labelDir
+                    </MudPaper>
+                    <MudPaper Elevation="0" Style="width:80px;flex-shrink:0;padding:2px 6px;font-weight:bold;font-size:0.72rem;white-space:nowrap;background:#f3e5f5;display:flex;align-items:center">
+                        @valorDir
+                    </MudPaper>
+                }
+                else
+                {
+                    <div style="width:194px;flex-shrink:0"></div>
+                }
+            </div>
+        }
+    </div>
+</MudPaper>
+
+<!-- Figuras — igual à versão HTML puro, usando MudCard -->
+<MudGrid Spacing="2">
+
+    <MudItem xs="12" sm="2">
+        <MudCard Elevation="2"><MudCardContent Class="pa-2">
+            <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Fig. "A"</MudText>
+            @foreach (var kv in mapa.FiguraA.OrderBy(x => x.Key))
+            {
+                <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #eee;font-size:0.78rem;align-items:center">
+                    <div style="background:#f3e5f5;font-weight:bold;text-align:center;padding:2px 4px">@kv.Key</div>
+                    <div style="text-align:center;padding:2px 4px">@kv.Value</div>
+                </div>
+            }
+        </MudCardContent></MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="7">
+        <MudGrid Spacing="2">
+
+            <MudItem xs="6" sm="4">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center">Fig. B — Lições Cármicas</MudText>
+                    <div class="d-flex flex-wrap gap-1 mt-1 justify-center">
+                        @foreach (var n in mapa.LicoesCarmicas)
+                        { <MudChip T="string" Color="Color.Warning" Size="Size.Small">@n</MudChip> }
+                        @if (!mapa.LicoesCarmicas.Any()) { <MudText Typo="Typo.body2">—</MudText> }
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <MudItem xs="6" sm="4">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center">Fig. C — Tendências</MudText>
+                    <div class="d-flex flex-wrap gap-1 mt-1 justify-center">
+                        @foreach (var n in mapa.TendenciasOcultas)
+                        { <MudChip T="string" Color="Color.Info" Size="Size.Small">@n</MudChip> }
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <MudItem xs="6" sm="4">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center">Fig. D</MudText>
+                    <div class="d-flex justify-center mt-1">
+                        <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@mapa.RespostaSubconsciente</MudChip>
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Fig. E</MudText>
+                    <div class="d-flex flex-wrap gap-3 align-center">
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Dívidas Cármicas</MudText>
+                            <div class="d-flex gap-1 justify-center">
+                                @foreach (var n in mapa.DividasCarmicas)
+                                { <MudChip T="string" Color="Color.Error" Size="Size.Small">@n</MudChip> }
+                                @if (!mapa.DividasCarmicas.Any()) { <MudText Typo="Typo.body2">—</MudText> }
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Nº de Destino</MudText>
+                            <MudChip T="string" Color="Color.Primary" Size="Size.Small">@mapa.NumeroDestino</MudChip>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Missão</MudText>
+                            <MudChip T="string" Color="Color.Primary" Size="Size.Small">@mapa.Missao</MudChip>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Ano Pessoal</MudText>
+                            <MudChip T="string" Color="Color.Info" Size="Size.Small">@pessoal.AnoPessoal</MudChip>
+                        </div>
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.body2" Class="mb-1"><strong>Dias do Mês Favoráveis</strong></MudText>
+                    <div class="d-flex flex-wrap gap-1">
+                        @foreach (var n in mapa.DiasMesFavoraveis)
+                        { <MudChip T="string" Color="Color.Success" Size="Size.Small">@n</MudChip> }
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+        </MudGrid>
+    </MudItem>
+
+    <MudItem xs="12" sm="3">
+        <div class="d-flex flex-column gap-2">
+            <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Fig. F — Ciclos de Vida</MudText>
+                @foreach (var (ciclo, valor, de, ate) in new[]
+                {
+                    ("1º", mapa.CicloVida1, anoNasc,      anoFimCiclo1),
+                    ("2º", mapa.CicloVida2, anoFimCiclo1, anoFimCiclo2),
+                    ("3º", mapa.CicloVida3, anoFimCiclo2, 0),
+                })
+                {
+                    <div class="d-flex justify-space-between align-center px-1" style="border-bottom:1px solid #eee;font-size:0.75rem">
+                        <span>@ciclo Ciclo</span>
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small">@valor</MudChip>
+                        <span style="color:#666">@(ate > 0 ? $"{de}–{ate}" : $"{de}→")</span>
+                    </div>
+                }
+            </MudCardContent></MudCard>
+
+            <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Fig. H — Desafios</MudText>
+                @foreach (var (nome, valor) in new[]
+                { ("Primeiro", mapa.Desafio1), ("Segundo", mapa.Desafio2), ("Principal", mapa.DesafioPrincipal) })
+                {
+                    <div class="d-flex justify-space-between align-center px-1" style="border-bottom:1px solid #eee;font-size:0.75rem">
+                        <span>@nome</span>
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">@valor</MudChip>
+                    </div>
+                }
+            </MudCardContent></MudCard>
+
+            <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Harmonia Conjugal</MudText>
+                <div style="font-size:0.75rem">
+                    <div class="d-flex align-center gap-1 mb-1">
+                        <strong>Vibra com:</strong>
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small">@mapa.HarmoniaVibraCom</MudChip>
+                    </div>
+                    <div class="d-flex flex-wrap align-center gap-1 mb-1">
+                        <strong>Atrai:</strong>
+                        @foreach (var n in mapa.HarmoniaAtrai)
+                        { <MudChip T="string" Color="Color.Success" Size="Size.Small">@n</MudChip> }
+                    </div>
+                    <div class="d-flex flex-wrap align-center gap-1 mb-1">
+                        <strong>É oposto a:</strong>
+                        @foreach (var n in mapa.HarmoniaEOpostoA)
+                        { <MudChip T="string" Color="Color.Error" Size="Size.Small">@n</MudChip> }
+                    </div>
+                    <div class="d-flex flex-wrap align-center gap-1">
+                        <strong>É passivo:</strong>
+                        @foreach (var n in mapa.HarmoniaEPassivoEm)
+                        { <MudChip T="string" Color="Color.Default" Size="Size.Small">@n</MudChip> }
+                    </div>
+                </div>
+            </MudCardContent></MudCard>
+        </div>
+    </MudItem>
+
+</MudGrid>

@@ -1,0 +1,44 @@
+@inherits LayoutComponentBase
+
+<div class="d-flex flex-column" style="min-height:100vh">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg" style="background:#198754;padding:0 16px">
+        <a class="navbar-brand text-white fw-semibold" href="/">Numerologia CRM</a>
+        <button class="navbar-toggler" type="button" @onclick="@(() => _navOpen = !_navOpen)">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="@(_navOpen ? "collapse navbar-collapse show" : "collapse navbar-collapse")">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white" href="/" Match="NavLinkMatch.All">Dashboard</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white" href="/consulentes">Consulentes</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white" href="/grafico-html">Gráfico — HTML Puro</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white" href="/grafico-framework">Gráfico — BB Components</NavLink>
+                </li>
+            </ul>
+            <!-- Badge de identificação -->
+            <span class="badge bg-warning text-dark fs-6 me-2">Blazor Bootstrap 3</span>
+        </div>
+    </nav>
+
+    <!-- Banner de identificação -->
+    <div class="alert alert-success rounded-0 mb-0 py-1 px-3" style="font-size:0.82rem;background:#d1e7dd;border:none">
+        <strong>POC: Blazor Bootstrap</strong> — Bootstrap 5 + componentes Blazor · localhost:5013
+    </div>
+
+    <!-- Conteúdo -->
+    <main class="container-fluid py-3">
+        @Body
+    </main>
+</div>
+
+@code {
+    private bool _navOpen = false;
+}
