@@ -37,10 +37,14 @@
     protected override async Task OnInitializedAsync()
     {
         _usuario = await AuthService.GetCurrentUserAsync();
+        // Inicializa PerfilState com o valor atual da API para que o menu
+        // exiba o nome correto mesmo antes de o usuário abrir a tela de Perfil.
+        if (PerfilState.NomeExibicao is null)
+            PerfilState.SilentInit(_usuario?.NomeExibicao);
         PerfilState.OnChange += AtualizarComponente;
     }
 
-    private void AtualizarComponente() => InvokeAsync(StateHasChanged);
+    private void AtualizarComponente() => StateHasChanged();
 
     private async Task Sair()
     {
