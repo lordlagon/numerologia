@@ -122,8 +122,8 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Blazor: `ListaMapas`, `FormMapa`, `IMapasService`, botão "Mapas" na lista de consulentes
   - Testes: unit (entity + service), integração (endpoints), bUnit (componentes)
 
-- [x] **F1.3.1** — Ícone de acesso aos Mapas na lista de Consulentes ✅
-  - Substituído botão "Mapas" por ícone `bi-file-text` (Bootstrap Icons) com `aria-label="Mapas"` e `title="Mapas"`
+- [x] **F1.3.1** — Acesso aos Mapas na lista de Consulentes ✅
+  - Originalmente implementado como ícone Bootstrap Icons; migrado para botão de texto "Mapas" (MudButton) em F6
 
 - [x] **F1.4** — Exibição do Gráfico Numerológico ✅
   - Layout fiel ao Gráfico Numerológico (imagem de referência em `docs/privado/`)
@@ -269,49 +269,53 @@ Numeróloga (usuária autenticada via Google OAuth)
   - `UsuarioInfo` recebe campo `NomeExibicao` (nullable)
   - `UserMenu` exibe `NomeExibicao ?? Nome` no botão do dropdown
   - Endpoint PDF usa `usuario.NomeExibicao ?? usuario.Nome` na capa
+  - **Fix (2026-04-27):** nome no menu atualiza imediatamente após salvar — `PerfilState.SilentInit()` inicializa estado no primeiro load; `StateHasChanged()` direto em vez de `InvokeAsync`; `Immediate="true"` no MudTextField do Perfil
 
 ---
 
-### Fase 6 — Migração para MudBlazor
+### Fase 6 — Migração para MudBlazor ✅
 > Objetivo: substituir Bootstrap + CSS customizado por MudBlazor para UI mais consistente e produtiva.
-> **Status: decisão tomada — iniciar 2026-04-28.**
+> **Status: concluído — PR #65 feat/f6-mudblazor → staging (2026-04-27).**
 
 **Decisão (2026-04-27):** MudBlazor escolhido após avaliação de POCs (MudBlazor / FluentUI / Blazor Bootstrap).
-POC de referência em `pocs/poc-mudblazor/` — manter para consulta durante a migração.
+POC de referência em `pocs/poc-mudblazor/` — manter para consulta futura.
 
-**Padrões visuais aprovados na POC:**
+**Padrões visuais:**
 - Tema Deep Purple (`#7b1fa2`) como cor primária
-- `MudChip Size.Small` para todos os números das figuras (Color por tipo: Warning=lições, Error=dívidas, Success=dias favoráveis, Primary=destino/missão/ciclos, Info=ano pessoal, Tertiary=resp. subconsciente)
-- Grade de letras: `flex:1` por célula preenchendo 100% da largura — **nunca substituir por componentes MudBlazor**
+- `MudChip Size.Small` para todos os números das figuras (Color por tipo: Warning=lições/desafios, Error=dívidas/oposto, Success=dias favoráveis/atrai, Primary=destino/missão/ciclos/MDs/intervalores, Info=tendências/pessoal, Tertiary=resp. subconsciente, Default=passivo)
+- Grade de letras: HTML/CSS `flex:1` por célula — **nunca substituir por componentes MudBlazor**
+- CSS legado removido: `MainLayout.razor.css`, `NavMenu.razor.css`, `GraficoNumerologico.razor.css`; `app.css` reduzido a essenciais do runtime Blazor
 
 - [x] **F6.0** — POCs de avaliação de framework ✅
   - 3 POCs implementadas: MudBlazor (5010), FluentUI (5012 — descartado), Blazor Bootstrap (5013)
   - Framework escolhido: **MudBlazor**
 
-- [ ] **F6.1** — Setup e infraestrutura
-  - Adicionar pacote `MudBlazor` ao projeto Web
-  - Configurar `MudThemeProvider` (tema deep-purple), `MudDialogProvider`, `MudSnackbarProvider` em `App.razor`
-  - Remover dependências Bootstrap (CSS, JS) e ícones Bootstrap Icons → MudBlazor Icons
+- [x] **F6.1** — Setup e infraestrutura ✅
+  - Pacote `MudBlazor` adicionado ao projeto Web
+  - `MudThemeProvider` (tema deep-purple), `MudDialogProvider`, `MudSnackbarProvider`, `MudPopoverProvider` em `App.razor` / `MainLayout.razor`
+  - Dependências Bootstrap (CSS, JS) e ícones Bootstrap Icons removidos
 
-- [ ] **F6.2** — Layout e navegação
-  - Migrar `MainLayout.razor` → `MudLayout` + `MudAppBar` + `MudDrawer`
-  - Migrar `NavMenu.razor` → `MudNavMenu` / `MudNavLink`
-  - Migrar menu de usuário (dropdown) → `MudMenu`
+- [x] **F6.2** — Layout e navegação ✅
+  - `MainLayout.razor` → `MudLayout` + `MudAppBar` + `MudDrawer` (responsivo)
+  - `NavMenu.razor` → `MudNavMenu` / `MudNavLink`
+  - `UserMenu` → `MudMenu` com `MudPopoverProvider`
 
-- [ ] **F6.3** — Listagens e formulários
-  - Migrar `ListaConsulentes` → `MudTable`
-  - Migrar `FormConsulente` / `EditarMapa` → `MudTextField`, `MudDatePicker`, `MudButton`
-  - Migrar confirmações de exclusão → `MudDialog`
-  - Migrar notificações → `MudSnackbar`
+- [x] **F6.3** — Listagens e formulários ✅
+  - `ListaConsulentes` → `MudTable` + `MudTextField` (busca) + botão texto "Mapas"
+  - `FormConsulente`, `EditarMapa`, `FormMapa`, `Perfil` → `MudTextField`, `MudButton`
+  - Validação de data de nascimento restaurada (regressão corrigida em FormMapa e EditarMapa)
+  - 29 falhas de teste bUnit corrigidas: `AddMudServices()` + `JSInterop.Loose` + `Input()` em vez de `Change()`
 
-- [ ] **F6.4** — Dashboard e Gráfico Numerológico
-  - Migrar `Dashboard` → `MudCard`, `MudGrid`
-  - Migrar Gráfico Numerológico → `MudCard` por figura + grade de letras preservada (flex nativo)
-  - Aplicar padrão de chips coloridos por tipo de número (ver POC como referência)
+- [x] **F6.4** — Dashboard e Gráfico Numerológico ✅
+  - `Dashboard` → `MudGrid`, `MudCard`, `MudList`, `MudListItem`
+  - `GraficoNumerologico` → `MudCard` por figura; chips coloridos por tipo; `MudExpansionPanels` para interpretações
+  - `BadgeCor` → `MudChip` (era `<span class="badge">`)
+  - Fig. D: 2 células estilo Fig. C; Fig. E: título acima, chip abaixo (estilo Dívidas Cármicas)
+  - Data Natal: coluna esquerda com fundo `#f3e5f5`, negrito, centralizado (estilo Fig. A)
 
-- [ ] **F6.5** — Testes e ajustes finais
-  - Atualizar testes bUnit para renderização com MudBlazor
-  - Remover CSS legado, limpar `wwwroot`
+- [x] **F6.5** — Testes e ajustes finais ✅
+  - Testes bUnit atualizados para MudBlazor: 565 testes passando (507 unit + 58 integration)
+  - CSS legado removido; `app.css` reduzido a essenciais Blazor
 
 ---
 
