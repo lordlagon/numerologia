@@ -1,0 +1,93 @@
+@page "/perfil"
+@inject IPerfilService PerfilService
+
+<PageTitle>Perfil</PageTitle>
+
+<div class="container" style="max-width: 480px;">
+    <h1 class="h3 mb-4">Perfil</h1>
+
+    @if (_carregando)
+    {
+        <p>Carregando...</p>
+    }
+    else
+    {
+        <div class="mb-3">
+            <label class="form-label fw-semibold">E-mail</label>
+            <p class="form-control-plaintext">@_perfil!.Email</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Nome (Google)</label>
+            <p class="form-control-plaintext">@_perfil.Nome</p>
+        </div>
+
+        <form @onsubmit="SalvarAsync" @onsubmit:preventDefault>
+            <div class="mb-3">
+                <label for="nomeExibicao" class="form-label">Nome de Exibição</label>
+                <input id="nomeExibicao"
+                       data-testid="nomeExibicao"
+                       class="form-control"
+                       @bind="_nomeExibicao"
+                       placeholder="Nome para a capa do PDF (opcional)" />
+                <div class="form-text text-muted">
+                    Usado na capa do PDF. Se vazio, será usado o nome do Google.
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_erro))
+            {
+                <div class="alert alert-danger" role="alert">@_erro</div>
+            }
+
+            @if (_salvoComSucesso)
+            {
+                <div class="alert alert-success" role="alert">Perfil atualizado com sucesso.</div>
+            }
+
+            <button type="submit" class="btn btn-primary" disabled="@_salvando">
+                @(_salvando ? "Salvando..." : "Salvar")
+            </button>
+        </form>
+    }
+</div>
+
+@code {
+    private PerfilDto? _perfil;
+    private string? _nomeExibicao;
+    private bool _carregando = true;
+    private bool _salvando;
+    private bool _salvoComSucesso;
+    private string? _erro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _perfil = await PerfilService.ObterAsync();
+        _nomeExibicao = _perfil.NomeExibicao;
+        _carregando = false;
+    }
+
+    private async Task SalvarAsync()
+    {
+        _erro = null;
+        _salvoComSucesso = false;
+
+        var nomeParaSalvar = string.IsNullOrWhiteSpace(_nomeExibicao) ? null : _nomeExibicao.Trim();
+
+        _salvando = true;
+        try
+        {
+            _perfil = await PerfilService.AtualizarAsync(new SalvarPerfilDto(nomeParaSalvar));
+            _nomeExibicao = _perfil.NomeExibicao;
+            _salvoComSucesso = true;
+        }
+        catch
+        {
+            _erro = "Erro ao salvar. Tente novamente.";
+        }
+        finally
+        {
+            _salvando = false;
+        }
+    }
+}

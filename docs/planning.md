@@ -253,6 +253,56 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Download direto pelo sistema
 ---
 
+### Fase 5 — Perfil da Numeróloga
+> Objetivo: numeróloga edita seu nome de exibição (usado na capa do PDF).
+
+- [ ] **F5.1** — Tela de Perfil
+  - Adicionar campo `NomeExibicao` (nullable) na entidade `Usuario` + migration
+  - Adicionar `AtualizarAsync` em `IUsuarioRepository` / `UsuarioRepository`
+  - Endpoints: `GET /api/perfil` e `PUT /api/perfil`
+  - `IPerfilService` + `PerfilService` no projeto Web
+  - `Perfil.razor` em `/perfil` — email somente leitura, campo editável `NomeExibicao`
+  - Testes: unit (`Usuario`), integração (endpoints), bUnit (`Perfil.razor`)
+  - **Motivação:** `NomeExibicao` é separado de `Nome` (que vem do Google OAuth); será usado na capa do PDF
+
+---
+
+### Fase 6 — Migração para MudBlazor
+> Objetivo: substituir Bootstrap + CSS customizado por MudBlazor para UI mais consistente e produtiva.
+> **Status: em avaliação** — iniciar após definição da estratégia de transição.
+
+- [ ] **F6.0** — POC na tela mais complexa
+  - Testar MudBlazor na tela de maior complexidade (ex: Gráfico Numerológico) antes de migrar em lote
+  - Validar: tema, componentes de tabela, layout responsivo, integração com Blazor auth
+  - Critério de go/no-go antes de prosseguir com F6.1+
+
+- [ ] **F6.1** — Setup e infraestrutura
+  - Adicionar pacote `MudBlazor` ao projeto Web
+  - Configurar `MudThemeProvider`, `MudDialogProvider`, `MudSnackbarProvider` em `App.razor`
+  - Remover dependências Bootstrap (CSS, JS) e ícones Bootstrap Icons → MudBlazor Icons
+  - Definir tema de cores (primária, secundária, surface)
+
+- [ ] **F6.2** — Layout e navegação
+  - Migrar `MainLayout.razor` para `MudLayout` + `MudAppBar` + `MudDrawer`
+  - Migrar `NavMenu.razor` para `MudNavMenu` / `MudNavLink`
+  - Migrar menu de usuário (dropdown) para `MudMenu`
+
+- [ ] **F6.3** — Listagens e formulários
+  - Migrar `ListaConsulentes` → `MudTable` / `MudDataGrid`
+  - Migrar `FormConsulente` / `EditarMapa` → `MudTextField`, `MudDatePicker`, `MudButton`
+  - Migrar confirmações de exclusão → `MudDialog`
+  - Migrar notificações → `MudSnackbar`
+
+- [ ] **F6.4** — Dashboard e Gráfico Numerológico
+  - Migrar `Dashboard` → `MudCard`, `MudGrid`
+  - Migrar Gráfico Numerológico → preservar layout fiel ao gráfico físico (avaliar `MudPaper` + grid customizado)
+
+- [ ] **F6.5** — Testes e ajustes finais
+  - Atualizar testes bUnit para renderização com MudBlazor
+  - Remover CSS legado, limpar `wwwroot`
+
+---
+
 ## Ordem de Desenvolvimento (TDD — XP)
 
 Cada item abaixo é uma user story. Seguir o ciclo Red → Green → Blue.  

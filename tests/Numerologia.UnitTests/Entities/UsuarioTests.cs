@@ -55,4 +55,46 @@ public class UsuarioTests
         act.Should().Throw<ArgumentException>()
             .WithParameterName("nome");
     }
+
+    [Fact]
+    public void NomeExibicao_Novo_DeveSerNulo()
+    {
+        var usuario = new Usuario("google-123", "joao@gmail.com", "João");
+
+        usuario.NomeExibicao.Should().BeNull();
+    }
+
+    [Fact]
+    public void AtualizarPerfil_ComNomeValido_DeveAtualizarNomeExibicao()
+    {
+        var usuario = new Usuario("google-123", "joao@gmail.com", "João");
+
+        usuario.AtualizarPerfil("João Numerólogo");
+
+        usuario.NomeExibicao.Should().Be("João Numerólogo");
+    }
+
+    [Fact]
+    public void AtualizarPerfil_ComNulo_DeveLimparNomeExibicao()
+    {
+        var usuario = new Usuario("google-123", "joao@gmail.com", "João");
+        usuario.AtualizarPerfil("Nome antigo");
+
+        usuario.AtualizarPerfil(null);
+
+        usuario.NomeExibicao.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void AtualizarPerfil_ComStringVazia_DeveLancarExcecao(string nomeExibicao)
+    {
+        var usuario = new Usuario("google-123", "joao@gmail.com", "João");
+
+        var act = () => usuario.AtualizarPerfil(nomeExibicao);
+
+        act.Should().Throw<ArgumentException>()
+            .WithParameterName("nomeExibicao");
+    }
 }
