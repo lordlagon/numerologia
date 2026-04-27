@@ -1,0 +1,59 @@
+@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Dashboard — MudBlazor POC</PageTitle>
+
+<MudText Typo="Typo.h5" Class="mb-4">Dashboard</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="4">
+        <MudCard Elevation="3">
+            <MudCardContent Class="text-center">
+                <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h3" Class="mt-2">@MockDataService.Consulentes.Count</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Total de Consulentes</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudCard Elevation="3">
+            <MudCardContent Class="text-center">
+                <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h3" Class="mt-2">@MockDataService.Consulentes.Sum(c => c.TotalMapas)</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Total de Mapas</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudCard Elevation="3">
+            <MudCardContent Class="text-center">
+                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h3" Class="mt-2">
+                    @MockDataService.Consulentes.Count(c => c.TotalMapas > 0)
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Com Mapas Gerados</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<MudText Typo="Typo.h6" Class="mt-6 mb-3">Últimos Mapas</MudText>
+<MudPaper Elevation="1">
+    <MudList T="string">
+        @foreach (var c in MockDataService.Consulentes.Where(c => c.TotalMapas > 0))
+        {
+            <MudListItem Icon="@Icons.Material.Filled.Person">
+                <MudText>
+                    <strong>@c.Nome</strong>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2">
+                        @c.TotalMapas mapa(s)
+                    </MudChip>
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @c.DataNascimento.ToString("dd/MM/yyyy")
+                </MudText>
+            </MudListItem>
+            <MudDivider />
+        }
+    </MudList>
+</MudPaper>

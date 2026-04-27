@@ -30,5 +30,26 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── POCs de framework UI (sem banco — dados mockados) ──────────────────────
+  # Subir um:    docker compose --profile pocs up poc-mudblazor
+  # Subir todos: docker compose --profile pocs up
+  # Ou sem profile (sobrescreve): docker compose up poc-mudblazor
+
+  poc-mudblazor:
+    build:
+      context: .
+      dockerfile: pocs/poc-mudblazor/Dockerfile
+    ports:
+      - "5010:8080"
+    profiles: ["pocs"]
+
+  poc-blazorbootstrap:
+    build:
+      context: .
+      dockerfile: pocs/poc-blazorbootstrap/Dockerfile
+    ports:
+      - "5013:8080"
+    profiles: ["pocs"]
+
 volumes:
   postgres_data:

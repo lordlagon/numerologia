@@ -1,0 +1,66 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="2" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                       OnClick="@(() => _drawerOpen = !_drawerOpen)" />
+        <MudText Typo="Typo.h6" Class="ml-3">Numerologia CRM</MudText>
+        <MudSpacer />
+        <!-- Badge de identificação do framework -->
+        <MudChip T="string" Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Small" Class="mr-2">
+            MudBlazor 7
+        </MudChip>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Variant="DrawerVariant.Responsive">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.subtitle1" Class="fw-bold">Menu</MudText>
+        </MudDrawerHeader>
+        <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+                Dashboard
+            </MudNavLink>
+            <MudNavLink Href="/consulentes" Icon="@Icons.Material.Filled.People">
+                Consulentes
+            </MudNavLink>
+            <MudDivider Class="my-2" />
+            <MudNavLink Href="/grafico-html" Icon="@Icons.Material.Filled.TableChart">
+                Gráfico — HTML Puro
+            </MudNavLink>
+            <MudNavLink Href="/grafico-framework" Icon="@Icons.Material.Filled.GridView">
+                Gráfico — MudBlazor
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent>
+        <!-- Banner permanente de identificação -->
+        <MudAlert Severity="Severity.Info" Dense="true" Class="rounded-0 mb-0"
+                  Style="background:#7b1fa2;color:white;border-radius:0">
+            <MudText Typo="Typo.body2">
+                <strong>POC: MudBlazor</strong> — Deep Purple theme · localhost:5010
+            </MudText>
+        </MudAlert>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="pt-4 pb-8">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary   = "#7b1fa2",   // Deep Purple
+            Secondary = "#ff6f00",   // Amber
+        }
+    };
+}

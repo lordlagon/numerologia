@@ -1,0 +1,300 @@
+@page "/grafico-html"
+@rendermode InteractiveServer
+
+<PageTitle>Gráfico — HTML Puro</PageTitle>
+
+@{
+    var mapa    = MockDataService.MapaAndre;
+    var pessoal = MockDataService.PessoalAndre();
+    var anoNasc      = mapa.DataNascimento.Year;
+    var anoFimCiclo1 = anoNasc + mapa.FimCiclo1Idade;
+    var anoFimCiclo2 = anoNasc + mapa.FimCiclo2Idade;
+    var anoFimMD1    = anoFimCiclo1;
+    var anoFimMD2    = anoFimMD1 + 9;
+    var anoFimMD3    = anoFimMD2 + 9;
+}
+
+<MudAlert Severity="Severity.Normal" Dense="true" Class="mb-3" Icon="@Icons.Material.Filled.Html">
+    Grade de letras como <strong>&lt;table&gt; HTML puro</strong> — mesmo comportamento da produção.
+</MudAlert>
+
+<MudText Typo="Typo.h5" Align="Align.Center" Class="mb-1 fw-bold">GRÁFICO NUMEROLÓGICO</MudText>
+<MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary" Class="mb-4">
+    @mapa.NomeUtilizado — @mapa.DataNascimento.ToString("dd/MM/yyyy")
+</MudText>
+
+<!-- GRADE DE LETRAS — HTML puro (tabela nativa) -->
+<MudPaper Elevation="2" Class="mb-3 pa-2 overflow-auto">
+    <table class="grade-table">
+        <tbody>
+            <tr>
+                <td class="grade-label">Vogais</td>
+                @foreach (var e in mapa.GradeLetras)
+                {
+                    <td class="grade-cell @(e.Tipo == TipoLetra.Espaco ? "grade-espaco" : "")">
+                        @(e.Tipo == TipoLetra.Vogal ? e.ValorCabalistico.ToString() : "")
+                    </td>
+                }
+                <td class="grade-label">Nº de Motivação</td>
+                <td class="grade-resultado">@mapa.SomaMotivacao ⇒ @mapa.NumeroMotivacao</td>
+            </tr>
+            <tr>
+                <td class="grade-label">Nome</td>
+                @foreach (var e in mapa.GradeLetras)
+                {
+                    <td class="grade-cell">@(e.Tipo != TipoLetra.Espaco ? e.Letra.ToString() : "")</td>
+                }
+                <td colspan="2"></td>
+            </tr>
+            <tr>
+                <td class="grade-label">Consoante</td>
+                @foreach (var e in mapa.GradeLetras)
+                {
+                    <td class="grade-cell">@(e.Tipo == TipoLetra.Consoante ? e.ValorCabalistico.ToString() : "")</td>
+                }
+                <td class="grade-label">Nº de Impressão</td>
+                <td class="grade-resultado">@mapa.SomaImpressao ⇒ @mapa.NumeroImpressao</td>
+            </tr>
+            <tr>
+                <td class="grade-label">TOTAL</td>
+                @foreach (var e in mapa.GradeLetras)
+                {
+                    <td class="grade-cell">@(e.Tipo != TipoLetra.Espaco ? e.ValorCabalistico.ToString() : "")</td>
+                }
+                <td class="grade-label">Nº de Expressão</td>
+                <td class="grade-resultado">@mapa.SomaExpressao ⇒ @mapa.NumeroExpressao</td>
+            </tr>
+        </tbody>
+    </table>
+</MudPaper>
+
+<!-- Figuras -->
+<MudGrid Spacing="2">
+
+    <!-- Fig. A -->
+    <MudItem xs="12" sm="2">
+        <MudCard Elevation="2">
+            <MudCardContent Class="pa-2">
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Fig. "A"</MudText>
+                <table class="fig-table">
+                    <tbody>
+                        @foreach (var kv in mapa.FiguraA.OrderBy(x => x.Key))
+                        {
+                            <tr>
+                                <td class="fig-key">@kv.Key</td>
+                                <td class="fig-val">@kv.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <MudText Typo="Typo.caption" Align="Align.Center">Total de Letras<br />em Cada Número</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Coluna central -->
+    <MudItem xs="12" sm="7">
+        <MudGrid Spacing="2">
+
+            <MudItem xs="6" sm="4">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center">Fig. B — Lições Cármicas</MudText>
+                    <div class="d-flex flex-wrap gap-1 mt-1 justify-center">
+                        @foreach (var n in mapa.LicoesCarmicas)
+                        { <MudChip T="string" Color="Color.Warning" Size="Size.Small">@n</MudChip> }
+                        @if (!mapa.LicoesCarmicas.Any()) { <MudText Typo="Typo.body2">—</MudText> }
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <MudItem xs="6" sm="4">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center">Fig. C — Tendências</MudText>
+                    <div class="d-flex flex-wrap gap-1 mt-1 justify-center">
+                        @foreach (var n in mapa.TendenciasOcultas)
+                        { <MudChip T="string" Color="Color.Info" Size="Size.Small">@n</MudChip> }
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <MudItem xs="6" sm="4">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center">Fig. D</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-1">
+                        Resp. Subconsciente: <strong>@mapa.RespostaSubconsciente</strong>
+                    </MudText>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <!-- Fig. E -->
+            <MudItem xs="12">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Fig. E</MudText>
+                    <div class="d-flex flex-wrap gap-3 align-center">
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Dívidas Cármicas</MudText>
+                            <div class="d-flex gap-1 justify-center">
+                                @foreach (var n in mapa.DividasCarmicas)
+                                { <MudChip T="string" Color="Color.Error" Size="Size.Small">@n</MudChip> }
+                                @if (!mapa.DividasCarmicas.Any()) { <MudText Typo="Typo.body2">—</MudText> }
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Nº de Destino</MudText>
+                            <MudText Typo="Typo.h5" Color="Color.Primary">@mapa.NumeroDestino</MudText>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Missão</MudText>
+                            <MudText Typo="Typo.h5" Color="Color.Primary">@mapa.Missao</MudText>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Ano Pessoal</MudText>
+                            <MudText Typo="Typo.h5" Color="Color.Primary">@pessoal.AnoPessoal</MudText>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Mês Pessoal</MudText>
+                            <MudText Typo="Typo.h5">@pessoal.MesPessoal</MudText>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.caption">Dia Pessoal</MudText>
+                            <MudText Typo="Typo.h5">@pessoal.DiaPessoal</MudText>
+                        </div>
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <!-- Dias Favoráveis -->
+            <MudItem xs="12">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.body2" Class="mb-1"><strong>Dias do Mês Favoráveis</strong></MudText>
+                    <div class="d-flex flex-wrap gap-1">
+                        @foreach (var n in mapa.DiasMesFavoraveis)
+                        { <MudChip T="string" Color="Color.Success" Size="Size.Small">@n</MudChip> }
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <!-- Números Harmônicos + Relação Intervalores + Cores -->
+            <MudItem xs="6" sm="4">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.caption">Números Harmônicos</MudText>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        @foreach (var n in mapa.NumerosHarmonicos)
+                        { <MudChip T="string" Color="Color.Primary" Size="Size.Small">@n</MudChip> }
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <MudItem xs="6" sm="4">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2 text-center">
+                    <MudText Typo="Typo.caption">Relação Intervalores</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary" Class="mt-1">@mapa.RelacaoIntervalores</MudText>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                    <MudText Typo="Typo.caption">Cores Favoráveis</MudText>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        @foreach (var cor in mapa.CoresFavoraveis)
+                        { <MudChip T="string" Size="Size.Small" Style="@CorStyle(cor)">@cor</MudChip> }
+                    </div>
+                </MudCardContent></MudCard>
+            </MudItem>
+
+        </MudGrid>
+    </MudItem>
+
+    <!-- Coluna direita -->
+    <MudItem xs="12" sm="3">
+        <div class="d-flex flex-column gap-2">
+
+            <!-- Fig. F -->
+            <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Fig. F — Ciclos de Vida</MudText>
+                <table class="fig-table">
+                    <tbody>
+                        <tr><td>1º Ciclo</td><td class="fig-key">@mapa.CicloVida1</td><td class="fig-periodo">de @anoNasc até @anoFimCiclo1</td></tr>
+                        <tr><td>2º Ciclo</td><td class="fig-key">@mapa.CicloVida2</td><td class="fig-periodo">de @anoFimCiclo1 até @anoFimCiclo2</td></tr>
+                        <tr><td>3º Ciclo</td><td class="fig-key">@mapa.CicloVida3</td><td class="fig-periodo">de @anoFimCiclo2 em diante</td></tr>
+                    </tbody>
+                </table>
+            </MudCardContent></MudCard>
+
+            <!-- Fig. H -->
+            <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Fig. H — Desafios</MudText>
+                <table class="fig-table">
+                    <tbody>
+                        <tr><td>Primeiro</td><td class="fig-key">@mapa.Desafio1</td></tr>
+                        <tr><td>Segundo</td><td class="fig-key">@mapa.Desafio2</td></tr>
+                        <tr><td>Principal</td><td class="fig-key">@mapa.DesafioPrincipal</td></tr>
+                    </tbody>
+                </table>
+            </MudCardContent></MudCard>
+
+            <!-- Fig. G -->
+            <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Fig. G — Momentos Decisivos</MudText>
+                <table class="fig-table">
+                    <tbody>
+                        <tr><td>1º</td><td class="fig-key">@mapa.MomentoDecisivo1</td><td class="fig-periodo">de @anoNasc até @anoFimMD1</td></tr>
+                        <tr><td>2º</td><td class="fig-key">@mapa.MomentoDecisivo2</td><td class="fig-periodo">de @anoFimMD1 até @anoFimMD2</td></tr>
+                        <tr><td>3º</td><td class="fig-key">@mapa.MomentoDecisivo3</td><td class="fig-periodo">de @anoFimMD2 até @anoFimMD3</td></tr>
+                        <tr><td>4º</td><td class="fig-key">@mapa.MomentoDecisivo4</td><td class="fig-periodo">de @anoFimMD3 em diante</td></tr>
+                    </tbody>
+                </table>
+            </MudCardContent></MudCard>
+
+            <!-- Harmonia Conjugal -->
+            <MudCard Elevation="2"><MudCardContent Class="pa-2">
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1">Harmonia Conjugal</MudText>
+                <table class="fig-table">
+                    <tbody>
+                        <tr><td>Número</td><td class="fig-key">@mapa.Missao</td></tr>
+                        <tr><td>Vibra com</td><td class="fig-key">@mapa.HarmoniaVibraCom</td></tr>
+                        <tr><td>Atrai</td><td>@string.Join(", ", mapa.HarmoniaAtrai)</td></tr>
+                        <tr><td>É oposto a</td><td>@string.Join(", ", mapa.HarmoniaEOpostoA)</td></tr>
+                        <tr><td>É passivo</td><td>@string.Join(", ", mapa.HarmoniaEPassivoEm)</td></tr>
+                    </tbody>
+                </table>
+            </MudCardContent></MudCard>
+
+        </div>
+    </MudItem>
+
+</MudGrid>
+
+@code {
+    private static string CorStyle(string cor) => cor.ToLowerInvariant() switch
+    {
+        "vermelho"   => "background:#e53935;color:white",
+        "azul"       => "background:#1565c0;color:white",
+        "verde"      => "background:#2e7d32;color:white",
+        "amarelo"    => "background:#f9a825;color:black",
+        "laranja"    => "background:#e65100;color:white",
+        "roxo"       => "background:#6a1b9a;color:white",
+        "rosa"       => "background:#e91e63;color:white",
+        "branco"     => "background:#f5f5f5;color:black;border:1px solid #ccc",
+        "preto"      => "background:#212121;color:white",
+        "cinza"      => "background:#757575;color:white",
+        "marrom"     => "background:#4e342e;color:white",
+        "dourado"    => "background:#f57f17;color:black",
+        "azul-claro" => "background:#42a5f5;color:white",
+        _            => "background:#9e9e9e;color:white"
+    };
+}
+
+<style>
+    .grade-table  { border-collapse: collapse; width: 100%; font-size: 0.8rem; }
+    .grade-table td { border: 1px solid #bdbdbd; padding: 2px 4px; text-align: center; }
+    .grade-label  { background: #f3e5f5; font-weight: bold; white-space: nowrap; padding: 3px 6px; }
+    .grade-espaco { background: #ede7f6; }
+    .grade-cell   { min-width: 22px; }
+    .grade-resultado { font-weight: bold; background: #f3e5f5; white-space: nowrap; }
+    .fig-table    { border-collapse: collapse; width: 100%; font-size: 0.78rem; }
+    .fig-table td { border: 1px solid #e0e0e0; padding: 2px 5px; }
+    .fig-key      { font-weight: bold; text-align: center; background: #f3e5f5; }
+    .fig-val      { text-align: center; }
+    .fig-periodo  { font-size: 0.7rem; color: #666; }
+</style>

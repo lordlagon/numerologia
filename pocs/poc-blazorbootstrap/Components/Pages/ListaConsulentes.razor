@@ -1,0 +1,55 @@
+@page "/consulentes"
+@rendermode InteractiveServer
+
+<PageTitle>Consulentes — Blazor Bootstrap POC</PageTitle>
+
+<h5 class="mb-4">Consulentes</h5>
+
+<div class="mb-3" style="max-width:400px">
+    <input class="form-control" placeholder="Buscar por nome..." @oninput="OnBusca" />
+</div>
+
+<Grid TItem="(int Id, string Nome, DateOnly DataNascimento, int TotalMapas)"
+      DataProvider="ConsultentesProvider"
+      AllowFiltering="false"
+      AllowSorting="true"
+      Class="table table-hover table-sm"
+      Responsive="true">
+    <GridColumn TItem="(int Id, string Nome, DateOnly DataNascimento, int TotalMapas)"
+                HeaderText="Nome" PropertyName="Nome" SortKeySelector="x => x.Nome">
+        @context.Nome
+    </GridColumn>
+    <GridColumn TItem="(int Id, string Nome, DateOnly DataNascimento, int TotalMapas)"
+                HeaderText="Data de Nascimento" PropertyName="DataNascimento">
+        @context.DataNascimento.ToString("dd/MM/yyyy")
+    </GridColumn>
+    <GridColumn TItem="(int Id, string Nome, DateOnly DataNascimento, int TotalMapas)"
+                HeaderText="Mapas" PropertyName="TotalMapas" Class="text-center">
+        <Badge Color="@(context.TotalMapas > 0 ? BadgeColor.Success : BadgeColor.Secondary)">
+            @context.TotalMapas
+        </Badge>
+    </GridColumn>
+    <GridColumn TItem="(int Id, string Nome, DateOnly DataNascimento, int TotalMapas)"
+                HeaderText="Ações">
+        @if (context.Id == 1)
+        {
+            <a href="/grafico-html" class="btn btn-outline-success btn-sm">Ver Mapa</a>
+        }
+    </GridColumn>
+</Grid>
+
+@code {
+    private string _busca = "";
+
+    private void OnBusca(ChangeEventArgs e) => _busca = e.Value?.ToString() ?? "";
+
+    private Task<GridDataProviderResult<(int Id, string Nome, DateOnly DataNascimento, int TotalMapas)>>
+        ConsultentesProvider(GridDataProviderRequest<(int Id, string Nome, DateOnly DataNascimento, int TotalMapas)> req)
+    {
+        var dados = MockDataService.Consulentes
+            .Where(c => string.IsNullOrWhiteSpace(_busca) ||
+                        c.Nome.Contains(_busca, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(req.ApplyTo(dados));
+    }
+}

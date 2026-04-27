@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>PocMudBlazor</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="7.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Numerologia.Core/Numerologia.Core.csproj" />
+  </ItemGroup>
+</Project>

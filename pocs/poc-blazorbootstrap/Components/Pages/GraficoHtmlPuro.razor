@@ -1,0 +1,250 @@
+@page "/grafico-html"
+@rendermode InteractiveServer
+
+<PageTitle>Gráfico — HTML Puro</PageTitle>
+
+@{
+    var mapa    = MockDataService.MapaAndre;
+    var pessoal = MockDataService.PessoalAndre();
+    var anoNasc      = mapa.DataNascimento.Year;
+    var anoFimCiclo1 = anoNasc + mapa.FimCiclo1Idade;
+    var anoFimCiclo2 = anoNasc + mapa.FimCiclo2Idade;
+    var anoFimMD1    = anoFimCiclo1;
+    var anoFimMD2    = anoFimMD1 + 9;
+    var anoFimMD3    = anoFimMD2 + 9;
+}
+
+<div class="alert alert-info py-1 mb-3">
+    Grade de letras como <strong>&lt;table&gt; HTML puro</strong> — mesmo comportamento da produção.
+</div>
+
+<h5 class="text-center fw-bold mb-1">GRÁFICO NUMEROLÓGICO</h5>
+<p class="text-center text-muted mb-4">@mapa.NomeUtilizado — @mapa.DataNascimento.ToString("dd/MM/yyyy")</p>
+
+<div class="card mb-3">
+    <div class="card-body p-2 overflow-auto">
+        <table class="grade-table">
+            <tbody>
+                <tr>
+                    <td class="grade-label">Vogais</td>
+                    @foreach (var e in mapa.GradeLetras)
+                    {
+                        <td class="grade-cell @(e.Tipo == TipoLetra.Espaco ? "grade-espaco" : "")">
+                            @(e.Tipo == TipoLetra.Vogal ? e.ValorCabalistico.ToString() : "")
+                        </td>
+                    }
+                    <td class="grade-label">Nº de Motivação</td>
+                    <td class="grade-resultado">@mapa.SomaMotivacao ⇒ @mapa.NumeroMotivacao</td>
+                </tr>
+                <tr>
+                    <td class="grade-label">Nome</td>
+                    @foreach (var e in mapa.GradeLetras)
+                    { <td class="grade-cell">@(e.Tipo != TipoLetra.Espaco ? e.Letra.ToString() : "")</td> }
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td class="grade-label">Consoante</td>
+                    @foreach (var e in mapa.GradeLetras)
+                    {
+                        <td class="grade-cell">@(e.Tipo == TipoLetra.Consoante ? e.ValorCabalistico.ToString() : "")</td>
+                    }
+                    <td class="grade-label">Nº de Impressão</td>
+                    <td class="grade-resultado">@mapa.SomaImpressao ⇒ @mapa.NumeroImpressao</td>
+                </tr>
+                <tr>
+                    <td class="grade-label">TOTAL</td>
+                    @foreach (var e in mapa.GradeLetras)
+                    {
+                        <td class="grade-cell">@(e.Tipo != TipoLetra.Espaco ? e.ValorCabalistico.ToString() : "")</td>
+                    }
+                    <td class="grade-label">Nº de Expressão</td>
+                    <td class="grade-resultado">@mapa.SomaExpressao ⇒ @mapa.NumeroExpressao</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Fig. A -->
+    <div class="col-auto">
+        <div class="card h-100">
+            <div class="card-body p-2">
+                <div class="text-center fw-bold mb-1">Fig. "A"</div>
+                <table class="fig-table">
+                    @foreach (var kv in mapa.FiguraA.OrderBy(x => x.Key))
+                    { <tr><td class="fig-key">@kv.Key</td><td class="fig-val">@kv.Value</td></tr> }
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Central -->
+    <div class="col">
+        <div class="row g-2">
+            <div class="col-auto">
+                <div class="card"><div class="card-body p-2">
+                    <div class="fw-bold text-center mb-1">Fig. B</div>
+                    <div class="d-flex gap-1 flex-wrap">
+                        @foreach (var n in mapa.LicoesCarmicas)
+                        { <Badge Color="BadgeColor.Warning">@n</Badge> }
+                        @if (!mapa.LicoesCarmicas.Any()) { <span class="text-muted">—</span> }
+                    </div>
+                    <div class="text-center mt-1" style="font-size:0.7rem">Lições Cármicas</div>
+                </div></div>
+            </div>
+            <div class="col-auto">
+                <div class="card"><div class="card-body p-2">
+                    <div class="fw-bold text-center mb-1">Fig. C</div>
+                    <div class="d-flex gap-1 flex-wrap">
+                        @foreach (var n in mapa.TendenciasOcultas)
+                        { <Badge Color="BadgeColor.Info">@n</Badge> }
+                    </div>
+                    <div class="text-center mt-1" style="font-size:0.7rem">Tendências Ocultas</div>
+                </div></div>
+            </div>
+            <div class="col-auto">
+                <div class="card"><div class="card-body p-2">
+                    <div class="fw-bold text-center mb-1">Fig. D</div>
+                    <div style="font-size:0.82rem">Resp. Subconsciente: <strong>@mapa.RespostaSubconsciente</strong></div>
+                </div></div>
+            </div>
+            <div class="col-12">
+                <div class="card"><div class="card-body p-2">
+                    <div class="fw-bold text-center mb-1">Fig. E</div>
+                    <div class="d-flex flex-wrap gap-3 align-items-center">
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Dívidas Cármicas</div>
+                            <div class="d-flex gap-1">
+                                @foreach (var n in mapa.DividasCarmicas)
+                                { <Badge Color="BadgeColor.Danger">@n</Badge> }
+                                @if (!mapa.DividasCarmicas.Any()) { <span class="text-muted">—</span> }
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Nº de Destino</div>
+                            <strong style="font-size:1.3rem;color:#198754">@mapa.NumeroDestino</strong>
+                        </div>
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Missão</div>
+                            <strong style="font-size:1.3rem;color:#198754">@mapa.Missao</strong>
+                        </div>
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Ano Pessoal</div>
+                            <strong style="font-size:1.3rem;color:#198754">@pessoal.AnoPessoal</strong>
+                        </div>
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Mês Pessoal</div>
+                            <strong style="font-size:1.3rem">@pessoal.MesPessoal</strong>
+                        </div>
+                        <div class="text-center">
+                            <div style="font-size:0.72rem;color:#666">Dia Pessoal</div>
+                            <strong style="font-size:1.3rem">@pessoal.DiaPessoal</strong>
+                        </div>
+                    </div>
+                </div></div>
+            </div>
+            <div class="col-12">
+                <div class="card"><div class="card-body p-2">
+                    <div style="font-size:0.82rem;font-weight:bold;margin-bottom:4px">Dias do Mês Favoráveis</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        @foreach (var n in mapa.DiasMesFavoraveis)
+                        { <Badge Color="BadgeColor.Success">@n</Badge> }
+                    </div>
+                </div></div>
+            </div>
+            <div class="col-auto">
+                <div class="card"><div class="card-body p-2">
+                    <div style="font-size:0.72rem;color:#666">Números Harmônicos</div>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        @foreach (var n in mapa.NumerosHarmonicos)
+                        { <Badge Color="BadgeColor.Primary">@n</Badge> }
+                    </div>
+                </div></div>
+            </div>
+            <div class="col-auto">
+                <div class="card"><div class="card-body p-2 text-center">
+                    <div style="font-size:0.72rem;color:#666">Relação Intervalores</div>
+                    <strong style="font-size:1.3rem;color:#198754">@mapa.RelacaoIntervalores</strong>
+                </div></div>
+            </div>
+            <div class="col-12">
+                <div class="card"><div class="card-body p-2">
+                    <div style="font-size:0.72rem;color:#666;margin-bottom:4px">Cores Favoráveis</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var cor in mapa.CoresFavoraveis)
+                        { <span style="@CorStyle(cor)">@cor</span> }
+                    </div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direita -->
+    <div class="col-auto">
+        <div class="d-flex flex-column gap-2">
+            <div class="card"><div class="card-body p-2">
+                <div class="fw-bold text-center mb-1">Fig. F — Ciclos de Vida</div>
+                <table class="fig-table">
+                    <tr><td>1º Ciclo</td><td class="fig-key">@mapa.CicloVida1</td><td class="fig-periodo">@anoNasc–@anoFimCiclo1</td></tr>
+                    <tr><td>2º Ciclo</td><td class="fig-key">@mapa.CicloVida2</td><td class="fig-periodo">@anoFimCiclo1–@anoFimCiclo2</td></tr>
+                    <tr><td>3º Ciclo</td><td class="fig-key">@mapa.CicloVida3</td><td class="fig-periodo">@anoFimCiclo2→</td></tr>
+                </table>
+            </div></div>
+            <div class="card"><div class="card-body p-2">
+                <div class="fw-bold text-center mb-1">Fig. H — Desafios</div>
+                <table class="fig-table">
+                    <tr><td>Primeiro</td><td class="fig-key">@mapa.Desafio1</td></tr>
+                    <tr><td>Segundo</td><td class="fig-key">@mapa.Desafio2</td></tr>
+                    <tr><td>Principal</td><td class="fig-key">@mapa.DesafioPrincipal</td></tr>
+                </table>
+            </div></div>
+            <div class="card"><div class="card-body p-2">
+                <div class="fw-bold text-center mb-1">Fig. G — Momentos Decisivos</div>
+                <table class="fig-table">
+                    <tr><td>1º</td><td class="fig-key">@mapa.MomentoDecisivo1</td><td class="fig-periodo">@anoNasc–@anoFimMD1</td></tr>
+                    <tr><td>2º</td><td class="fig-key">@mapa.MomentoDecisivo2</td><td class="fig-periodo">@anoFimMD1–@anoFimMD2</td></tr>
+                    <tr><td>3º</td><td class="fig-key">@mapa.MomentoDecisivo3</td><td class="fig-periodo">@anoFimMD2–@anoFimMD3</td></tr>
+                    <tr><td>4º</td><td class="fig-key">@mapa.MomentoDecisivo4</td><td class="fig-periodo">@anoFimMD3→</td></tr>
+                </table>
+            </div></div>
+            <div class="card"><div class="card-body p-2">
+                <div class="fw-bold text-center mb-1">Harmonia Conjugal</div>
+                <table class="fig-table">
+                    <tr><td>Vibra com</td><td class="fig-key">@mapa.HarmoniaVibraCom</td></tr>
+                    <tr><td>Atrai</td><td>@string.Join(", ", mapa.HarmoniaAtrai)</td></tr>
+                    <tr><td>É oposto a</td><td>@string.Join(", ", mapa.HarmoniaEOpostoA)</td></tr>
+                    <tr><td>É passivo</td><td>@string.Join(", ", mapa.HarmoniaEPassivoEm)</td></tr>
+                </table>
+            </div></div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private static string CorStyle(string cor) => cor.ToLowerInvariant() switch
+    {
+        "vermelho"   => "background:#e53935;color:white;padding:2px 8px;border-radius:12px;font-size:0.75rem",
+        "azul"       => "background:#1565c0;color:white;padding:2px 8px;border-radius:12px;font-size:0.75rem",
+        "verde"      => "background:#2e7d32;color:white;padding:2px 8px;border-radius:12px;font-size:0.75rem",
+        "amarelo"    => "background:#f9a825;color:black;padding:2px 8px;border-radius:12px;font-size:0.75rem",
+        "branco"     => "background:#f5f5f5;color:black;border:1px solid #ccc;padding:2px 8px;border-radius:12px;font-size:0.75rem",
+        "cinza"      => "background:#757575;color:white;padding:2px 8px;border-radius:12px;font-size:0.75rem",
+        "azul-claro" => "background:#42a5f5;color:white;padding:2px 8px;border-radius:12px;font-size:0.75rem",
+        _            => "background:#9e9e9e;color:white;padding:2px 8px;border-radius:12px;font-size:0.75rem"
+    };
+}
+
+<style>
+    .grade-table  { border-collapse: collapse; width: 100%; font-size: 0.8rem; }
+    .grade-table td { border: 1px solid #bdbdbd; padding: 2px 4px; text-align: center; }
+    .grade-label  { background: #d1e7dd; font-weight: bold; white-space: nowrap; padding: 3px 6px; }
+    .grade-espaco { background: #a3cfbb; }
+    .grade-cell   { min-width: 22px; }
+    .grade-resultado { font-weight: bold; background: #d1e7dd; white-space: nowrap; }
+    .fig-table    { border-collapse: collapse; width: 100%; font-size: 0.78rem; }
+    .fig-table td { border: 1px solid #e0e0e0; padding: 2px 5px; }
+    .fig-key      { font-weight: bold; text-align: center; background: #d1e7dd; }
+    .fig-val      { text-align: center; }
+    .fig-periodo  { font-size: 0.7rem; color: #666; }
+</style>
