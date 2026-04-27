@@ -54,12 +54,11 @@ else
                 <MudTd DataLabel="Email">@(context.Email ?? "—")</MudTd>
                 <MudTd DataLabel="Telefone">@(context.Telefone ?? "—")</MudTd>
                 <MudTd Style="text-align:right">
-                    <MudIconButton Icon="@Icons.Material.Filled.Map"
-                                   Href="@($"/consulentes/{context.Id}/mapas")"
-                                   aria-label="Mapas"
-                                   title="Mapas"
-                                   Color="Color.Default"
-                                   Size="Size.Small" />
+                    <MudButton Href="@($"/consulentes/{context.Id}/mapas")"
+                               Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               Size="Size.Small"
+                               aria-label="Mapas">Mapas</MudButton>
                     <MudButton Href="@($"/consulentes/{context.Id}/editar")"
                                Variant="Variant.Outlined"
                                Color="Color.Primary"
