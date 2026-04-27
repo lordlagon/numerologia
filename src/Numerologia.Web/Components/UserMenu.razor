@@ -44,7 +44,7 @@
         PerfilState.OnChange += AtualizarComponente;
     }
 
-    private void AtualizarComponente() => StateHasChanged();
+    private void AtualizarComponente() => InvokeAsync(StateHasChanged);
 
     private async Task Sair()
     {

@@ -61,7 +61,7 @@ public class PerfilTests : TestContext
         var cut = RenderComponent<Perfil>();
         cut.WaitForAssertion(() => cut.Find("[data-testid='nomeExibicao']"));
 
-        cut.Find("[data-testid='nomeExibicao']").Change("Ana Numeróloga");
+        cut.Find("[data-testid='nomeExibicao']").Input("Ana Numeróloga");
         await cut.Find("form").SubmitAsync();
 
         await _serviceMock.Received(1).AtualizarAsync(
