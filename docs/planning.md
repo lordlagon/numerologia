@@ -264,7 +264,7 @@ Numeróloga (usuária autenticada via Google OAuth)
   - `Perfil.razor` em `/perfil` — email somente leitura, campo editável `NomeExibicao`
   - Testes: unit (`Usuario`), integração (endpoints), bUnit (`Perfil.razor`)
 
-- [ ] **F5.2** — Usar NomeExibicao no menu e no PDF
+- [x] **F5.2** — Usar NomeExibicao no menu e no PDF ✅
   - `/auth/me` passa a retornar `NomeExibicao` (além de `Email` e `Nome`)
   - `UsuarioInfo` recebe campo `NomeExibicao` (nullable)
   - `UserMenu` exibe `NomeExibicao ?? Nome` no botão do dropdown
@@ -274,33 +274,40 @@ Numeróloga (usuária autenticada via Google OAuth)
 
 ### Fase 6 — Migração para MudBlazor
 > Objetivo: substituir Bootstrap + CSS customizado por MudBlazor para UI mais consistente e produtiva.
-> **Status: em avaliação** — iniciar após definição da estratégia de transição.
+> **Status: decisão tomada — iniciar 2026-04-28.**
 
-- [ ] **F6.0** — POC na tela mais complexa
-  - Testar MudBlazor na tela de maior complexidade (ex: Gráfico Numerológico) antes de migrar em lote
-  - Validar: tema, componentes de tabela, layout responsivo, integração com Blazor auth
-  - Critério de go/no-go antes de prosseguir com F6.1+
+**Decisão (2026-04-27):** MudBlazor escolhido após avaliação de POCs (MudBlazor / FluentUI / Blazor Bootstrap).
+POC de referência em `pocs/poc-mudblazor/` — manter para consulta durante a migração.
+
+**Padrões visuais aprovados na POC:**
+- Tema Deep Purple (`#7b1fa2`) como cor primária
+- `MudChip Size.Small` para todos os números das figuras (Color por tipo: Warning=lições, Error=dívidas, Success=dias favoráveis, Primary=destino/missão/ciclos, Info=ano pessoal, Tertiary=resp. subconsciente)
+- Grade de letras: `flex:1` por célula preenchendo 100% da largura — **nunca substituir por componentes MudBlazor**
+
+- [x] **F6.0** — POCs de avaliação de framework ✅
+  - 3 POCs implementadas: MudBlazor (5010), FluentUI (5012 — descartado), Blazor Bootstrap (5013)
+  - Framework escolhido: **MudBlazor**
 
 - [ ] **F6.1** — Setup e infraestrutura
   - Adicionar pacote `MudBlazor` ao projeto Web
-  - Configurar `MudThemeProvider`, `MudDialogProvider`, `MudSnackbarProvider` em `App.razor`
+  - Configurar `MudThemeProvider` (tema deep-purple), `MudDialogProvider`, `MudSnackbarProvider` em `App.razor`
   - Remover dependências Bootstrap (CSS, JS) e ícones Bootstrap Icons → MudBlazor Icons
-  - Definir tema de cores (primária, secundária, surface)
 
 - [ ] **F6.2** — Layout e navegação
-  - Migrar `MainLayout.razor` para `MudLayout` + `MudAppBar` + `MudDrawer`
-  - Migrar `NavMenu.razor` para `MudNavMenu` / `MudNavLink`
-  - Migrar menu de usuário (dropdown) para `MudMenu`
+  - Migrar `MainLayout.razor` → `MudLayout` + `MudAppBar` + `MudDrawer`
+  - Migrar `NavMenu.razor` → `MudNavMenu` / `MudNavLink`
+  - Migrar menu de usuário (dropdown) → `MudMenu`
 
 - [ ] **F6.3** — Listagens e formulários
-  - Migrar `ListaConsulentes` → `MudTable` / `MudDataGrid`
+  - Migrar `ListaConsulentes` → `MudTable`
   - Migrar `FormConsulente` / `EditarMapa` → `MudTextField`, `MudDatePicker`, `MudButton`
   - Migrar confirmações de exclusão → `MudDialog`
   - Migrar notificações → `MudSnackbar`
 
 - [ ] **F6.4** — Dashboard e Gráfico Numerológico
   - Migrar `Dashboard` → `MudCard`, `MudGrid`
-  - Migrar Gráfico Numerológico → preservar layout fiel ao gráfico físico (avaliar `MudPaper` + grid customizado)
+  - Migrar Gráfico Numerológico → `MudCard` por figura + grade de letras preservada (flex nativo)
+  - Aplicar padrão de chips coloridos por tipo de número (ver POC como referência)
 
 - [ ] **F6.5** — Testes e ajustes finais
   - Atualizar testes bUnit para renderização com MudBlazor
