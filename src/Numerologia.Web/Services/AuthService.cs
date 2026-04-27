@@ -17,7 +17,7 @@ public class AuthService : IAuthService
                 return null;
 
             var data = await response.Content.ReadFromJsonAsync<MeResponse>();
-            return data is null ? null : new UsuarioInfo(data.Nome, data.Email);
+            return data is null ? null : new UsuarioInfo(data.Nome, data.Email, data.NomeExibicao);
         }
         catch
         {
@@ -30,5 +30,5 @@ public class AuthService : IAuthService
         await _http.PostAsync("/auth/logout", null);
     }
 
-    private record MeResponse(string Nome, string Email);
+    private record MeResponse(string Nome, string Email, string? NomeExibicao);
 }

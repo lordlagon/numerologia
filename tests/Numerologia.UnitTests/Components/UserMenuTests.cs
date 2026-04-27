@@ -67,6 +67,30 @@ public class UserMenuTests : TestContext
     }
 
     [Fact]
+    public void Render_ComNomeExibicao_ExibeNomeExibicaoNoBotao()
+    {
+        _authService.GetCurrentUserAsync()
+            .Returns(new UsuarioInfo("Ana Google", "ana@test.com", "Ana Numeróloga"));
+
+        var cut = RenderComponent<UserMenu>();
+
+        cut.WaitForAssertion(() =>
+            cut.Markup.Should().Contain("Ana Numeróloga"));
+    }
+
+    [Fact]
+    public void Render_SemNomeExibicao_ExibeNomeGoogle()
+    {
+        _authService.GetCurrentUserAsync()
+            .Returns(new UsuarioInfo("Ana Google", "ana@test.com", null));
+
+        var cut = RenderComponent<UserMenu>();
+
+        cut.WaitForAssertion(() =>
+            cut.Markup.Should().Contain("Ana Google"));
+    }
+
+    [Fact]
     public async Task BotaoSair_QuandoClicado_ChamaLogout()
     {
         _authService.GetCurrentUserAsync().Returns(new UsuarioInfo("Ana Lima", "ana@test.com"));

@@ -26,6 +26,37 @@ public class FormMapaTests : TestContext
         _nav = Services.GetRequiredService<NavigationManager>();
 
         _consulentesService.ObterAsync(1).Returns(_consulenteFake);
+        _mapasService.ListarAsync(1).Returns(new List<MapaResumoDto>()); // sem mapas por padrão
+    }
+
+    [Fact]
+    public void Render_PrimeiroMapa_PreencheNomeDoConsulente()
+    {
+        // sem mapas já criados — deve pré-preencher o nome
+        _mapasService.ListarAsync(1).Returns(new List<MapaResumoDto>());
+
+        var cut = RenderComponent<FormMapa>(p => p.Add(c => c.ConsulenteId, 1));
+
+        cut.WaitForAssertion(() =>
+        {
+            var input = cut.Find("[data-testid='nome-utilizado']");
+            input.GetAttribute("value").Should().Be("José da Silva");
+        });
+    }
+
+    [Fact]
+    public void Render_MapasExistentes_NomeFicaVazio()
+    {
+        var mapaExistente = new MapaResumoDto(1, "JOSE DA SILVA", _dataNasc, 3, 5, 7, 9, DateTime.UtcNow);
+        _mapasService.ListarAsync(1).Returns(new List<MapaResumoDto> { mapaExistente });
+
+        var cut = RenderComponent<FormMapa>(p => p.Add(c => c.ConsulenteId, 1));
+
+        cut.WaitForAssertion(() =>
+        {
+            var input = cut.Find("[data-testid='nome-utilizado']");
+            input.GetAttribute("value").Should().BeNullOrEmpty();
+        });
     }
 
     [Fact]

@@ -15,7 +15,7 @@
                 @onclick="ToggleMenu"
                 aria-expanded="@_aberto">
             <span class="bi bi-person-circle fs-5" aria-hidden="true"></span>
-            <span class="d-none d-sm-inline">@_usuario.Nome</span>
+            <span class="d-none d-sm-inline">@(_usuario.NomeExibicao ?? _usuario.Nome)</span>
         </button>
         <ul class="dropdown-menu shadow @(_aberto ? "show" : "")" style="right:0;left:auto">
             <li>

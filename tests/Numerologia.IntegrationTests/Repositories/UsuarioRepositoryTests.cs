@@ -63,6 +63,19 @@ public class UsuarioRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task AtualizarAsync_DevePeristirNomeExibicaoNoBanco()
+    {
+        var usuario = new Usuario("google-upd", "up@test.com", "Up");
+        await _sut.AdicionarAsync(usuario);
+
+        usuario.AtualizarPerfil("Novo Nome Exibição");
+        await _sut.AtualizarAsync(usuario);
+
+        var salvo = await _context.Usuarios.FirstAsync(u => u.GoogleId == "google-upd");
+        salvo.NomeExibicao.Should().Be("Novo Nome Exibição");
+    }
+
+    [Fact]
     public async Task GoogleId_DeveSerUnico()
     {
         var usuario1 = new Usuario("google-dup", "a@test.com", "A");

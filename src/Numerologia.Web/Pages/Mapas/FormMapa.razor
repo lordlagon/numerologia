@@ -58,9 +58,17 @@ else
     {
         try
         {
-            var consulente = await ConsulentesService.ObterAsync(ConsulenteId);
+            var (consulente, mapas) = (
+                await ConsulentesService.ObterAsync(ConsulenteId),
+                await MapasService.ListarAsync(ConsulenteId));
+
             if (consulente is not null)
+            {
                 _form.DataNascimento = consulente.DataNascimento;
+
+                if (mapas is null || mapas.Count == 0)
+                    _form.NomeUtilizado = consulente.NomeCompleto;
+            }
         }
         catch { }
         finally
