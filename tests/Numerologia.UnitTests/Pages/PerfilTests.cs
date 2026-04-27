@@ -1,6 +1,8 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using NSubstitute;
 using Numerologia.Web.Pages;
 using Numerologia.Web.Services;
@@ -14,6 +16,8 @@ public class PerfilTests : TestContext
 
     public PerfilTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
         _serviceMock = Substitute.For<IPerfilService>();
         Services.AddSingleton(_serviceMock);
         Services.AddSingleton(_perfilState);

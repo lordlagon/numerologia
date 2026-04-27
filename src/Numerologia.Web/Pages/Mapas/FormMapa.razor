@@ -6,50 +6,58 @@
 
 <PageTitle>Gerar Mapa Numerológico</PageTitle>
 
-<h1>Gerar Mapa Numerológico</h1>
+<MudText Typo="Typo.h5" Class="mb-4">Gerar Mapa Numerológico</MudText>
 
 @if (_carregando)
 {
-    <p>Carregando...</p>
+    <MudProgressLinear Indeterminate="true" />
+    <MudText>Carregando...</MudText>
 }
 else
 {
-    <EditForm Model="_form" OnValidSubmit="Gerar">
-        <DataAnnotationsValidator />
+    <MudPaper Elevation="2" Class="pa-4" Style="max-width:540px">
+        <EditForm Model="_form" OnValidSubmit="Gerar">
+            <DataAnnotationsValidator />
 
-        <div class="mb-3">
-            <label class="form-label">Nome utilizado *</label>
-            <InputText class="form-control" @bind-Value="_form.NomeUtilizado"
-                       data-testid="nome-utilizado" />
-            <ValidationMessage For="() => _form.NomeUtilizado" />
-            <div class="form-text">
-                Nome conforme certidão de nascimento (ou nome de casada, se alterado).
+            <MudTextField @bind-Value="_form.NomeUtilizado"
+                          Label="Nome utilizado *"
+                          For="() => _form.NomeUtilizado"
+                          Immediate="true"
+                          HelperText="Nome conforme certidão de nascimento (ou nome de casada, se alterado)."
+                          Class="mb-3"
+                          data-testid="nome-utilizado" />
+
+            <MudTextField @bind-Value="_dataNascimentoStr"
+                          Label="Data de nascimento *"
+                          InputType="InputType.Date"
+                          Class="mb-3"
+                          data-testid="data-nascimento" />
+
+            @if (_erro is not null)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3">@_erro</MudAlert>
+            }
+
+            <div class="d-flex gap-2">
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="_gerando">
+                    @(_gerando ? "Gerando..." : "Gerar Mapa")
+                </MudButton>
+                <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas")"
+                           Variant="Variant.Outlined"
+                           Color="Color.Default">Cancelar</MudButton>
             </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Data de nascimento *</label>
-            <InputDate class="form-control" @bind-Value="_form.DataNascimento"
-                       data-testid="data-nascimento" />
-            <ValidationMessage For="() => _form.DataNascimento" />
-        </div>
-
-        @if (_erro is not null)
-        {
-            <div class="alert alert-danger">@_erro</div>
-        }
-
-        <button type="submit" class="btn btn-primary" disabled="@_gerando">
-            @(_gerando ? "Gerando..." : "Gerar Mapa")
-        </button>
-        <a href="/consulentes/@ConsulenteId/mapas" class="btn btn-secondary ms-2">Cancelar</a>
-    </EditForm>
+        </EditForm>
+    </MudPaper>
 }
 
 @code {
     [Parameter] public int ConsulenteId { get; set; }
 
     private readonly FormModel _form = new();
+    private string _dataNascimentoStr = "";
     private bool _carregando = true;
     private bool _gerando;
     private string? _erro;
@@ -64,7 +72,7 @@ else
 
             if (consulente is not null)
             {
-                _form.DataNascimento = consulente.DataNascimento;
+                _dataNascimentoStr = consulente.DataNascimento.ToString("yyyy-MM-dd");
 
                 if (mapas is null || mapas.Count == 0)
                     _form.NomeUtilizado = consulente.NomeCompleto;
@@ -82,9 +90,16 @@ else
         _gerando = true;
         _erro = null;
 
+        if (!DateOnly.TryParse(_dataNascimentoStr, out var dataNascimento))
+        {
+            _erro = "Data de nascimento é obrigatória.";
+            _gerando = false;
+            return;
+        }
+
         try
         {
-            await MapasService.CriarAsync(ConsulenteId, _form.NomeUtilizado!, _form.DataNascimento);
+            await MapasService.CriarAsync(ConsulenteId, _form.NomeUtilizado!, dataNascimento);
             Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas");
         }
         catch
@@ -98,8 +113,5 @@ else
     {
         [Required(ErrorMessage = "Nome utilizado é obrigatório")]
         public string? NomeUtilizado { get; set; }
-
-        [Required(ErrorMessage = "Data de nascimento é obrigatória")]
-        public DateOnly DataNascimento { get; set; }
     }
 }

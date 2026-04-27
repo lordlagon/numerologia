@@ -6,52 +6,60 @@
 
 <PageTitle>@(_id is null ? "Novo Consulente" : "Editar Consulente")</PageTitle>
 
-<h1>@(_id is null ? "Novo Consulente" : "Editar Consulente")</h1>
+<MudText Typo="Typo.h5" Class="mb-4">@(_id is null ? "Novo Consulente" : "Editar Consulente")</MudText>
 
 @if (_carregando)
 {
-    <p>Carregando...</p>
+    <MudProgressLinear Indeterminate="true" />
+    <MudText>Carregando...</MudText>
 }
 else
 {
-    <EditForm Model="_form" OnValidSubmit="Salvar">
-        <DataAnnotationsValidator />
+    <MudPaper Elevation="2" Class="pa-4" Style="max-width:540px">
+        <EditForm Model="_form" OnValidSubmit="Salvar">
+            <DataAnnotationsValidator />
 
-        <div class="mb-3">
-            <label class="form-label">Nome completo *</label>
-            <InputText class="form-control" @bind-Value="_form.NomeCompleto"
-                       data-testid="nome" />
-            <ValidationMessage For="() => _form.NomeCompleto" />
-        </div>
+            <MudTextField @bind-Value="_form.NomeCompleto"
+                          Label="Nome completo *"
+                          For="() => _form.NomeCompleto"
+                          Immediate="true"
+                          Class="mb-3"
+                          data-testid="nome" />
 
-        <div class="mb-3">
-            <label class="form-label">Data de nascimento *</label>
-            <InputDate class="form-control" @bind-Value="_form.DataNascimento"
-                       data-testid="data-nascimento" />
-        </div>
+            <MudTextField @bind-Value="_dataNascimentoStr"
+                          Label="Data de nascimento *"
+                          InputType="InputType.Date"
+                          Class="mb-3"
+                          data-testid="data-nascimento" />
 
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <InputText class="form-control" @bind-Value="_form.Email"
-                       data-testid="email" />
-        </div>
+            <MudTextField @bind-Value="_form.Email"
+                          Label="Email"
+                          Class="mb-3"
+                          data-testid="email" />
 
-        <div class="mb-3">
-            <label class="form-label">Telefone</label>
-            <InputText class="form-control" @bind-Value="_form.Telefone"
-                       data-testid="telefone" />
-        </div>
+            <MudTextField @bind-Value="_form.Telefone"
+                          Label="Telefone"
+                          Class="mb-3"
+                          data-testid="telefone" />
 
-        @if (_erro is not null)
-        {
-            <div class="alert alert-danger">@_erro</div>
-        }
+            @if (_erro is not null)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3">@_erro</MudAlert>
+            }
 
-        <button type="submit" class="btn btn-primary" disabled="@_salvando">
-            @(_salvando ? "Salvando..." : "Salvar")
-        </button>
-        <a href="/consulentes" class="btn btn-secondary ms-2">Cancelar</a>
-    </EditForm>
+            <div class="d-flex gap-2">
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="_salvando">
+                    @(_salvando ? "Salvando..." : "Salvar")
+                </MudButton>
+                <MudButton Href="/consulentes"
+                           Variant="Variant.Outlined"
+                           Color="Color.Default">Cancelar</MudButton>
+            </div>
+        </EditForm>
+    </MudPaper>
 }
 
 @code {
@@ -59,6 +67,7 @@ else
 
     private int? _id;
     private FormModel _form = new();
+    private string _dataNascimentoStr = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd");
     private bool _carregando = true;
     private bool _salvando;
     private string? _erro;
@@ -77,11 +86,11 @@ else
                 {
                     _form = new FormModel
                     {
-                        NomeCompleto   = consulente.NomeCompleto,
-                        DataNascimento = consulente.DataNascimento,
-                        Email          = consulente.Email,
-                        Telefone       = consulente.Telefone,
+                        NomeCompleto = consulente.NomeCompleto,
+                        Email        = consulente.Email,
+                        Telefone     = consulente.Telefone,
                     };
+                    _dataNascimentoStr = consulente.DataNascimento.ToString("yyyy-MM-dd");
                 }
             }
             catch
@@ -102,7 +111,7 @@ else
         {
             var dto = new SalvarConsulenteDto(
                 _form.NomeCompleto!,
-                _form.DataNascimento.ToString("yyyy-MM-dd"),
+                _dataNascimentoStr,
                 _form.Email,
                 _form.Telefone);
 
@@ -124,8 +133,6 @@ else
     {
         [Required(ErrorMessage = "Nome é obrigatório")]
         public string? NomeCompleto { get; set; }
-
-        public DateOnly DataNascimento { get; set; } = DateOnly.FromDateTime(DateTime.Today);
 
         public string? Email { get; set; }
 

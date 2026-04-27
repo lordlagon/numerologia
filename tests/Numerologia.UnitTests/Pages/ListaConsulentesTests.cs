@@ -2,6 +2,8 @@ using Bunit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using NSubstitute;
 using Numerologia.Web.Pages.Consulentes;
 using Numerologia.Web.Services;
@@ -14,6 +16,8 @@ public class ListaConsulentesTests : TestContext
 
     public ListaConsulentesTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
         _serviceMock = Substitute.For<IConsulentesService>();
         Services.AddSingleton(_serviceMock);
     }
@@ -203,7 +207,6 @@ public class ListaConsulentesTests : TestContext
         {
             var link = cut.Find("a[href='/consulentes/7/mapas']");
             link.GetAttribute("aria-label").Should().Be("Mapas");
-            link.QuerySelector("i.bi-file-text").Should().NotBeNull();
         });
     }
 }
