@@ -10,10 +10,12 @@ namespace Numerologia.UnitTests.Components;
 public class UserMenuTests : TestContext
 {
     private readonly IAuthService _authService = Substitute.For<IAuthService>();
+    private readonly PerfilState _perfilState = new();
 
     public UserMenuTests()
     {
         Services.AddSingleton(_authService);
+        Services.AddSingleton(_perfilState);
     }
 
     [Fact]
@@ -88,6 +90,20 @@ public class UserMenuTests : TestContext
 
         cut.WaitForAssertion(() =>
             cut.Markup.Should().Contain("Ana Google"));
+    }
+
+    [Fact]
+    public void Render_QuandoPerfilStateAtualiza_ExibeNomeAtualizado()
+    {
+        _authService.GetCurrentUserAsync()
+            .Returns(new UsuarioInfo("Ana Google", "ana@test.com", null));
+
+        var cut = RenderComponent<UserMenu>();
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Ana Google"));
+
+        _perfilState.Atualizar("Ana Numeróloga");
+
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Ana Numeróloga"));
     }
 
     [Fact]

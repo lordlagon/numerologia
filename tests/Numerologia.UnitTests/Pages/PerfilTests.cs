@@ -10,11 +10,13 @@ namespace Numerologia.UnitTests.Pages;
 public class PerfilTests : TestContext
 {
     private readonly IPerfilService _serviceMock;
+    private readonly PerfilState _perfilState = new();
 
     public PerfilTests()
     {
         _serviceMock = Substitute.For<IPerfilService>();
         Services.AddSingleton(_serviceMock);
+        Services.AddSingleton(_perfilState);
     }
 
     [Fact]
@@ -76,6 +78,22 @@ public class PerfilTests : TestContext
 
         cut.WaitForAssertion(() =>
             cut.Markup.Should().Contain("Perfil atualizado com sucesso"));
+    }
+
+    [Fact]
+    public async Task Submit_ComSucesso_AtualizaPerfilState()
+    {
+        _serviceMock.ObterAsync().Returns(new PerfilDto("ana@test.com", "Ana Google", null));
+        _serviceMock.AtualizarAsync(Arg.Any<SalvarPerfilDto>())
+            .Returns(new PerfilDto("ana@test.com", "Ana Google", "Ana Numeróloga"));
+
+        var cut = RenderComponent<Perfil>();
+        cut.WaitForAssertion(() => cut.Find("[data-testid='nomeExibicao']"));
+
+        cut.Find("[data-testid='nomeExibicao']").Change("Ana Numeróloga");
+        await cut.Find("form").SubmitAsync();
+
+        _perfilState.NomeExibicao.Should().Be("Ana Numeróloga");
     }
 
     [Fact]
