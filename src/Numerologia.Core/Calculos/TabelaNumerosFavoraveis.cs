@@ -136,4 +136,31 @@ public static class TabelaNumerosFavoraveis
 
         return numeros;
     }
+
+    // Pág. 202: gera a lista completa de dias favoráveis do mês a partir dos 2 números base.
+    // Algoritmo: a, b, 2b (única multiplicação), depois alternando +a e +b até > 31.
+    public static int[] GerarDiasFavoraveis(int dia, int mes)
+    {
+        var base_nums = Consultar(dia, mes);
+        var a = Math.Min(base_nums[0], base_nums[1]);
+        var b = Math.Max(base_nums[0], base_nums[1]);
+
+        var dias = new List<int> { a, b };
+
+        // Única multiplicação: 2×b
+        var atual = b * 2;
+        if (atual <= 31) dias.Add(atual);
+
+        // Alternando +a e +b até ultrapassar 31
+        var addA = true;
+        while (true)
+        {
+            atual += addA ? a : b;
+            if (atual > 31) break;
+            dias.Add(atual);
+            addA = !addA;
+        }
+
+        return [.. dias.Distinct().Order()];
+    }
 }

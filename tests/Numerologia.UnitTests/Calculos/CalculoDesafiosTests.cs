@@ -55,4 +55,27 @@ public class CalculoDesafiosTests
         var r = _sut.Calcular(new DateOnly(1990, 2, 9), numeroExpressao: 1);
         r.Desafio1.Should().Be(7);
     }
+
+    // ── Números mestres nos desafios devem ser reduzidos: 11→2 e 22→4 ─────────
+    // (os ciclos preservam 11/22, mas a Fig. H usa redução total)
+
+    [Fact]
+    public void Calcular_Desafio_OnzeReduzidoParaDoisNaFigH()
+    {
+        // 29/06/1947: DiaReduzido=11 (mestre), MesReduzido=6, AnoReduzido=2
+        // Para desafios: 11→2
+        // Desafio1 = |6 − 2| = 4
+        var r = _sut.Calcular(new DateOnly(1947, 6, 29), numeroExpressao: 1);
+        r.Desafio1.Should().Be(4);
+    }
+
+    [Fact]
+    public void Calcular_Desafio2_VinteDoisReduzidoParaQuatroNaFigH()
+    {
+        // André 28/07/1984: DiaReduzido=1, MesReduzido=7, AnoReduzido=22 (mestre)
+        // Para desafios: 22→4
+        // Desafio2 = |4 − 1| = 3
+        var r = _sut.Calcular(new DateOnly(1984, 7, 28), numeroExpressao: 1);
+        r.Desafio2.Should().Be(3);
+    }
 }
