@@ -1,6 +1,8 @@
 @using Numerologia.Web.Services
 @inject IAuthService AuthService
 @inject NavigationManager Nav
+@inject PerfilState PerfilState
+@implements IDisposable
 
 @if (_aberto)
 {
@@ -15,7 +17,7 @@
                 @onclick="ToggleMenu"
                 aria-expanded="@_aberto">
             <span class="bi bi-person-circle fs-5" aria-hidden="true"></span>
-            <span class="d-none d-sm-inline">@(_usuario.NomeExibicao ?? _usuario.Nome)</span>
+            <span class="d-none d-sm-inline">@(PerfilState.NomeExibicao ?? _usuario.NomeExibicao ?? _usuario.Nome)</span>
         </button>
         <ul class="dropdown-menu shadow @(_aberto ? "show" : "")" style="right:0;left:auto">
             <li>
@@ -43,6 +45,12 @@
     protected override async Task OnInitializedAsync()
     {
         _usuario = await AuthService.GetCurrentUserAsync();
+        PerfilState.OnChange += AtualizarComponente;
+    }
+
+    private void AtualizarComponente()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private void ToggleMenu() => _aberto = !_aberto;
@@ -53,5 +61,10 @@
         _aberto = false;
         await AuthService.LogoutAsync();
         Nav.NavigateTo("/", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        PerfilState.OnChange -= AtualizarComponente;
     }
 }

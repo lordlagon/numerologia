@@ -1,5 +1,6 @@
 @page "/perfil"
 @inject IPerfilService PerfilService
+@inject PerfilState PerfilState
 
 <PageTitle>Perfil</PageTitle>
 
@@ -80,6 +81,7 @@
             _perfil = await PerfilService.AtualizarAsync(new SalvarPerfilDto(nomeParaSalvar));
             _nomeExibicao = _perfil.NomeExibicao;
             _salvoComSucesso = true;
+            PerfilState.Atualizar(_perfil.NomeExibicao);
         }
         catch
         {
