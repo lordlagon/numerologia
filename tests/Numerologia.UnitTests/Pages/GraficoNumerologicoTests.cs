@@ -1,6 +1,8 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using NSubstitute;
 using Numerologia.Web.Pages.Mapas;
 using Numerologia.Web.Services;
@@ -59,6 +61,8 @@ public class GraficoNumerologicoTests : TestContext
 
     public GraficoNumerologicoTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
         Services.AddSingleton(_mapasService);
         Services.AddSingleton(_pessoaisService);
     }
@@ -143,7 +147,7 @@ public class GraficoNumerologicoTests : TestContext
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.FindAll("[data-testid='celula-letra']").Should().HaveCount(4));
+            cut.FindAll("div[data-testid='celula-letra']").Should().HaveCount(4));
     }
 
     [Fact]
@@ -216,7 +220,7 @@ public class GraficoNumerologicoTests : TestContext
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='ciclo1-periodo']").TextContent.Should().Be("de 1985 até 2012"));
+            cut.Find("[data-testid='ciclo1-periodo']").TextContent.Should().Be("1985–2012"));
     }
 
     [Fact]
@@ -227,7 +231,7 @@ public class GraficoNumerologicoTests : TestContext
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='ciclo2-periodo']").TextContent.Should().Be("de 2012 até 2039"));
+            cut.Find("[data-testid='ciclo2-periodo']").TextContent.Should().Be("2012–2039"));
     }
 
     [Fact]
@@ -237,7 +241,7 @@ public class GraficoNumerologicoTests : TestContext
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='ciclo3-periodo']").TextContent.Should().Be("de 2039 em diante"));
+            cut.Find("[data-testid='ciclo3-periodo']").TextContent.Should().Be("2039→"));
     }
 
     // ── F2.8 — Anos dos Momentos Decisivos ───────────────────────────────────
@@ -251,7 +255,7 @@ public class GraficoNumerologicoTests : TestContext
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='md1-periodo']").TextContent.Should().Be("de 1985 até 2012"));
+            cut.Find("[data-testid='md1-periodo']").TextContent.Should().Be("1985–2012"));
     }
 
     [Fact]
@@ -262,7 +266,7 @@ public class GraficoNumerologicoTests : TestContext
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='md2-periodo']").TextContent.Should().Be("de 2012 até 2021"));
+            cut.Find("[data-testid='md2-periodo']").TextContent.Should().Be("2012–2021"));
     }
 
     [Fact]
@@ -273,7 +277,7 @@ public class GraficoNumerologicoTests : TestContext
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='md3-periodo']").TextContent.Should().Be("de 2021 até 2030"));
+            cut.Find("[data-testid='md3-periodo']").TextContent.Should().Be("2021–2030"));
     }
 
     [Fact]
@@ -283,7 +287,7 @@ public class GraficoNumerologicoTests : TestContext
         var cut = RenderGrafico();
 
         cut.WaitForAssertion(() =>
-            cut.Find("[data-testid='md4-periodo']").TextContent.Should().Be("de 2030 em diante"));
+            cut.Find("[data-testid='md4-periodo']").TextContent.Should().Be("2030→"));
     }
 
     // ── F2.9 — Data de nascimento sem redução (card "Data Natal") ───────────
