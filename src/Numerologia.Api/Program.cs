@@ -239,7 +239,7 @@ app.MapGet("/auth/me", async (HttpContext context, UsuarioService usuarioService
 
     var usuario = await usuarioService.ObterOuCriarAsync(googleId, email ?? "", nome ?? "");
 
-    return Results.Ok(new { usuario.Email, usuario.Nome });
+    return Results.Ok(new { usuario.Email, usuario.Nome, usuario.NomeExibicao });
 }).RequireAuthorization();
 
 app.MapPost("/auth/logout", async (HttpContext context) =>
@@ -416,7 +416,7 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/pdf",
         var consulente = await consRepo.ObterPorIdAsync(consulenteId, usuario.Id);
         if (consulente is null) return Results.NotFound();
 
-        var bytes = GeradorPdf.Gerar(mapa, consulente.NomeCompleto, usuario.Nome);
+        var bytes = GeradorPdf.Gerar(mapa, consulente.NomeCompleto, usuario.NomeExibicao ?? usuario.Nome);
         var nomeArquivo = $"mapa-{consulente.NomeCompleto.Replace(" ", "-").ToLower()}.pdf";
         return Results.File(bytes, "application/pdf", nomeArquivo);
     }).RequireAuthorization();
@@ -451,6 +451,30 @@ app.MapPut("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
         await repo.SalvarAlteracoesAsync();
         return Results.Ok(ToResumoResponse(mapa));
     }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+// Perfil da numeróloga
+app.MapGet("/api/perfil", async (HttpContext ctx, UsuarioService usuarioService) =>
+{
+    var usuario = await ResolverUsuario(ctx, usuarioService);
+    if (usuario is null) return Results.Unauthorized();
+
+    return Results.Ok(new { usuario.Email, usuario.Nome, usuario.NomeExibicao });
+}).RequireAuthorization().RequireRateLimiting("api-geral");
+
+app.MapPut("/api/perfil", async (AtualizarPerfilRequest req, HttpContext ctx,
+    UsuarioService usuarioService, IUsuarioRepository usuarioRepo) =>
+{
+    var usuario = await ResolverUsuario(ctx, usuarioService);
+    if (usuario is null) return Results.Unauthorized();
+
+    if (req.NomeExibicao is not null && string.IsNullOrWhiteSpace(req.NomeExibicao))
+        return Results.BadRequest(new { error = "NomeExibicao não pode ser vazio." });
+
+    usuario.AtualizarPerfil(req.NomeExibicao);
+    await usuarioRepo.AtualizarAsync(usuario);
+
+    return Results.Ok(new { usuario.Email, usuario.Nome, usuario.NomeExibicao });
+}).RequireAuthorization().RequireRateLimiting("api-geral");
 
 // Fallback para o roteamento client-side do Blazor
 // Só alcançado quando o path NÃO começa com /api — resolve o conflito de rotas
@@ -511,6 +535,8 @@ record AtualizarConsulenteRequest(
 
 record ConsulenteResponse(int Id, string NomeCompleto, DateOnly DataNascimento,
     string? Email, string? Telefone, DateTime CriadoEm);
+
+record AtualizarPerfilRequest(string? NomeExibicao);
 
 record CriarMapaRequest([property: MaxLength(256)] string NomeUtilizado, string? DataNascimento = null);
 record AtualizarMapaRequest([property: MaxLength(256)] string NomeUtilizado, string? DataNascimento = null);

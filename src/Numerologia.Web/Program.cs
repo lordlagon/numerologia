@@ -13,5 +13,7 @@ builder.Services.AddScoped<IConsulentesService, ConsulentesService>();
 builder.Services.AddScoped<IMapasService, MapasService>();
 builder.Services.AddScoped<ICalculosPessoaisService, CalculosPessoaisService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IPerfilService, PerfilService>();
+builder.Services.AddSingleton<PerfilState>();
 
 await builder.Build().RunAsync();

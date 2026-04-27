@@ -6,6 +6,7 @@ public class Usuario
     public string GoogleId { get; private set; }
     public string Email { get; private set; }
     public string Nome { get; private set; }
+    public string? NomeExibicao { get; private set; }
     public DateTime CriadoEm { get; private set; }
 
     public Usuario(string googleId, string email, string nome)
@@ -18,6 +19,14 @@ public class Usuario
         Email = email;
         Nome = nome;
         CriadoEm = DateTime.UtcNow;
+    }
+
+    public void AtualizarPerfil(string? nomeExibicao)
+    {
+        if (nomeExibicao is not null && string.IsNullOrWhiteSpace(nomeExibicao))
+            throw new ArgumentException("NomeExibicao não pode ser vazio ou apenas espaços.", nameof(nomeExibicao));
+
+        NomeExibicao = nomeExibicao;
     }
 
     // EF Core requer construtor sem parâmetros

@@ -66,6 +66,18 @@ public class AuthEndpointsTests : IClassFixture<NumerologiaWebFactory>
     }
 
     [Fact]
+    public async Task AuthMe_ComAutenticacao_DeveRetornarNomeExibicao()
+    {
+        var client = _factory.CreateAuthenticatedClient("google-exibicao", "exibicao@test.com", "Exibicao User");
+
+        var response = await client.GetAsync("/auth/me");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<MeResponse>();
+        body!.NomeExibicao.Should().BeNull(); // novo usuário ainda não tem NomeExibicao
+    }
+
+    [Fact]
     public async Task AuthLogout_DeveRetornar200()
     {
         var client = _factory.CreateAuthenticatedClient("google-logout", "logout@test.com", "Logout");
@@ -75,5 +87,5 @@ public class AuthEndpointsTests : IClassFixture<NumerologiaWebFactory>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    public record MeResponse(string Email, string Nome);
+    public record MeResponse(string Email, string Nome, string? NomeExibicao);
 }
