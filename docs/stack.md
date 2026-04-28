@@ -6,6 +6,7 @@
 |--------|------------|
 | Backend | ASP.NET Core Web API (.NET 10) |
 | Frontend | Blazor WebAssembly (.NET 10) |
+| UI Components | MudBlazor 7.16.0 — tema Deep Purple (`#7b1fa2`) |
 | Banco de dados | PostgreSQL |
 | ORM | Entity Framework Core 10 + Npgsql 10 |
 | Auth | Google OAuth (`Microsoft.AspNetCore.Authentication.Google` v10.*) |
@@ -111,6 +112,33 @@ Sobe a API em `http://localhost:8080` e o PostgreSQL em `localhost:5432`.
 - Testes de integração usam `WebApplicationFactory<Program>` com SQLite in-memory (substitui PostgreSQL via `ConfigureTestServices`). A factory chama `EnsureCreated()` — **não chamar** `Database.Migrate()` em testes.
 - Testes de componentes Blazor usam `bUnit`; mockar `IJSRuntime` — bUnit não executa JavaScript.
 - Usar `Bogus` para dados realistas com constraints explícitas; evitar magic strings.
+
+### bUnit + MudBlazor — setup obrigatório
+
+Todo `TestContext` que renderize componentes MudBlazor precisa:
+
+```csharp
+public MinhaClasseTests()
+{
+    JSInterop.Mode = JSRuntimeMode.Loose;
+    Services.AddMudServices();
+}
+```
+
+Sem isso: `InvalidOperationException: Cannot provide a value for 'Localizer' on type 'MudInput'`.
+
+**`MudMenu` / `MudPopover`:** itens abertos aparecem no `MudPopoverProvider`, não no `cut`:
+```csharp
+private readonly IRenderedComponent<MudPopoverProvider> _popoverProvider;
+// no construtor — antes de qualquer RenderComponent:
+_popoverProvider = RenderComponent<MudPopoverProvider>();
+```
+
+**`MudTextField` com `Immediate="true"`:** usar `element.Input("valor")` (não `.Change()`) nos testes.
+
+**`data-testid` em `MudTd`:** o atributo fica no `<td>`, não no `<tr>`. Seletor: `td[data-testid^='...']`.
+
+**Href com parâmetros int:** `Href="@($"/path/{id}")"` — nunca `Href="/path/@id"` (erro de compilação).
 
 ---
 

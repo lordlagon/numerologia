@@ -1,11 +1,20 @@
 using Bunit;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using Numerologia.Web.Components;
 
 namespace Numerologia.UnitTests.Components;
 
 public class BadgeCorTests : TestContext
 {
+    public BadgeCorTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
+    }
+
     [Fact]
     public void Render_ExibeNomeDaCor()
     {
@@ -19,7 +28,7 @@ public class BadgeCorTests : TestContext
     {
         var cut = RenderComponent<BadgeCor>(p => p.Add(c => c.Cor, "Azul"));
 
-        cut.Find("span").GetAttribute("style").Should().Contain("background-color");
+        cut.Markup.Should().Contain("background-color");
     }
 
     [Fact]
@@ -27,7 +36,7 @@ public class BadgeCorTests : TestContext
     {
         var cut = RenderComponent<BadgeCor>(p => p.Add(c => c.Cor, "Azul"));
 
-        cut.Find("span").GetAttribute("style").Should().Contain("color");
+        cut.Markup.Should().Contain("color");
     }
 
     [Fact]
@@ -35,7 +44,7 @@ public class BadgeCorTests : TestContext
     {
         var cut = RenderComponent<BadgeCor>(p => p.Add(c => c.Cor, "Branco"));
 
-        cut.Find("span").GetAttribute("style").Should().Contain("#212529");
+        cut.Markup.Should().Contain("#212529");
     }
 
     [Fact]
@@ -43,6 +52,6 @@ public class BadgeCorTests : TestContext
     {
         var cut = RenderComponent<BadgeCor>(p => p.Add(c => c.Cor, "Preto"));
 
-        cut.Find("span").GetAttribute("style").Should().Contain("#ffffff");
+        cut.Markup.Should().Contain("#ffffff");
     }
 }

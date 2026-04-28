@@ -6,13 +6,18 @@
 
 @if (_loading)
 {
-    <p>Carregando...</p>
+    <MudProgressLinear Indeterminate="true" />
 }
 else if (_usuario is null)
 {
-    <h1>Numerologia Cabalística</h1>
-    <p>Faça login para acessar seu mapa numerológico.</p>
-    <a href="/auth/login" class="btn btn-primary">Entrar com Google</a>
+    <MudText Typo="Typo.h4" Class="mb-3">Numerologia Cabalística</MudText>
+    <MudText Class="mb-4">Faça login para acessar seu mapa numerológico.</MudText>
+    <MudButton Href="/auth/login"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Login">
+        Entrar com Google
+    </MudButton>
 }
 else
 {
@@ -27,12 +32,5 @@ else
     {
         _usuario = await AuthService.GetCurrentUserAsync();
         _loading = false;
-    }
-
-    private async Task Logout()
-    {
-        await AuthService.LogoutAsync();
-        _usuario = null;
-        Nav.NavigateTo("/", forceLoad: true);
     }
 }

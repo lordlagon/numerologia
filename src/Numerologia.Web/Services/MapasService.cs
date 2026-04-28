@@ -45,4 +45,8 @@ public class MapasService : IMapasService
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<MapaResumoDto>())!;
     }
+
+    public async Task<PiramideDto?> ObterPiramideAsync(int consulenteId, int mapaId)
+        => await _http.GetFromJsonAsync<PiramideDto>(
+            $"/api/consulentes/{consulenteId}/mapas/{mapaId}/piramides");
 }

@@ -4,61 +4,50 @@
 @inject PerfilState PerfilState
 @implements IDisposable
 
-@if (_aberto)
-{
-    <div style="position:fixed;inset:0;z-index:999" @onclick="FecharMenu"></div>
-}
-
 @if (_usuario is not null)
 {
-    <div class="dropdown" style="z-index:1000;position:relative" @onclick:stopPropagation>
-        <button class="btn btn-link text-dark text-decoration-none dropdown-toggle d-flex align-items-center gap-2"
-                type="button"
-                @onclick="ToggleMenu"
-                aria-expanded="@_aberto">
-            <span class="bi bi-person-circle fs-5" aria-hidden="true"></span>
-            <span class="d-none d-sm-inline">@(PerfilState.NomeExibicao ?? _usuario.NomeExibicao ?? _usuario.Nome)</span>
-        </button>
-        <ul class="dropdown-menu shadow @(_aberto ? "show" : "")" style="right:0;left:auto">
-            <li>
-                <span class="dropdown-item-text small text-muted">@_usuario.Email</span>
-            </li>
-            <li><hr class="dropdown-divider" /></li>
-            <li>
-                <a class="dropdown-item" href="/perfil" @onclick="FecharMenu">
-                    <span class="bi bi-person me-2" aria-hidden="true"></span>Perfil
-                </a>
-            </li>
-            <li>
-                <button class="dropdown-item text-danger" @onclick="Sair">
-                    <span class="bi bi-box-arrow-right me-2" aria-hidden="true"></span>Sair
-                </button>
-            </li>
-        </ul>
-    </div>
+    <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+        <ActivatorContent>
+            <MudButton Color="Color.Inherit"
+                       StartIcon="@Icons.Material.Filled.AccountCircle"
+                       EndIcon="@Icons.Material.Filled.ArrowDropDown">
+                @(PerfilState.NomeExibicao ?? _usuario.NomeExibicao ?? _usuario.Nome)
+            </MudButton>
+        </ActivatorContent>
+        <ChildContent>
+            <MudMenuItem Disabled="true">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@_usuario.Email</MudText>
+            </MudMenuItem>
+            <MudDivider />
+            <MudMenuItem Href="/perfil" Icon="@Icons.Material.Filled.Person">
+                Perfil
+            </MudMenuItem>
+            <MudMenuItem OnClick="Sair"
+                         Icon="@Icons.Material.Filled.Logout"
+                         IconColor="Color.Error">
+                <MudText Color="Color.Error">Sair</MudText>
+            </MudMenuItem>
+        </ChildContent>
+    </MudMenu>
 }
 
 @code {
     private UsuarioInfo? _usuario;
-    private bool _aberto;
 
     protected override async Task OnInitializedAsync()
     {
         _usuario = await AuthService.GetCurrentUserAsync();
+        // Inicializa PerfilState com o valor atual da API para que o menu
+        // exiba o nome correto mesmo antes de o usuário abrir a tela de Perfil.
+        if (PerfilState.NomeExibicao is null)
+            PerfilState.SilentInit(_usuario?.NomeExibicao);
         PerfilState.OnChange += AtualizarComponente;
     }
 
-    private void AtualizarComponente()
-    {
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void ToggleMenu() => _aberto = !_aberto;
-    private void FecharMenu() => _aberto = false;
+    private void AtualizarComponente() => InvokeAsync(StateHasChanged);
 
     private async Task Sair()
     {
-        _aberto = false;
         await AuthService.LogoutAsync();
         Nav.NavigateTo("/", forceLoad: true);
     }

@@ -14,6 +14,7 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
     public DbSet<Usuario>            Usuarios           => Set<Usuario>();
     public DbSet<Consulente>         Consulentes        => Set<Consulente>();
     public DbSet<MapaNumerologico>   Mapas              => Set<MapaNumerologico>();
+    public DbSet<AssinaturaTeste>    AssinaturasTeste   => Set<AssinaturaTeste>();
     public DbSet<DataProtectionKey>  DataProtectionKeys => Set<DataProtectionKey>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
@@ -87,6 +88,16 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, _jsonOptions),
                     v => JsonSerializer.Deserialize<Dictionary<int, int>>(v, _jsonOptions)!);
+        });
+
+        modelBuilder.Entity<AssinaturaTeste>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+            entity.Property(a => a.Texto).IsRequired().HasMaxLength(256);
+            entity.HasOne<MapaNumerologico>()
+                  .WithMany()
+                  .HasForeignKey(a => a.MapaId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 

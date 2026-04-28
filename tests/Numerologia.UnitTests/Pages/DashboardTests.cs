@@ -1,6 +1,8 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using NSubstitute;
 using Numerologia.Web.Pages;
 using Numerologia.Web.Services;
@@ -13,6 +15,8 @@ public class DashboardTests : TestContext
 
     public DashboardTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
         Services.AddSingleton(_dashboardService);
     }
 

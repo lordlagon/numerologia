@@ -1,6 +1,8 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using NSubstitute;
 using Numerologia.Web.Components;
 using Numerologia.Web.Services;
@@ -11,11 +13,17 @@ public class UserMenuTests : TestContext
 {
     private readonly IAuthService _authService = Substitute.For<IAuthService>();
     private readonly PerfilState _perfilState = new();
+    private readonly IRenderedComponent<MudPopoverProvider> _popoverProvider;
 
     public UserMenuTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
         Services.AddSingleton(_authService);
         Services.AddSingleton(_perfilState);
+        // MudPopoverProvider não tem ChildContent — renderizado separado;
+        // itens de menu abertos aparecem no markup do provider
+        _popoverProvider = RenderComponent<MudPopoverProvider>();
     }
 
     [Fact]
@@ -26,7 +34,7 @@ public class UserMenuTests : TestContext
         var cut = RenderComponent<UserMenu>();
 
         cut.WaitForAssertion(() =>
-            cut.Markup.Should().NotContain("dropdown"));
+            cut.Markup.Trim().Should().BeEmpty());
     }
 
     [Fact]
@@ -47,10 +55,15 @@ public class UserMenuTests : TestContext
 
         var cut = RenderComponent<UserMenu>();
 
-        cut.WaitForAssertion(() =>
+        // abre o menu
+        cut.WaitForAssertion(() => cut.Find("button.mud-button-root").Should().NotBeNull());
+        cut.Find("button.mud-button-root").Click();
+
+        // itens ficam no popover provider após abertura
+        _popoverProvider.WaitForAssertion(() =>
         {
-            var link = cut.FindAll("a").FirstOrDefault(a =>
-                a.GetAttribute("href")?.Contains("perfil") == true);
+            var link = _popoverProvider.FindAll("a")
+                .FirstOrDefault(a => a.GetAttribute("href")?.Contains("perfil") == true);
             link.Should().NotBeNull();
         });
     }
@@ -62,10 +75,11 @@ public class UserMenuTests : TestContext
 
         var cut = RenderComponent<UserMenu>();
 
-        cut.WaitForAssertion(() =>
-            cut.FindAll("button, a")
-               .Any(e => e.TextContent.Contains("Sair"))
-               .Should().BeTrue());
+        cut.WaitForAssertion(() => cut.Find("button.mud-button-root").Should().NotBeNull());
+        cut.Find("button.mud-button-root").Click();
+
+        _popoverProvider.WaitForAssertion(() =>
+            _popoverProvider.Markup.Should().Contain("Sair"));
     }
 
     [Fact]
@@ -113,10 +127,20 @@ public class UserMenuTests : TestContext
         _authService.LogoutAsync().Returns(Task.CompletedTask);
 
         var cut = RenderComponent<UserMenu>();
-        cut.WaitForAssertion(() =>
-            cut.FindAll("button, a").Any(e => e.TextContent.Contains("Sair")).Should().BeTrue());
 
-        var btnSair = cut.FindAll("button").First(b => b.TextContent.Contains("Sair"));
+        // abre o menu
+        cut.WaitForAssertion(() => cut.Find("button.mud-button-root").Should().NotBeNull());
+        cut.Find("button.mud-button-root").Click();
+
+        // aguarda o item "Sair" aparecer no popover e clica
+        _popoverProvider.WaitForAssertion(() =>
+            _popoverProvider.Markup.Should().Contain("Sair"));
+
+        // pega o elemento mais específico que contém "Sair" (menor TextContent)
+        var btnSair = _popoverProvider.FindAll("*")
+            .Where(e => e.TextContent.Contains("Sair"))
+            .OrderBy(e => e.TextContent.Length)
+            .First();
         await cut.InvokeAsync(() => btnSair.Click());
 
         await _authService.Received(1).LogoutAsync();

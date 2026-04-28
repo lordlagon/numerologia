@@ -1,0 +1,244 @@
+@page "/consulentes/{ConsulenteId:int}/mapas/{MapaId:int}/piramides"
+@inject IMapasService MapasService
+@inject NavigationManager Nav
+
+<PageTitle>Pirâmides da Vida</PageTitle>
+
+@if (_carregando)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else if (_erro is not null)
+{
+    <MudAlert Severity="Severity.Error">@_erro</MudAlert>
+}
+else if (_mapa is not null && _piramide is not null)
+{
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-1 fw-bold">PIRÂMIDES DA VIDA</MudText>
+    <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary" Class="mb-4">
+        @_mapa.NomeUtilizado — @_mapa.DataNascimento.ToString("dd/MM/yyyy")
+    </MudText>
+
+    <!-- ── GRADE DE LETRAS — HTML/CSS flex puro ─────────────────────────────── -->
+    <MudPaper Elevation="2" Class="mb-4 pa-2 overflow-auto">
+        <div style="display:flex;flex-direction:column;gap:2px;font-size:0.78rem">
+            @foreach (var (rotulo, _) in new[]
+            {
+                ("Nome",   TipoLetraDto.Espaco),
+                ("TOTAL",  (TipoLetraDto)(-1)),
+            })
+            {
+                <div style="display:flex;align-items:stretch;gap:2px">
+                    <div style="width:70px;flex-shrink:0;padding:2px 6px;background:#f3e5f5;font-weight:bold;font-size:0.75rem;text-align:right;white-space:nowrap;display:flex;align-items:center;justify-content:flex-end">
+                        @rotulo
+                    </div>
+                    <div style="flex:1;display:flex;gap:2px">
+                        @foreach (var e in _mapa.GradeLetras)
+                        {
+                            var valor = rotulo == "Nome"
+                                ? (e.Tipo != TipoLetraDto.Espaco ? e.Letra.ToString() : "")
+                                : (e.Tipo != TipoLetraDto.Espaco ? e.ValorCabalistico.ToString() : "");
+                            var bgColor = e.Tipo == TipoLetraDto.Espaco ? "#ede7f6" : "white";
+                            <div style="@($"flex:1;min-width:0;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.82rem;background:{bgColor};border:1px solid #ddd")">
+                                @valor
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </MudPaper>
+
+    <!-- ── TRIÂNGULO INVERTIDO — base no topo, apex embaixo ─────────────────── -->
+    <MudPaper Elevation="2" Class="mb-4 pa-3 overflow-auto">
+        <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Triângulo Básico</MudText>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:0.82rem">
+            @for (var rowIdx = 0; rowIdx < _piramide.Triangulo.Length; rowIdx++)
+            {
+                var linha  = _piramide.Triangulo[rowIdx];
+                var isApex = rowIdx == _piramide.Triangulo.Length - 1;
+                var ri     = rowIdx;
+                <div style="display:flex;gap:4px;justify-content:center">
+                    @for (var colIdx = 0; colIdx < linha.Length; colIdx++)
+                    {
+                        var v     = linha[colIdx];
+                        var ci    = colIdx;
+                        var neg   = EhNegativa(ri, ci);
+                        var seq45 = ri == 0 && EhParteDaSequencia45(_piramide.Triangulo[0], ci);
+
+                        var bg    = isApex ? "#7b1fa2"
+                                  : neg    ? "#c62828"
+                                  : seq45  ? "#f9a825"
+                                  :          "#f3e5f5";
+                        var color = (isApex || neg) ? "white" : "inherit";
+                        var fw    = (isApex || neg || seq45) ? "bold" : "normal";
+                        <div title="@(neg ? $"Sequência {new string((char)('0'+v), 3)}" : seq45 ? "Sequência 45" : "")"
+                             style="@($"width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:{bg};color:{color};font-weight:{fw};border:1px solid #ce93d8;border-radius:4px")">
+                            @v
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Arcano de Momento -->
+        <div style="text-align:center;margin-top:12px">
+            <MudText Typo="Typo.body2">
+                Arcano de Momento: <strong>@_piramide.ArcanoMomento</strong>
+                @if (_piramide.TituloArcanoMomento is not null)
+                {
+                    <span> — @_piramide.TituloArcanoMomento</span>
+                }
+            </MudText>
+            @if (_piramide.SignificadoArcanoMomento is not null)
+            {
+                <MudText Typo="Typo.body2" Class="mt-1" style="font-style:italic;color:#555;max-width:700px;margin:4px auto 0">
+                    @_piramide.SignificadoArcanoMomento
+                </MudText>
+            }
+        </div>
+    </MudPaper>
+
+    <!-- ── ARCANOS DO NOME ────────────────────────────────────────────────────── -->
+    @if (_piramide.Arcanos.Length > 0)
+    {
+        <MudPaper Elevation="2" Class="mb-4 pa-3">
+            <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Arcanos do Nome</MudText>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+                @foreach (var arcano in _piramide.Arcanos)
+                {
+                    <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#f3e5f5;border:1px solid #ce93d8;border-radius:4px;font-size:0.85rem;font-weight:bold">
+                        @arcano
+                    </div>
+                }
+            </div>
+        </MudPaper>
+    }
+
+    <!-- ── SEQUÊNCIAS NEGATIVAS (accordion) ──────────────────────────────────── -->
+    @if (_sequenciasUnicas.Count > 0)
+    {
+        <MudPaper Elevation="2" Class="mb-4" style="border-left:4px solid #c62828">
+            <MudExpansionPanels>
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <MudText Typo="Typo.subtitle1" style="color:#c62828;font-weight:bold">
+                            Sequências Negativas (@_sequenciasUnicas.Count)
+                        </MudText>
+                    </TitleContent>
+                    <ChildContent>
+                        @foreach (var (digito, significado) in _sequenciasUnicas)
+                        {
+                            var sequenciaStr = new string((char)('0' + digito), 3);
+                            <div class="mb-3">
+                                <MudText Typo="Typo.subtitle2" style="color:#c62828">@sequenciaStr</MudText>
+                                <MudText Typo="Typo.body2">@significado</MudText>
+                            </div>
+                        }
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudPaper>
+    }
+
+    <!-- ── SUGESTÃO DE ASSINATURA ─────────────────────────────────────────────── -->
+    @if (_piramide.AssinaturaEscolhida is not null)
+    {
+        <MudPaper Elevation="2" Class="mb-4 pa-3 cursor-pointer"
+                  style="border-left:4px solid #7b1fa2"
+                  @onclick="@(() => Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas/{MapaId}/assinaturas"))">
+            <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold" style="color:#7b1fa2">
+                Sugestão de Assinatura
+                <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" style="vertical-align:middle;margin-left:4px" />
+            </MudText>
+            <div style="font-family:'Sacramento',cursive;font-size:2.4rem;color:#4a148c;line-height:1.3">
+                @_piramide.AssinaturaEscolhida.Texto
+            </div>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                Arcano de Momento: <strong>@_piramide.AssinaturaEscolhida.ArcanoMomento</strong>
+                @if (_piramide.AssinaturaEscolhida.TituloArcano is not null)
+                {
+                    <span> — @_piramide.AssinaturaEscolhida.TituloArcano</span>
+                }
+            </MudText>
+            @if (_piramide.AssinaturaEscolhida.SignificadoArcano is not null)
+            {
+                <MudText Typo="Typo.body2" Class="mt-1" style="font-style:italic;color:#555;max-width:700px;margin:4px auto 0">
+                    @_piramide.AssinaturaEscolhida.SignificadoArcano
+                </MudText>
+            }
+        </MudPaper>
+    }
+}
+
+<!-- ── BOTÕES DE NAVEGAÇÃO ────────────────────────────────────────────────────── -->
+<div class="d-flex gap-3 mt-2 flex-wrap">
+    <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas")"
+               Variant="Variant.Text"
+               StartIcon="@Icons.Material.Filled.ArrowBack">
+        Voltar aos Mapas
+    </MudButton>
+    <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/{MapaId}/assinaturas")"
+               Variant="Variant.Outlined"
+               Color="Color.Secondary"
+               StartIcon="@Icons.Material.Filled.Edit">
+        Gerenciar Assinaturas
+    </MudButton>
+</div>
+
+@code {
+    [Parameter] public int ConsulenteId { get; set; }
+    [Parameter] public int MapaId       { get; set; }
+
+    private MapaDetalheDto?  _mapa;
+    private PiramideDto?     _piramide;
+    private bool             _carregando = true;
+    private string?          _erro;
+    private List<(int Digito, string Significado)> _sequenciasUnicas = [];
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var tMapa     = MapasService.ObterAsync(ConsulenteId, MapaId);
+            var tPiramide = MapasService.ObterPiramideAsync(ConsulenteId, MapaId);
+            await Task.WhenAll(tMapa, tPiramide);
+            _mapa     = tMapa.Result;
+            _piramide = tPiramide.Result;
+
+            if (_mapa is null || _piramide is null)
+            {
+                Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas");
+                return;
+            }
+
+            _sequenciasUnicas = _piramide.SequenciasNegativas
+                .GroupBy(s => s.Digito)
+                .Select(g => (g.Key, g.First().Significado))
+                .OrderBy(x => x.Key)
+                .ToList();
+        }
+        catch
+        {
+            _erro = "Erro ao carregar as pirâmides. Tente novamente.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private bool EhNegativa(int linha, int col) =>
+        _piramide!.SequenciasNegativas.Any(s =>
+            s.Linha == linha &&
+            col >= s.PosicaoInicio &&
+            col < s.PosicaoInicio + s.Comprimento);
+
+    private static bool EhParteDaSequencia45(int[] linha, int col)
+    {
+        if (col < linha.Length - 1 && linha[col] == 4 && linha[col + 1] == 5) return true;
+        if (col > 0 && linha[col - 1] == 4 && linha[col] == 5)               return true;
+        return false;
+    }
+}

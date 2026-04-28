@@ -5,59 +5,73 @@
 
 <PageTitle>Mapas Numerológicos</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Mapas Numerológicos</h1>
-    <a href="/consulentes/@ConsulenteId/mapas/novo" class="btn btn-primary">+ Gerar Mapa</a>
+<div class="d-flex justify-space-between align-center mb-4">
+    <MudText Typo="Typo.h5">Mapas Numerológicos</MudText>
+    <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/novo")"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">
+        Gerar Mapa
+    </MudButton>
 </div>
 
 @if (_carregando)
 {
-    <p>Carregando...</p>
+    <MudProgressLinear Indeterminate="true" Class="mb-2" />
+    <MudText>Carregando...</MudText>
 }
 else if (_mapas.Count == 0)
 {
-    <p>Nenhum mapa gerado ainda.</p>
+    <MudText Color="Color.Secondary">Nenhum mapa gerado ainda.</MudText>
 }
 else
 {
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Nome Utilizado</th>
-                <th>Data de Nascimento</th>
-                <th>Criado em</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var m in _mapas)
-            {
-                <tr data-testid="mapa-@m.Id">
-                    <td>@m.NomeUtilizado</td>
-                    <td>@m.DataNascimento.ToString("dd/MM/yyyy")</td>
-                    <td>@m.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                    <td class="text-end">
-                        <a href="/consulentes/@ConsulenteId/mapas/@m.Id"
-                           class="btn btn-sm btn-outline-primary">Ver Mapa</a>
-                        <a href="/consulentes/@ConsulenteId/mapas/@m.Id/editar"
-                           class="btn btn-sm btn-outline-secondary ms-1">Editar</a>
-                        <button class="btn btn-sm btn-outline-danger ms-1"
-                                @onclick="() => Excluir(m.Id, m.NomeUtilizado)">Excluir</button>
-                        <button class="btn btn-sm btn-outline-secondary ms-1" disabled
-                                title="Em breve">Pirâmides</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="@_mapas" Hover="true" Elevation="2" Dense="true">
+        <HeaderContent>
+            <MudTh>Nome Utilizado</MudTh>
+            <MudTh>Nascimento</MudTh>
+            <MudTh>Criado em</MudTh>
+            <MudTh Style="text-align:right"></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nome Utilizado" data-testid="@($"mapa-{context.Id}")">@context.NomeUtilizado</MudTd>
+            <MudTd DataLabel="Nascimento">@context.DataNascimento.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Criado em">@context.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</MudTd>
+            <MudTd Style="text-align:right">
+                <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/{context.Id}")"
+                           Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Size="Size.Small">Ver Mapa</MudButton>
+                <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/{context.Id}/editar")"
+                           Variant="Variant.Outlined"
+                           Color="Color.Default"
+                           Size="Size.Small"
+                           Class="ml-1">Editar</MudButton>
+                @{var mId = context.Id; var mNome = context.NomeUtilizado;}
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Error"
+                           Size="Size.Small"
+                           Class="ml-1"
+                           OnClick="@(async () => await Excluir(mId, mNome))">Excluir</MudButton>
+                <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/{context.Id}/piramides")"
+                           Variant="Variant.Outlined"
+                           Color="Color.Secondary"
+                           Size="Size.Small"
+                           Class="ml-1">Pirâmides</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @if (_erro is not null)
 {
-    <div class="alert alert-danger mt-3">@_erro</div>
+    <MudAlert Severity="Severity.Error" Class="mt-3">@_erro</MudAlert>
 }
 
-<a href="/consulentes" class="btn btn-secondary mt-2">Voltar</a>
+<MudButton Href="/consulentes"
+           Variant="Variant.Outlined"
+           Color="Color.Default"
+           Class="mt-3">Voltar</MudButton>
 
 @code {
     [Parameter] public int ConsulenteId { get; set; }

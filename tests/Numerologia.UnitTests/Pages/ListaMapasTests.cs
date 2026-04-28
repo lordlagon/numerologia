@@ -1,6 +1,8 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using NSubstitute;
 using Numerologia.Web.Pages.Mapas;
 using Numerologia.Web.Services;
@@ -13,6 +15,8 @@ public class ListaMapasTests : TestContext
 
     public ListaMapasTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
         Services.AddSingleton(_mapasService);
     }
 
@@ -53,7 +57,7 @@ public class ListaMapasTests : TestContext
         var cut = RenderComponent<ListaMapas>(p => p.Add(c => c.ConsulenteId, 1));
 
         cut.WaitForAssertion(() =>
-            cut.FindAll("tr[data-testid^='mapa-']").Should().HaveCount(2));
+            cut.FindAll("td[data-testid^='mapa-']").Should().HaveCount(2));
     }
 
     [Fact]
@@ -87,7 +91,7 @@ public class ListaMapasTests : TestContext
     }
 
     [Fact]
-    public void Render_ComMapas_ExibeBotaoPiramidesDesabilitado()
+    public void Render_ComMapas_ExibeBotaoPiramidesHabilitadoComLink()
     {
         var mapas = new List<MapaResumoDto>
         {
@@ -99,9 +103,9 @@ public class ListaMapasTests : TestContext
 
         cut.WaitForAssertion(() =>
         {
-            var btn = cut.FindAll("button")
-                .First(b => b.TextContent.Contains("Pirâmides"));
-            btn.HasAttribute("disabled").Should().BeTrue();
+            var link = cut.FindAll("a")
+                .First(a => a.TextContent.Contains("Pirâmides"));
+            link.GetAttribute("href").Should().Contain("piramides");
         });
     }
 

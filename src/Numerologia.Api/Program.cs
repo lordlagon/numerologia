@@ -13,11 +13,13 @@ using Npgsql;
 using QuestPDF.Infrastructure;
 using Scalar.AspNetCore;
 using Numerologia.Api.Pdf;
+using Numerologia.Core.Calculos;
 using Numerologia.Core.Entities;
 using Numerologia.Core.Interfaces;
 using Numerologia.Core.Services;
 using Numerologia.Infrastructure.Data;
 using Numerologia.Infrastructure.Repositories;
+using AssinaturasRepository = Numerologia.Infrastructure.Repositories.AssinaturasRepository;
 using MapasRepository = Numerologia.Infrastructure.Repositories.MapasRepository;
 
 QuestPDF.Settings.License = LicenseType.Community;
@@ -68,6 +70,7 @@ if (!string.IsNullOrEmpty(connectionString))
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IConsulentesRepository, ConsulentesRepository>();
 builder.Services.AddScoped<IMapasRepository, MapasRepository>();
+builder.Services.AddScoped<IAssinaturasRepository, AssinaturasRepository>();
 builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<GeradorMapa>();
 
@@ -184,8 +187,8 @@ app.UseSecurityHeaders(policies => policies
         csp.AddBlockAllMixedContent();
         csp.AddImgSrc().Self().Data();
         csp.AddFormAction().Self();
-        csp.AddFontSrc().Self().From("https://cdn.jsdelivr.net");
-        csp.AddStyleSrc().Self().UnsafeInline().From("https://cdn.jsdelivr.net");  // Bootstrap usa inline styles + Bootstrap Icons CDN
+        csp.AddFontSrc().Self().From("https://cdn.jsdelivr.net").From("https://fonts.gstatic.com");
+        csp.AddStyleSrc().Self().UnsafeInline().From("https://cdn.jsdelivr.net").From("https://fonts.googleapis.com");
         csp.AddScriptSrc().Self().UnsafeEval().UnsafeInline();   // Blazor WASM precisa de eval + inline importmap
         csp.AddConnectSrc().Self();               // Chamadas à API
         csp.AddWorkerSrc().Self().Blob();         // Web workers do Blazor WASM
@@ -421,6 +424,138 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/pdf",
         return Results.File(bytes, "application/pdf", nomeArquivo);
     }).RequireAuthorization();
 
+app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/piramides",
+    async (int consulenteId, int mapaId, HttpContext ctx,
+        IMapasRepository repo, IAssinaturasRepository assRepo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        var valoresLetras = mapa.GradeLetras
+            .Where(e => e.Tipo != TipoLetra.Espaco)
+            .Select(e => e.ValorCabalistico).ToArray();
+        var resultado = CalculoPiramide.Calcular(valoresLetras);
+        var seqs = resultado.SequenciasNegativas
+            .Select(s => new SequenciaNegativaResponse(s.Linha, s.PosicaoInicio, s.Comprimento, s.Digito, s.Significado))
+            .ToArray();
+        var arcanoInfo = TabelaArcanos.Obter(resultado.ArcanoMomento);
+        var escolhida  = await assRepo.ObterEscolhidaAsync(mapaId);
+        var arcanoAss    = escolhida is null ? null : TabelaArcanos.Obter(escolhida.ArcanoMomento);
+        var escolhidaDto = escolhida is null ? null
+            : new AssinaturaEscolhidaResponse(escolhida.Id, escolhida.Texto, escolhida.ArcanoMomento,
+                arcanoAss?.Titulo, arcanoAss?.Significado);
+        return Results.Ok(new PiramideResponse(
+            resultado.Triangulo, resultado.ArcanoMomento,
+            arcanoInfo?.Titulo, arcanoInfo?.Significado,
+            resultado.Arcanos, seqs, escolhidaDto));
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+// ── Assinaturas de Teste ──────────────────────────────────────────────────────
+
+app.MapPost("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/assinaturas/preview",
+    async (int consulenteId, int mapaId, AssinaturaPreviewRequest req, HttpContext ctx,
+        IMapasRepository mapaRepo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await mapaRepo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        var valores = req.Texto
+            .Where(char.IsLetter)
+            .Select(TabelaCabalistica.ObterValor)
+            .Where(v => v > 0)
+            .ToArray();
+        if (valores.Length < 2) return Results.BadRequest("Assinatura precisa ter ao menos 2 letras.");
+
+        var resultado = CalculoPiramide.Calcular(valores);
+        var seqs = resultado.SequenciasNegativas
+            .Select(s => new SequenciaNegativaResponse(s.Linha, s.PosicaoInicio, s.Comprimento, s.Digito, s.Significado))
+            .ToArray();
+        var grade = req.Texto
+            .Where(c => c == ' ' || (char.IsLetter(c) && TabelaCabalistica.ObterValor(c) > 0))
+            .Select(c => new AssinaturaLetraResponse(c.ToString(), TabelaCabalistica.ObterValor(c), c == ' '))
+            .ToArray();
+        return Results.Ok(new AssinaturaPreviewResponse(grade, resultado.Triangulo, resultado.ArcanoMomento, resultado.Arcanos, seqs));
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/assinaturas",
+    async (int consulenteId, int mapaId, HttpContext ctx,
+        IMapasRepository mapaRepo, IAssinaturasRepository assRepo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await mapaRepo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        var lista = await assRepo.ObterTodosAsync(mapaId);
+        return Results.Ok(lista.Select(a => new AssinaturaDto(a.Id, a.Texto, a.ArcanoMomento, a.Escolhida, a.CriadoEm)));
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+app.MapPost("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/assinaturas",
+    async (int consulenteId, int mapaId, AssinaturaPreviewRequest req, HttpContext ctx,
+        IMapasRepository mapaRepo, IAssinaturasRepository assRepo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await mapaRepo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        var valores = req.Texto
+            .Where(char.IsLetter)
+            .Select(TabelaCabalistica.ObterValor)
+            .Where(v => v > 0)
+            .ToArray();
+        if (valores.Length < 2) return Results.BadRequest("Assinatura precisa ter ao menos 2 letras.");
+
+        var resultado  = CalculoPiramide.Calcular(valores);
+        var assinatura = new AssinaturaTeste(mapaId, req.Texto, resultado.ArcanoMomento);
+        await assRepo.AdicionarAsync(assinatura);
+        await assRepo.SalvarAlteracoesAsync();
+        return Results.Created($"/api/consulentes/{consulenteId}/mapas/{mapaId}/assinaturas/{assinatura.Id}",
+            new AssinaturaDto(assinatura.Id, assinatura.Texto, assinatura.ArcanoMomento, assinatura.Escolhida, assinatura.CriadoEm));
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+app.MapPut("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/assinaturas/{assId:int}/escolher",
+    async (int consulenteId, int mapaId, int assId, HttpContext ctx,
+        IMapasRepository mapaRepo, IAssinaturasRepository assRepo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await mapaRepo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        await assRepo.EscolherAsync(mapaId, assId);
+        await assRepo.SalvarAlteracoesAsync();
+        return Results.NoContent();
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
+app.MapDelete("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/assinaturas/{assId:int}",
+    async (int consulenteId, int mapaId, int assId, HttpContext ctx,
+        IMapasRepository mapaRepo, IAssinaturasRepository assRepo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await mapaRepo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        var todas = await assRepo.ObterTodosAsync(mapaId);
+        var ass   = todas.FirstOrDefault(a => a.Id == assId);
+        if (ass is null) return Results.NotFound();
+
+        await assRepo.RemoverAsync(ass);
+        await assRepo.SalvarAlteracoesAsync();
+        return Results.NoContent();
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
 app.MapDelete("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
     async (int consulenteId, int mapaId, HttpContext ctx,
         IMapasRepository repo, UsuarioService usuarioService) =>
@@ -562,3 +697,19 @@ record MapaDetalheResponse(
     int HarmoniaVibraCom, int[] HarmoniaAtrai, int[] HarmoniaEOpostoA,
     int[] HarmoniaProfundamenteOpostoA, int[] HarmoniaEPassivoEm,
     string[] CoresFavoraveis);
+
+record PiramideResponse(
+    int[][] Triangulo, int ArcanoMomento,
+    string? TituloArcanoMomento, string? SignificadoArcanoMomento,
+    int[] Arcanos, SequenciaNegativaResponse[] SequenciasNegativas,
+    AssinaturaEscolhidaResponse? AssinaturaEscolhida);
+record SequenciaNegativaResponse(int Linha, int PosicaoInicio, int Comprimento, int Digito, string Significado);
+record AssinaturaEscolhidaResponse(int Id, string Texto, int ArcanoMomento, string? TituloArcano, string? SignificadoArcano);
+
+record AssinaturaPreviewRequest([property: MaxLength(256)] string Texto);
+record AssinaturaLetraResponse(string Letra, int Valor, bool EhEspaco);
+record AssinaturaPreviewResponse(
+    AssinaturaLetraResponse[] GradeLetras,
+    int[][] Triangulo, int ArcanoMomento, int[] Arcanos,
+    SequenciaNegativaResponse[] SequenciasNegativas);
+record AssinaturaDto(int Id, string Texto, int ArcanoMomento, bool Escolhida, DateTime CriadoEm);

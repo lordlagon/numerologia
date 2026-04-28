@@ -7,7 +7,16 @@ public interface IMapasService
     Task<MapaResumoDto> CriarAsync(int consulenteId, string nomeUtilizado, DateOnly dataNascimento);
     Task RemoverAsync(int consulenteId, int mapaId);
     Task<MapaResumoDto> AtualizarAsync(int consulenteId, int mapaId, string nomeUtilizado, DateOnly dataNascimento);
+    Task<PiramideDto?> ObterPiramideAsync(int consulenteId, int mapaId);
 }
+
+public record PiramideDto(
+    int[][] Triangulo, int ArcanoMomento,
+    string? TituloArcanoMomento, string? SignificadoArcanoMomento,
+    int[] Arcanos, SequenciaNegativaDto[] SequenciasNegativas,
+    AssinaturaEscolhidaDto? AssinaturaEscolhida);
+public record SequenciaNegativaDto(int Linha, int PosicaoInicio, int Comprimento, int Digito, string Significado);
+public record AssinaturaEscolhidaDto(int Id, string Texto, int ArcanoMomento, string? TituloArcano, string? SignificadoArcano);
 
 public interface IDashboardService
 {
@@ -87,3 +96,21 @@ public record MapaDetalheDto(
     int[] HarmoniaProfundamenteOpostoA,
     int[] HarmoniaEPassivoEm,
     string[] CoresFavoraveis);
+
+// ── Assinaturas de Teste ──────────────────────────────────────────────────────
+
+public interface IAssinaturasService
+{
+    Task<AssinaturaPreviewDto?> PreviewAsync(int consulenteId, int mapaId, string texto);
+    Task<List<AssinaturaDto>> ListarAsync(int consulenteId, int mapaId);
+    Task<AssinaturaDto> SalvarAsync(int consulenteId, int mapaId, string texto);
+    Task EscolherAsync(int consulenteId, int mapaId, int assinaturaId);
+    Task ExcluirAsync(int consulenteId, int mapaId, int assinaturaId);
+}
+
+public record AssinaturaLetraDto(string Letra, int Valor, bool EhEspaco);
+public record AssinaturaPreviewDto(
+    AssinaturaLetraDto[] GradeLetras,
+    int[][] Triangulo, int ArcanoMomento, int[] Arcanos,
+    SequenciaNegativaDto[] SequenciasNegativas);
+public record AssinaturaDto(int Id, string Texto, int ArcanoMomento, bool Escolhida, DateTime CriadoEm);
