@@ -147,12 +147,25 @@ else if (_mapa is not null && _piramide is not null)
         <MudPaper Elevation="2" Class="mb-4 pa-3 cursor-pointer"
                   style="border-left:4px solid #7b1fa2"
                   @onclick="@(() => Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas/{MapaId}/assinaturas"))">
-            <MudText Typo="Typo.subtitle1" Class="mb-1 fw-bold" style="color:#7b1fa2">
+            <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold" style="color:#7b1fa2">
                 Sugestão de Assinatura
                 <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" style="vertical-align:middle;margin-left:4px" />
             </MudText>
-            <MudText Typo="Typo.h6">@_piramide.AssinaturaEscolhida.Texto</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">
+            <div class="d-flex gap-6 flex-wrap align-center">
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-1">Great Vibes</MudText>
+                    <div style="font-family:'Great Vibes',cursive;font-size:2rem;color:#4a148c;line-height:1.2">
+                        @_piramide.AssinaturaEscolhida.Texto
+                    </div>
+                </div>
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-1">Pinyon Script</MudText>
+                    <div style="font-family:'Pinyon Script',cursive;font-size:2rem;color:#4a148c;line-height:1.2">
+                        @_piramide.AssinaturaEscolhida.Texto
+                    </div>
+                </div>
+            </div>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
                 Arcano de Momento: @_piramide.AssinaturaEscolhida.ArcanoMomento
             </MudText>
         </MudPaper>
