@@ -118,4 +118,73 @@ public class CalculoPiramideTests
 
         resultado.Arcanos.Should().BeEmpty();
     }
+
+    // ── Sequências Negativas ──────────────────────────────────────────────────
+    // 3+ dígitos iguais consecutivos em qualquer linha do triângulo
+
+    [Fact]
+    public void Calcular_SemSequenciaRepetida_RetornaVazio()
+    {
+        // [4, 1] → [5] — sem repetição
+        var resultado = CalculoPiramide.Calcular([4, 1]);
+
+        resultado.SequenciasNegativas.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Calcular_ExemploAndre_Encontra666NaLinhaCorreta()
+    {
+        // André: A=1, N=5, D=4, R=2, É=7
+        // Row 0: [1,5,4,2,7]
+        // Row 1: [6,9,6,9]  (1+5=6, 5+4=9, 4+2=6, 2+7=9)
+        // Row 2: [6,6,6]    (6+9=15→6, 9+6=15→6, 6+9=15→6) ← 666
+        int[] andre = [1, 5, 4, 2, 7];
+
+        var resultado = CalculoPiramide.Calcular(andre);
+
+        resultado.SequenciasNegativas.Should().HaveCount(1);
+        var seq = resultado.SequenciasNegativas[0];
+        seq.Linha.Should().Be(2);
+        seq.PosicaoInicio.Should().Be(0);
+        seq.Comprimento.Should().Be(3);
+        seq.Digito.Should().Be(6);
+        seq.Significado.Should().Contain("afetos");
+    }
+
+    [Fact]
+    public void Calcular_QuatroDigitosIguais_UmaSequenciaComprimento4()
+    {
+        // [4, 4, 4, 4] → row 0 tem 4444 → 1 sequência, comprimento 4
+        var resultado = CalculoPiramide.Calcular([4, 4, 4, 4]);
+
+        var seqs = resultado.SequenciasNegativas.Where(s => s.Linha == 0).ToArray();
+        seqs.Should().HaveCount(1);
+        seqs[0].Digito.Should().Be(4);
+        seqs[0].Comprimento.Should().Be(4);
+    }
+
+    [Fact]
+    public void Calcular_DuasSequenciasDiferentesNaMesmaLinha_EncontraAmbas()
+    {
+        // Row construída manualmente: [1,1,1,6,6,6]
+        // Provocar via triângulo não é trivial, então testamos diretamente a detecção.
+        // [1,1,1,6,6,6] como base — apex não importa para este teste
+        int[] base6 = [1, 1, 1, 6, 6, 6];
+
+        var resultado = CalculoPiramide.Calcular(base6);
+
+        var seqsLinha0 = resultado.SequenciasNegativas.Where(s => s.Linha == 0).ToArray();
+        seqsLinha0.Should().HaveCount(2);
+        seqsLinha0.Select(s => s.Digito).Should().Contain(1).And.Contain(6);
+    }
+
+    [Fact]
+    public void Calcular_SignificadoPreenchido_NaoNuloNemVazio()
+    {
+        int[] andre = [1, 5, 4, 2, 7];
+
+        var resultado = CalculoPiramide.Calcular(andre);
+
+        resultado.SequenciasNegativas[0].Significado.Should().NotBeNullOrWhiteSpace();
+    }
 }

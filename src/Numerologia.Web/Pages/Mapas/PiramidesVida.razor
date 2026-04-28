@@ -22,8 +22,7 @@ else if (_mapa is not null && _piramide is not null)
     <!-- ── GRADE DE LETRAS — HTML/CSS flex puro (idêntico ao GraficoNumerologico) ── -->
     <MudPaper Elevation="2" Class="mb-4 pa-2 overflow-auto">
         <div style="display:flex;flex-direction:column;gap:2px;font-size:0.78rem">
-
-            @foreach (var (rotulo, tipo) in new[]
+            @foreach (var (rotulo, _) in new[]
             {
                 ("Nome",   TipoLetraDto.Espaco),
                 ("TOTAL",  (TipoLetraDto)(-1)),
@@ -54,17 +53,25 @@ else if (_mapa is not null && _piramide is not null)
     <MudPaper Elevation="2" Class="mb-4 pa-3 overflow-auto">
         <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Triângulo Básico</MudText>
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:0.82rem">
-            @for (var i = 0; i < _piramide.Triangulo.Length; i++)
+            @for (var rowIdx = 0; rowIdx < _piramide.Triangulo.Length; rowIdx++)
             {
-                var linha   = _piramide.Triangulo[i];
-                var isApex  = i == _piramide.Triangulo.Length - 1;
+                var linha  = _piramide.Triangulo[rowIdx];
+                var isApex = rowIdx == _piramide.Triangulo.Length - 1;
+                var ri     = rowIdx; // capture for lambda
                 <div style="display:flex;gap:4px;justify-content:center">
-                    @foreach (var v in linha)
+                    @for (var colIdx = 0; colIdx < linha.Length; colIdx++)
                     {
-                        var bg    = isApex ? "#7b1fa2" : "#f3e5f5";
-                        var color = isApex ? "white"   : "inherit";
-                        var fw    = isApex ? "bold"    : "normal";
-                        <div style="@($"width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:{bg};color:{color};font-weight:{fw};border:1px solid #ce93d8;border-radius:4px")">
+                        var v   = linha[colIdx];
+                        var ci  = colIdx; // capture for lambda
+                        var neg = EhNegativa(ri, ci);
+
+                        var bg    = isApex ? "#7b1fa2"
+                                  : neg    ? "#c62828"
+                                  :          "#f3e5f5";
+                        var color = (isApex || neg) ? "white" : "inherit";
+                        var fw    = (isApex || neg) ? "bold"  : "normal";
+                        <div title="@(neg ? $"Sequência {new string((char)('0'+v), 3)}" : "")"
+                             style="@($"width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:{bg};color:{color};font-weight:{fw};border:1px solid #ce93d8;border-radius:4px")">
                             @v
                         </div>
                     }
@@ -91,6 +98,26 @@ else if (_mapa is not null && _piramide is not null)
             </div>
         </MudPaper>
     }
+
+    <!-- ── SEQUÊNCIAS NEGATIVAS ───────────────────────────────────────────────── -->
+    @if (_sequenciasUnicas.Count > 0)
+    {
+        <MudPaper Elevation="2" Class="mb-4 pa-3" style="border-left:4px solid #c62828">
+            <MudText Typo="Typo.subtitle1" Class="mb-3 fw-bold" style="color:#c62828">
+                Sequências Negativas
+            </MudText>
+            @foreach (var (digito, significado) in _sequenciasUnicas)
+            {
+                var sequenciaStr = new string((char)('0' + digito), 3);
+                <div class="mb-3">
+                    <MudText Typo="Typo.subtitle2" style="color:#c62828">
+                        @sequenciaStr
+                    </MudText>
+                    <MudText Typo="Typo.body2">@significado</MudText>
+                </div>
+            }
+        </MudPaper>
+    }
 }
 
 <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas")"
@@ -109,6 +136,9 @@ else if (_mapa is not null && _piramide is not null)
     private bool             _carregando = true;
     private string?          _erro;
 
+    // Sequências únicas por dígito (para exibir significado uma vez só mesmo que apareça em múltiplas linhas)
+    private List<(int Digito, string Significado)> _sequenciasUnicas = [];
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -120,7 +150,16 @@ else if (_mapa is not null && _piramide is not null)
             _piramide = tPiramide.Result;
 
             if (_mapa is null || _piramide is null)
+            {
                 Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas");
+                return;
+            }
+
+            _sequenciasUnicas = _piramide.SequenciasNegativas
+                .GroupBy(s => s.Digito)
+                .Select(g => (g.Key, g.First().Significado))
+                .OrderBy(x => x.Key)
+                .ToList();
         }
         catch
         {
@@ -131,4 +170,10 @@ else if (_mapa is not null && _piramide is not null)
             _carregando = false;
         }
     }
+
+    private bool EhNegativa(int linha, int col) =>
+        _piramide!.SequenciasNegativas.Any(s =>
+            s.Linha == linha &&
+            col >= s.PosicaoInicio &&
+            col < s.PosicaoInicio + s.Comprimento);
 }

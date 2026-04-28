@@ -436,7 +436,10 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/piramides",
             .Where(e => e.Tipo != TipoLetra.Espaco)
             .Select(e => e.ValorCabalistico).ToArray();
         var resultado = CalculoPiramide.Calcular(valoresLetras);
-        return Results.Ok(new PiramideResponse(resultado.Triangulo, resultado.ArcanoMomento, resultado.Arcanos));
+        var seqs = resultado.SequenciasNegativas
+            .Select(s => new SequenciaNegativaResponse(s.Linha, s.PosicaoInicio, s.Comprimento, s.Digito, s.Significado))
+            .ToArray();
+        return Results.Ok(new PiramideResponse(resultado.Triangulo, resultado.ArcanoMomento, resultado.Arcanos, seqs));
     }).RequireAuthorization().RequireRateLimiting("api-geral");
 
 app.MapDelete("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
@@ -581,4 +584,5 @@ record MapaDetalheResponse(
     int[] HarmoniaProfundamenteOpostoA, int[] HarmoniaEPassivoEm,
     string[] CoresFavoraveis);
 
-record PiramideResponse(int[][] Triangulo, int ArcanoMomento, int[] Arcanos);
+record PiramideResponse(int[][] Triangulo, int ArcanoMomento, int[] Arcanos, SequenciaNegativaResponse[] SequenciasNegativas);
+record SequenciaNegativaResponse(int Linha, int PosicaoInicio, int Comprimento, int Digito, string Significado);

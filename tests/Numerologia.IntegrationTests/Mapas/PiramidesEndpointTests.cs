@@ -117,5 +117,6 @@ public class PiramidesEndpointTests : IClassFixture<NumerologiaWebFactory>
     private record MapaResumoDto(int Id, string NomeUtilizado, DateOnly DataNascimento,
         int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);
 
-    private record PiramideDto(int[][] Triangulo, int ArcanoMomento, int[] Arcanos);
+    private record SequenciaNegativaDto(int Linha, int PosicaoInicio, int Comprimento, int Digito, string Significado);
+    private record PiramideDto(int[][] Triangulo, int ArcanoMomento, int[] Arcanos, SequenciaNegativaDto[] SequenciasNegativas);
 }

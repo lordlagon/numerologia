@@ -10,7 +10,8 @@ public interface IMapasService
     Task<PiramideDto?> ObterPiramideAsync(int consulenteId, int mapaId);
 }
 
-public record PiramideDto(int[][] Triangulo, int ArcanoMomento, int[] Arcanos);
+public record PiramideDto(int[][] Triangulo, int ArcanoMomento, int[] Arcanos, SequenciaNegativaDto[] SequenciasNegativas);
+public record SequenciaNegativaDto(int Linha, int PosicaoInicio, int Comprimento, int Digito, string Significado);
 
 public interface IDashboardService
 {
