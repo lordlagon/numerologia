@@ -443,8 +443,10 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/piramides",
             .ToArray();
         var arcanoInfo = TabelaArcanos.Obter(resultado.ArcanoMomento);
         var escolhida  = await assRepo.ObterEscolhidaAsync(mapaId);
+        var arcanoAss    = escolhida is null ? null : TabelaArcanos.Obter(escolhida.ArcanoMomento);
         var escolhidaDto = escolhida is null ? null
-            : new AssinaturaEscolhidaResponse(escolhida.Id, escolhida.Texto, escolhida.ArcanoMomento);
+            : new AssinaturaEscolhidaResponse(escolhida.Id, escolhida.Texto, escolhida.ArcanoMomento,
+                arcanoAss?.Titulo, arcanoAss?.Significado);
         return Results.Ok(new PiramideResponse(
             resultado.Triangulo, resultado.ArcanoMomento,
             arcanoInfo?.Titulo, arcanoInfo?.Significado,
@@ -702,7 +704,7 @@ record PiramideResponse(
     int[] Arcanos, SequenciaNegativaResponse[] SequenciasNegativas,
     AssinaturaEscolhidaResponse? AssinaturaEscolhida);
 record SequenciaNegativaResponse(int Linha, int PosicaoInicio, int Comprimento, int Digito, string Significado);
-record AssinaturaEscolhidaResponse(int Id, string Texto, int ArcanoMomento);
+record AssinaturaEscolhidaResponse(int Id, string Texto, int ArcanoMomento, string? TituloArcano, string? SignificadoArcano);
 
 record AssinaturaPreviewRequest([property: MaxLength(256)] string Texto);
 record AssinaturaLetraResponse(string Letra, int Valor, bool EhEspaco);

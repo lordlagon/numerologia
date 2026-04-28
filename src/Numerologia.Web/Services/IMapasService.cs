@@ -16,7 +16,7 @@ public record PiramideDto(
     int[] Arcanos, SequenciaNegativaDto[] SequenciasNegativas,
     AssinaturaEscolhidaDto? AssinaturaEscolhida);
 public record SequenciaNegativaDto(int Linha, int PosicaoInicio, int Comprimento, int Digito, string Significado);
-public record AssinaturaEscolhidaDto(int Id, string Texto, int ArcanoMomento);
+public record AssinaturaEscolhidaDto(int Id, string Texto, int ArcanoMomento, string? TituloArcano, string? SignificadoArcano);
 
 public interface IDashboardService
 {

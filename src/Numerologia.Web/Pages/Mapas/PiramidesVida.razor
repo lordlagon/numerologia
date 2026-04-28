@@ -155,8 +155,18 @@ else if (_mapa is not null && _piramide is not null)
                 @_piramide.AssinaturaEscolhida.Texto
             </div>
             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
-                Arcano de Momento: @_piramide.AssinaturaEscolhida.ArcanoMomento
+                Arcano de Momento: <strong>@_piramide.AssinaturaEscolhida.ArcanoMomento</strong>
+                @if (_piramide.AssinaturaEscolhida.TituloArcano is not null)
+                {
+                    <span> — @_piramide.AssinaturaEscolhida.TituloArcano</span>
+                }
             </MudText>
+            @if (_piramide.AssinaturaEscolhida.SignificadoArcano is not null)
+            {
+                <MudText Typo="Typo.body2" Class="mt-1" style="font-style:italic;color:#555;max-width:700px;margin:4px auto 0">
+                    @_piramide.AssinaturaEscolhida.SignificadoArcano
+                </MudText>
+            }
         </MudPaper>
     }
 }
