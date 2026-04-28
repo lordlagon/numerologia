@@ -84,11 +84,15 @@
                     {
                         var v   = linha[colIdx];
                         var ci  = colIdx;
-                        var neg = _preview.SequenciasNegativas.Any(s =>
+                        var neg   = _preview.SequenciasNegativas.Any(s =>
                             s.Linha == ri && ci >= s.PosicaoInicio && ci < s.PosicaoInicio + s.Comprimento);
-                        var bg    = isApex ? "#7b1fa2" : neg ? "#c62828" : "#f3e5f5";
+                        var seq45 = ri == 0 && EhParteDaSequencia45(_preview.Triangulo[0], ci);
+                        var bg    = isApex ? "#7b1fa2"
+                                  : neg    ? "#c62828"
+                                  : seq45  ? "#f9a825"
+                                  :          "#f3e5f5";
                         var color = (isApex || neg) ? "white" : "inherit";
-                        var fw    = (isApex || neg) ? "bold" : "normal";
+                        var fw    = (isApex || neg || seq45) ? "bold" : "normal";
                         <div style="@($"width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:{bg};color:{color};font-weight:{fw};border:1px solid #ce93d8;border-radius:4px")">
                             @v
                         </div>
@@ -209,5 +213,12 @@
     {
         await AssinaturasService.ExcluirAsync(ConsulenteId, MapaId, id);
         _assinaturas.RemoveAll(a => a.Id == id);
+    }
+
+    private static bool EhParteDaSequencia45(int[] linha, int col)
+    {
+        if (col < linha.Length - 1 && linha[col] == 4 && linha[col + 1] == 5) return true;
+        if (col > 0 && linha[col - 1] == 4 && linha[col] == 5)               return true;
+        return false;
     }
 }
