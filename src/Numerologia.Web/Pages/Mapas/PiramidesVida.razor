@@ -19,7 +19,7 @@ else if (_mapa is not null && _piramide is not null)
         @_mapa.NomeUtilizado — @_mapa.DataNascimento.ToString("dd/MM/yyyy")
     </MudText>
 
-    <!-- ── GRADE DE LETRAS — HTML/CSS flex puro (idêntico ao GraficoNumerologico) ── -->
+    <!-- ── GRADE DE LETRAS — HTML/CSS flex puro ─────────────────────────────── -->
     <MudPaper Elevation="2" Class="mb-4 pa-2 overflow-auto">
         <div style="display:flex;flex-direction:column;gap:2px;font-size:0.78rem">
             @foreach (var (rotulo, _) in new[]
@@ -57,12 +57,12 @@ else if (_mapa is not null && _piramide is not null)
             {
                 var linha  = _piramide.Triangulo[rowIdx];
                 var isApex = rowIdx == _piramide.Triangulo.Length - 1;
-                var ri     = rowIdx; // capture for lambda
+                var ri     = rowIdx;
                 <div style="display:flex;gap:4px;justify-content:center">
                     @for (var colIdx = 0; colIdx < linha.Length; colIdx++)
                     {
-                        var v   = linha[colIdx];
-                        var ci  = colIdx; // capture for lambda
+                        var v     = linha[colIdx];
+                        var ci    = colIdx;
                         var neg   = EhNegativa(ri, ci);
                         var seq45 = ri == 0 && EhParteDaSequencia45(_piramide.Triangulo[0], ci);
 
@@ -80,9 +80,23 @@ else if (_mapa is not null && _piramide is not null)
                 </div>
             }
         </div>
-        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-3">
-            Arcano de Momento: <strong>@_piramide.ArcanoMomento</strong>
-        </MudText>
+
+        <!-- Arcano de Momento -->
+        <div style="text-align:center;margin-top:12px">
+            <MudText Typo="Typo.body2">
+                Arcano de Momento: <strong>@_piramide.ArcanoMomento</strong>
+                @if (_piramide.TituloArcanoMomento is not null)
+                {
+                    <span> — @_piramide.TituloArcanoMomento</span>
+                }
+            </MudText>
+            @if (_piramide.SignificadoArcanoMomento is not null)
+            {
+                <MudText Typo="Typo.body2" Class="mt-1" style="font-style:italic;color:#555;max-width:700px;margin:4px auto 0">
+                    @_piramide.SignificadoArcanoMomento
+                </MudText>
+            }
+        </div>
     </MudPaper>
 
     <!-- ── ARCANOS DO NOME ────────────────────────────────────────────────────── -->
@@ -101,33 +115,61 @@ else if (_mapa is not null && _piramide is not null)
         </MudPaper>
     }
 
-    <!-- ── SEQUÊNCIAS NEGATIVAS ───────────────────────────────────────────────── -->
+    <!-- ── SEQUÊNCIAS NEGATIVAS (accordion) ──────────────────────────────────── -->
     @if (_sequenciasUnicas.Count > 0)
     {
-        <MudPaper Elevation="2" Class="mb-4 pa-3" style="border-left:4px solid #c62828">
-            <MudText Typo="Typo.subtitle1" Class="mb-3 fw-bold" style="color:#c62828">
-                Sequências Negativas
+        <MudPaper Elevation="2" Class="mb-4" style="border-left:4px solid #c62828">
+            <MudExpansionPanels>
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <MudText Typo="Typo.subtitle1" style="color:#c62828;font-weight:bold">
+                            Sequências Negativas (@_sequenciasUnicas.Count)
+                        </MudText>
+                    </TitleContent>
+                    <ChildContent>
+                        @foreach (var (digito, significado) in _sequenciasUnicas)
+                        {
+                            var sequenciaStr = new string((char)('0' + digito), 3);
+                            <div class="mb-3">
+                                <MudText Typo="Typo.subtitle2" style="color:#c62828">@sequenciaStr</MudText>
+                                <MudText Typo="Typo.body2">@significado</MudText>
+                            </div>
+                        }
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudPaper>
+    }
+
+    <!-- ── SUGESTÃO DE ASSINATURA ─────────────────────────────────────────────── -->
+    @if (_piramide.AssinaturaEscolhida is not null)
+    {
+        <MudPaper Elevation="2" Class="mb-4 pa-3" style="border-left:4px solid #7b1fa2">
+            <MudText Typo="Typo.subtitle1" Class="mb-1 fw-bold" style="color:#7b1fa2">
+                Sugestão de Assinatura
             </MudText>
-            @foreach (var (digito, significado) in _sequenciasUnicas)
-            {
-                var sequenciaStr = new string((char)('0' + digito), 3);
-                <div class="mb-3">
-                    <MudText Typo="Typo.subtitle2" style="color:#c62828">
-                        @sequenciaStr
-                    </MudText>
-                    <MudText Typo="Typo.body2">@significado</MudText>
-                </div>
-            }
+            <MudText Typo="Typo.h6">@_piramide.AssinaturaEscolhida.Texto</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Arcano de Momento: @_piramide.AssinaturaEscolhida.ArcanoMomento
+            </MudText>
         </MudPaper>
     }
 }
 
-<MudButton Href="@($"/consulentes/{ConsulenteId}/mapas")"
-           Variant="Variant.Text"
-           StartIcon="@Icons.Material.Filled.ArrowBack"
-           Class="mt-2">
-    Voltar aos Mapas
-</MudButton>
+<!-- ── BOTÕES DE NAVEGAÇÃO ────────────────────────────────────────────────────── -->
+<div class="d-flex gap-3 mt-2 flex-wrap">
+    <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas")"
+               Variant="Variant.Text"
+               StartIcon="@Icons.Material.Filled.ArrowBack">
+        Voltar aos Mapas
+    </MudButton>
+    <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/{MapaId}/assinaturas")"
+               Variant="Variant.Outlined"
+               Color="Color.Secondary"
+               StartIcon="@Icons.Material.Filled.Edit">
+        Gerenciar Assinaturas
+    </MudButton>
+</div>
 
 @code {
     [Parameter] public int ConsulenteId { get; set; }
@@ -137,8 +179,6 @@ else if (_mapa is not null && _piramide is not null)
     private PiramideDto?     _piramide;
     private bool             _carregando = true;
     private string?          _erro;
-
-    // Sequências únicas por dígito (para exibir significado uma vez só mesmo que apareça em múltiplas linhas)
     private List<(int Digito, string Significado)> _sequenciasUnicas = [];
 
     protected override async Task OnInitializedAsync()
@@ -179,7 +219,6 @@ else if (_mapa is not null && _piramide is not null)
             col >= s.PosicaoInicio &&
             col < s.PosicaoInicio + s.Comprimento);
 
-    // Célula faz parte de um par [4, 5] consecutivo na linha base
     private static bool EhParteDaSequencia45(int[] linha, int col)
     {
         if (col < linha.Length - 1 && linha[col] == 4 && linha[col + 1] == 5) return true;
