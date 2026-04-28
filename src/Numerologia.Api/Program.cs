@@ -13,6 +13,7 @@ using Npgsql;
 using QuestPDF.Infrastructure;
 using Scalar.AspNetCore;
 using Numerologia.Api.Pdf;
+using Numerologia.Core.Calculos;
 using Numerologia.Core.Entities;
 using Numerologia.Core.Interfaces;
 using Numerologia.Core.Services;
@@ -421,6 +422,23 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/pdf",
         return Results.File(bytes, "application/pdf", nomeArquivo);
     }).RequireAuthorization();
 
+app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/piramides",
+    async (int consulenteId, int mapaId, HttpContext ctx,
+        IMapasRepository repo, UsuarioService usuarioService) =>
+    {
+        var usuario = await ResolverUsuario(ctx, usuarioService);
+        if (usuario is null) return Results.Unauthorized();
+
+        var mapa = await repo.ObterPorIdAsync(mapaId, consulenteId, usuario.Id);
+        if (mapa is null) return Results.NotFound();
+
+        var valoresLetras = mapa.GradeLetras
+            .Where(e => e.Tipo != TipoLetra.Espaco)
+            .Select(e => e.ValorCabalistico).ToArray();
+        var resultado = CalculoPiramide.Calcular(valoresLetras);
+        return Results.Ok(new PiramideResponse(resultado.Triangulo, resultado.ArcanoMomento));
+    }).RequireAuthorization().RequireRateLimiting("api-geral");
+
 app.MapDelete("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
     async (int consulenteId, int mapaId, HttpContext ctx,
         IMapasRepository repo, UsuarioService usuarioService) =>
@@ -562,3 +580,5 @@ record MapaDetalheResponse(
     int HarmoniaVibraCom, int[] HarmoniaAtrai, int[] HarmoniaEOpostoA,
     int[] HarmoniaProfundamenteOpostoA, int[] HarmoniaEPassivoEm,
     string[] CoresFavoraveis);
+
+record PiramideResponse(int[][] Triangulo, int ArcanoMomento);

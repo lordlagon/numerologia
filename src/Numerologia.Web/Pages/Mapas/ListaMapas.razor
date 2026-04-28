@@ -53,12 +53,11 @@ else
                            Size="Size.Small"
                            Class="ml-1"
                            OnClick="@(async () => await Excluir(mId, mNome))">Excluir</MudButton>
-                <MudButton Variant="Variant.Outlined"
-                           Color="Color.Default"
+                <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/{context.Id}/piramides")"
+                           Variant="Variant.Outlined"
+                           Color="Color.Secondary"
                            Size="Size.Small"
-                           Class="ml-1"
-                           Disabled="true"
-                           title="Em breve">Pirâmides</MudButton>
+                           Class="ml-1">Pirâmides</MudButton>
             </MudTd>
         </RowTemplate>
     </MudTable>

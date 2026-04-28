@@ -7,7 +7,10 @@ public interface IMapasService
     Task<MapaResumoDto> CriarAsync(int consulenteId, string nomeUtilizado, DateOnly dataNascimento);
     Task RemoverAsync(int consulenteId, int mapaId);
     Task<MapaResumoDto> AtualizarAsync(int consulenteId, int mapaId, string nomeUtilizado, DateOnly dataNascimento);
+    Task<PiramideDto?> ObterPiramideAsync(int consulenteId, int mapaId);
 }
+
+public record PiramideDto(int[][] Triangulo, int ArcanoMomento);
 
 public interface IDashboardService
 {

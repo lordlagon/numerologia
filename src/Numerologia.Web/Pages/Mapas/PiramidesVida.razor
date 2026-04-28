@@ -1,0 +1,118 @@
+@page "/consulentes/{ConsulenteId:int}/mapas/{MapaId:int}/piramides"
+@inject IMapasService MapasService
+@inject NavigationManager Nav
+
+<PageTitle>Pirâmides da Vida</PageTitle>
+
+@if (_carregando)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else if (_erro is not null)
+{
+    <MudAlert Severity="Severity.Error">@_erro</MudAlert>
+}
+else if (_mapa is not null && _piramide is not null)
+{
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-1 fw-bold">PIRÂMIDES DA VIDA</MudText>
+    <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary" Class="mb-4">
+        @_mapa.NomeUtilizado — @_mapa.DataNascimento.ToString("dd/MM/yyyy")
+    </MudText>
+
+    <!-- ── GRADE DE LETRAS — HTML/CSS flex puro (idêntico ao GraficoNumerologico) ── -->
+    <MudPaper Elevation="2" Class="mb-4 pa-2 overflow-auto">
+        <div style="display:flex;flex-direction:column;gap:2px;font-size:0.78rem">
+
+            @foreach (var (rotulo, tipo) in new[]
+            {
+                ("Nome",   TipoLetraDto.Espaco),
+                ("TOTAL",  (TipoLetraDto)(-1)),
+            })
+            {
+                <div style="display:flex;align-items:stretch;gap:2px">
+                    <div style="width:70px;flex-shrink:0;padding:2px 6px;background:#f3e5f5;font-weight:bold;font-size:0.75rem;text-align:right;white-space:nowrap;display:flex;align-items:center;justify-content:flex-end">
+                        @rotulo
+                    </div>
+                    <div style="flex:1;display:flex;gap:2px">
+                        @foreach (var e in _mapa.GradeLetras)
+                        {
+                            var valor = rotulo == "Nome"
+                                ? (e.Tipo != TipoLetraDto.Espaco ? e.Letra.ToString() : "")
+                                : (e.Tipo != TipoLetraDto.Espaco ? e.ValorCabalistico.ToString() : "");
+                            var bgColor = e.Tipo == TipoLetraDto.Espaco ? "#ede7f6" : "white";
+                            <div style="@($"flex:1;min-width:0;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.82rem;background:{bgColor};border:1px solid #ddd")">
+                                @valor
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </MudPaper>
+
+    <!-- ── TRIÂNGULO PIRAMIDAL ──────────────────────────────────────────────── -->
+    <MudPaper Elevation="2" Class="mb-4 pa-3 overflow-auto">
+        <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Triângulo Básico</MudText>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:0.82rem">
+            @for (var i = _piramide.Triangulo.Length - 1; i >= 0; i--)
+            {
+                var linha = _piramide.Triangulo[i];
+                var isApex = i == _piramide.Triangulo.Length - 1;
+                <div style="display:flex;gap:4px;justify-content:center">
+                    @foreach (var v in linha)
+                    {
+                        var bg     = isApex ? "#7b1fa2" : "#f3e5f5";
+                        var color  = isApex ? "white"   : "inherit";
+                        var fw     = isApex ? "bold"    : "normal";
+                        <div style="@($"width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:{bg};color:{color};font-weight:{fw};border:1px solid #ce93d8;border-radius:4px")">
+                            @v
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-3">
+            Arcano de Momento: <strong>@_piramide.ArcanoMomento</strong>
+        </MudText>
+    </MudPaper>
+}
+
+<MudButton Href="@($"/consulentes/{ConsulenteId}/mapas")"
+           Variant="Variant.Text"
+           StartIcon="@Icons.Material.Filled.ArrowBack"
+           Class="mt-2">
+    Voltar aos Mapas
+</MudButton>
+
+@code {
+    [Parameter] public int ConsulenteId { get; set; }
+    [Parameter] public int MapaId       { get; set; }
+
+    private MapaDetalheDto?  _mapa;
+    private PiramideDto?     _piramide;
+    private bool             _carregando = true;
+    private string?          _erro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var tMapa     = MapasService.ObterAsync(ConsulenteId, MapaId);
+            var tPiramide = MapasService.ObterPiramideAsync(ConsulenteId, MapaId);
+            await Task.WhenAll(tMapa, tPiramide);
+            _mapa     = tMapa.Result;
+            _piramide = tPiramide.Result;
+
+            if (_mapa is null || _piramide is null)
+                Nav.NavigateTo($"/consulentes/{ConsulenteId}/mapas");
+        }
+        catch
+        {
+            _erro = "Erro ao carregar as pirâmides. Tente novamente.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+}
