@@ -91,7 +91,7 @@ public class ListaMapasTests : TestContext
     }
 
     [Fact]
-    public void Render_ComMapas_ExibeBotaoPiramidesDesabilitado()
+    public void Render_ComMapas_ExibeBotaoPiramidesHabilitadoComLink()
     {
         var mapas = new List<MapaResumoDto>
         {
@@ -103,9 +103,9 @@ public class ListaMapasTests : TestContext
 
         cut.WaitForAssertion(() =>
         {
-            var btn = cut.FindAll("button")
-                .First(b => b.TextContent.Contains("Pirâmides"));
-            btn.HasAttribute("disabled").Should().BeTrue();
+            var link = cut.FindAll("a")
+                .First(a => a.TextContent.Contains("Pirâmides"));
+            link.GetAttribute("href").Should().Contain("piramides");
         });
     }
 

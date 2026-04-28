@@ -1,0 +1,232 @@
+@page "/consulentes/{ConsulenteId:int}/mapas/{MapaId:int}/assinaturas"
+@inject IAssinaturasService AssinaturasService
+@inject NavigationManager Nav
+
+<PageTitle>Assinaturas de Teste</PageTitle>
+
+<MudText Typo="Typo.h5" Class="mb-1 fw-bold">Assinaturas de Teste</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+    Digite uma assinatura, gere o triângulo e salve as que quiser testar.
+    Marque uma como sugestão para aparecer na tela de Pirâmides.
+</MudText>
+
+<!-- ── CAMPO DE ENTRADA ──────────────────────────────────────────────────────── -->
+<MudPaper Elevation="2" Class="mb-4 pa-3">
+    <MudTextField @bind-Value="_textoAssinatura"
+                  Label="Assinatura"
+                  Placeholder="Ex: A. MACEDO"
+                  Variant="Variant.Outlined"
+                  FullWidth="true"
+                  Class="mb-3"
+                  data-testid="campo-assinatura" />
+    <div class="d-flex gap-2">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.AutoGraph"
+                   OnClick="GerarPreview"
+                   Disabled="@(string.IsNullOrWhiteSpace(_textoAssinatura) || _gerando)">
+            Gerar Triângulo
+        </MudButton>
+        @if (_preview is not null)
+        {
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Success"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="SalvarAssinatura"
+                       Disabled="@_salvando">
+                Salvar esta Assinatura
+            </MudButton>
+        }
+    </div>
+    @if (_erroPreview is not null)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mt-2">@_erroPreview</MudAlert>
+    }
+</MudPaper>
+
+<!-- ── PREVIEW DO TRIÂNGULO ─────────────────────────────────────────────────── -->
+@if (_preview is not null)
+{
+    <MudPaper Elevation="2" Class="mb-4 pa-3 overflow-auto">
+        <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Preview — @_textoAssinatura</MudText>
+
+        <!-- Grade de letras -->
+        <div style="display:flex;flex-direction:column;gap:2px;font-size:0.78rem;margin-bottom:12px">
+            @foreach (var (rotulo, isTotalRow) in new[] { ("Letras", false), ("Valores", true) })
+            {
+                <div style="display:flex;gap:2px">
+                    <div style="width:60px;flex-shrink:0;padding:2px 6px;background:#f3e5f5;font-weight:bold;font-size:0.75rem;text-align:right;display:flex;align-items:center;justify-content:flex-end">
+                        @rotulo
+                    </div>
+                    <div style="flex:1;display:flex;gap:2px">
+                        @foreach (var e in _preview.GradeLetras)
+                        {
+                            var val     = isTotalRow ? (e.EhEspaco ? "" : e.Valor.ToString()) : e.Letra;
+                            var bgColor = e.EhEspaco ? "#ede7f6" : "white";
+                            <div style="@($"flex:1;min-width:0;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.82rem;background:{bgColor};border:1px solid #ddd")">
+                                @val
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Triângulo -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:0.82rem">
+            @for (var rowIdx = 0; rowIdx < _preview.Triangulo.Length; rowIdx++)
+            {
+                var linha  = _preview.Triangulo[rowIdx];
+                var isApex = rowIdx == _preview.Triangulo.Length - 1;
+                var ri     = rowIdx;
+                <div style="display:flex;gap:4px;justify-content:center">
+                    @for (var colIdx = 0; colIdx < linha.Length; colIdx++)
+                    {
+                        var v   = linha[colIdx];
+                        var ci  = colIdx;
+                        var neg   = _preview.SequenciasNegativas.Any(s =>
+                            s.Linha == ri && ci >= s.PosicaoInicio && ci < s.PosicaoInicio + s.Comprimento);
+                        var seq45 = ri == 0 && EhParteDaSequencia45(_preview.Triangulo[0], ci);
+                        var bg    = isApex ? "#7b1fa2"
+                                  : neg    ? "#c62828"
+                                  : seq45  ? "#f9a825"
+                                  :          "#f3e5f5";
+                        var color = (isApex || neg) ? "white" : "inherit";
+                        var fw    = (isApex || neg || seq45) ? "bold" : "normal";
+                        <div style="@($"width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:{bg};color:{color};font-weight:{fw};border:1px solid #ce93d8;border-radius:4px")">
+                            @v
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">
+            Arcano de Momento: <strong>@_preview.ArcanoMomento</strong>
+        </MudText>
+    </MudPaper>
+}
+
+<!-- ── ASSINATURAS SALVAS ────────────────────────────────────────────────────── -->
+@if (_assinaturas.Count > 0)
+{
+    <MudPaper Elevation="2" Class="mb-4 pa-3">
+        <MudText Typo="Typo.subtitle1" Class="mb-3 fw-bold">Assinaturas Salvas</MudText>
+        <MudTable Items="_assinaturas" Dense="true" Hover="true"
+                  OnRowClick="@((TableRowClickEventArgs<AssinaturaDto> e) => CarregarAssinatura(e.Item))"
+                  T="AssinaturaDto">
+            <HeaderContent>
+                <MudTh>Assinatura</MudTh>
+                <MudTh>Arcano</MudTh>
+                <MudTh>Sugestão</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <span style="@(context.Escolhida ? "font-weight:bold;color:#7b1fa2" : "")">
+                        @context.Texto
+                    </span>
+                </MudTd>
+                <MudTd>@context.ArcanoMomento</MudTd>
+                <MudTd>
+                    @if (context.Escolhida)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" Title="Sugestão atual" />
+                    }
+                </MudTd>
+                <MudTd>
+                    @if (!context.Escolhida)
+                    {
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Warning"
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Star"
+                                   OnClick="@(() => EscolherAssinatura(context.Id))">
+                            Sugerir
+                        </MudButton>
+                    }
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Delete"
+                               OnClick="@(() => ExcluirAssinatura(context.Id))">
+                        Excluir
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+}
+
+<MudButton Href="@($"/consulentes/{ConsulenteId}/mapas/{MapaId}/piramides")"
+           Variant="Variant.Text"
+           StartIcon="@Icons.Material.Filled.ArrowBack"
+           Class="mt-2">
+    Voltar às Pirâmides
+</MudButton>
+
+@code {
+    [Parameter] public int ConsulenteId { get; set; }
+    [Parameter] public int MapaId       { get; set; }
+
+    private string                  _textoAssinatura = "";
+    private AssinaturaPreviewDto?   _preview;
+    private List<AssinaturaDto>     _assinaturas = [];
+    private bool                    _gerando;
+    private bool                    _salvando;
+    private string?                 _erroPreview;
+
+    protected override async Task OnInitializedAsync() =>
+        _assinaturas = await AssinaturasService.ListarAsync(ConsulenteId, MapaId);
+
+    private async Task GerarPreview()
+    {
+        _erroPreview = null;
+        _preview     = null;
+        _gerando     = true;
+        try
+        {
+            _preview = await AssinaturasService.PreviewAsync(ConsulenteId, MapaId, _textoAssinatura);
+            if (_preview is null)
+                _erroPreview = "A assinatura precisa ter ao menos 2 letras com valor cabalístico.";
+        }
+        finally { _gerando = false; }
+    }
+
+    private async Task SalvarAssinatura()
+    {
+        _salvando = true;
+        try
+        {
+            var salva = await AssinaturasService.SalvarAsync(ConsulenteId, MapaId, _textoAssinatura);
+            _assinaturas.Insert(0, salva);
+            _preview = null;
+            _textoAssinatura = "";
+        }
+        finally { _salvando = false; }
+    }
+
+    private async Task EscolherAssinatura(int id)
+    {
+        await AssinaturasService.EscolherAsync(ConsulenteId, MapaId, id);
+        _assinaturas = await AssinaturasService.ListarAsync(ConsulenteId, MapaId);
+    }
+
+    private async Task ExcluirAssinatura(int id)
+    {
+        await AssinaturasService.ExcluirAsync(ConsulenteId, MapaId, id);
+        _assinaturas.RemoveAll(a => a.Id == id);
+    }
+
+    private async Task CarregarAssinatura(AssinaturaDto assinatura)
+    {
+        _textoAssinatura = assinatura.Texto;
+        await GerarPreview();
+    }
+
+    private static bool EhParteDaSequencia45(int[] linha, int col)
+    {
+        if (col < linha.Length - 1 && linha[col] == 4 && linha[col + 1] == 5) return true;
+        if (col > 0 && linha[col - 1] == 4 && linha[col] == 5)               return true;
+        return false;
+    }
+}

@@ -251,6 +251,31 @@ Numeróloga (usuária autenticada via Google OAuth)
   - Incluir imagem de referencia (ainda não incluido)
   - Layout idêntico ao gráfico 
   - Download direto pelo sistema
+
+---
+
+### Fase 7 — PDF do Mapa para o Consulente
+> Objetivo: gerar um PDF orientado ao cliente final (consulente), diferente do PDF técnico de gráfico da numeróloga.
+
+**Diferença do F3.1:** o PDF atual (F3.1) é o gráfico técnico para a numeróloga trabalhar. Este PDF é o documento entregue ao consulente — formatado, legível e interpretativo.
+
+- [ ] **F7.1** — Estrutura e layout do PDF do consulente
+  - Pág. 1 — Capa: título, nome do consulente, data de nascimento, nome da numeróloga
+  - Pág. 2 — Números Pessoais: Motivação, Impressão, Expressão, Destino, Missão com interpretações
+  - Pág. 3 — Ciclos e Momentos: Fig. F + Fig. G com períodos em anos
+  - Pág. 4 — Influências: Lições Cármicas, Tendências Ocultas, Dívidas Cármicas, Resp. Subconsciente
+  - Pág. 5 — Energia Atual: Ano/Mês/Dia Pessoal + Dias Favoráveis + Números Harmônicos
+  - Pág. 6 — Harmonia e Cores: Harmonia Conjugal, Relação Intervalores, Cores Favoráveis
+
+- [ ] **F7.2** — Backend: `GeradorPdfConsulente.cs` + endpoint
+  - Nova classe separada de `GeradorPdf.cs`
+  - Endpoint: `GET /consulentes/{id}/mapas/{mapaId}/pdf/consulente`
+  - Testes: unit (bytes não-nulos) + integração (200 + application/pdf)
+
+- [ ] **F7.3** — Frontend: botão "PDF do Consulente" no gráfico
+  - `MudButton` ao lado do "Baixar PDF" existente
+  - `Color.Secondary` para diferenciar visualmente
+
 ---
 
 ### Fase 5 — Perfil da Numeróloga
