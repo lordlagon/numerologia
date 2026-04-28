@@ -19,8 +19,12 @@ public static class CalculoPiramide
             linha = proxima;
         }
 
-        return new ResultadoPiramide(triangulo.ToArray(), linha[0]);
+        var arcanos = new int[Math.Max(0, valoresLetras.Length - 1)];
+        for (var i = 0; i < arcanos.Length; i++)
+            arcanos[i] = valoresLetras[i] * 10 + valoresLetras[i + 1];
+
+        return new ResultadoPiramide(triangulo.ToArray(), linha[0], arcanos);
     }
 }
 
-public record ResultadoPiramide(int[][] Triangulo, int ArcanoMomento);
+public record ResultadoPiramide(int[][] Triangulo, int ArcanoMomento, int[] Arcanos);

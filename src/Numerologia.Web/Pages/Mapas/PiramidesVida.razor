@@ -50,20 +50,20 @@ else if (_mapa is not null && _piramide is not null)
         </div>
     </MudPaper>
 
-    <!-- ── TRIÂNGULO PIRAMIDAL ──────────────────────────────────────────────── -->
+    <!-- ── TRIÂNGULO INVERTIDO — base no topo, apex embaixo ─────────────────── -->
     <MudPaper Elevation="2" Class="mb-4 pa-3 overflow-auto">
         <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Triângulo Básico</MudText>
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:0.82rem">
-            @for (var i = _piramide.Triangulo.Length - 1; i >= 0; i--)
+            @for (var i = 0; i < _piramide.Triangulo.Length; i++)
             {
-                var linha = _piramide.Triangulo[i];
-                var isApex = i == _piramide.Triangulo.Length - 1;
+                var linha   = _piramide.Triangulo[i];
+                var isApex  = i == _piramide.Triangulo.Length - 1;
                 <div style="display:flex;gap:4px;justify-content:center">
                     @foreach (var v in linha)
                     {
-                        var bg     = isApex ? "#7b1fa2" : "#f3e5f5";
-                        var color  = isApex ? "white"   : "inherit";
-                        var fw     = isApex ? "bold"    : "normal";
+                        var bg    = isApex ? "#7b1fa2" : "#f3e5f5";
+                        var color = isApex ? "white"   : "inherit";
+                        var fw    = isApex ? "bold"    : "normal";
                         <div style="@($"width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:{bg};color:{color};font-weight:{fw};border:1px solid #ce93d8;border-radius:4px")">
                             @v
                         </div>
@@ -75,6 +75,22 @@ else if (_mapa is not null && _piramide is not null)
             Arcano de Momento: <strong>@_piramide.ArcanoMomento</strong>
         </MudText>
     </MudPaper>
+
+    <!-- ── ARCANOS DO NOME ────────────────────────────────────────────────────── -->
+    @if (_piramide.Arcanos.Length > 0)
+    {
+        <MudPaper Elevation="2" Class="mb-4 pa-3">
+            <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Arcanos do Nome</MudText>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+                @foreach (var arcano in _piramide.Arcanos)
+                {
+                    <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#f3e5f5;border:1px solid #ce93d8;border-radius:4px;font-size:0.85rem;font-weight:bold">
+                        @arcano
+                    </div>
+                }
+            </div>
+        </MudPaper>
+    }
 }
 
 <MudButton Href="@($"/consulentes/{ConsulenteId}/mapas")"

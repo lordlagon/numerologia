@@ -5,7 +5,8 @@ namespace Numerologia.UnitTests.Calculos;
 
 public class CalculoPiramideTests
 {
-    // Algoritmo: pares adjacentes somados, se soma > 9 → soma - 9 (não módulo, não soma de dígitos)
+    // Algoritmo triângulo: pares adjacentes somados, se soma > 9 → soma - 9
+    // Algoritmo arcanos: arcano[i] = base[i] * 10 + base[i+1]
     // Referência: SequenciasPiramide.java + Numerologia.xlsx (Marli Xavier)
 
     [Fact]
@@ -23,12 +24,7 @@ public class CalculoPiramideTests
     [Fact]
     public void Calcular_SomaAcimaDe9_SubtracaoNoveNaoModulo()
     {
-        // 5 + 8 = 13 → 13 - 9 = 4 (NÃO 4 via soma de dígitos 1+3=4, mesma resposta)
-        // Caso que diferencia: 7 + 7 = 14 → 14 - 9 = 5 (soma dígitos: 1+4=5 — mesmo)
-        // Caso definitivo: 8 + 8 = 16 → 16 - 9 = 7 (soma dígitos: 1+6=7 — mesmo)
-        // Caso que realmente diferencia subtração de soma-dígitos:
-        // 9 + 9 = 18 → subtração: 18-9=9; soma dígitos: 1+8=9 — ainda igual...
-        // Per Java: soma > 9 → soma -= 9. Max soma = 9+9=18 → 18-9=9. OK.
+        // Per Java: soma > 9 → soma -= 9. Max soma = 9+9=18 → 18-9=9.
         var resultado = CalculoPiramide.Calcular([8, 5]);
 
         resultado.Triangulo[1].Should().Equal([4]); // 8+5=13, 13-9=4
@@ -72,5 +68,54 @@ public class CalculoPiramideTests
         resultado.Triangulo.Should().HaveCount(1);
         resultado.Triangulo[0].Should().Equal([7]);
         resultado.ArcanoMomento.Should().Be(7);
+    }
+
+    // ── Arcanos ──────────────────────────────────────────────────────────────
+    // arcano[i] = base[i] * 10 + base[i+1]
+    // N letras → N-1 arcanos
+
+    [Fact]
+    public void Calcular_DuasLetras_UmArcano()
+    {
+        // [4, 1] → arcano = 41
+        var resultado = CalculoPiramide.Calcular([4, 1]);
+
+        resultado.Arcanos.Should().HaveCount(1);
+        resultado.Arcanos[0].Should().Be(41);
+    }
+
+    [Fact]
+    public void Calcular_TresLetras_DoisArcanos()
+    {
+        // [3, 6, 2] → arcanos = [36, 62]
+        var resultado = CalculoPiramide.Calcular([3, 6, 2]);
+
+        resultado.Arcanos.Should().HaveCount(2);
+        resultado.Arcanos.Should().Equal([36, 62]);
+    }
+
+    [Fact]
+    public void Calcular_ExemploJoaquim_ArcanosCorretos()
+    {
+        // JOAQUIM MARIA MACHADO DE ASSIS (sem espaços)
+        // J  O  A  Q  U  I  M  M  A  R  I  A  M  A  C  H  A  D  O  D  E  A  S  S  I  S
+        // 1  7  1  1  6  1  4  4  1  2  1  1  4  1  3  5  1  4  7  4  5  1  3  3  1  3
+        int[] valores = [1, 7, 1, 1, 6, 1, 4, 4, 1, 2, 1, 1, 4, 1, 3, 5, 1, 4, 7, 4, 5, 1, 3, 3, 1, 3];
+
+        var resultado = CalculoPiramide.Calcular(valores);
+
+        int[] arcanosEsperados = [17, 71, 11, 16, 61, 14, 44, 41, 12, 21,
+                                   11, 14, 41, 13, 35, 51, 14, 47, 74, 45,
+                                   51, 13, 33, 31, 13];
+        resultado.Arcanos.Should().HaveCount(25);
+        resultado.Arcanos.Should().Equal(arcanosEsperados);
+    }
+
+    [Fact]
+    public void Calcular_UmaLetra_SemArcanos()
+    {
+        var resultado = CalculoPiramide.Calcular([7]);
+
+        resultado.Arcanos.Should().BeEmpty();
     }
 }

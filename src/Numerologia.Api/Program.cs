@@ -436,7 +436,7 @@ app.MapGet("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}/piramides",
             .Where(e => e.Tipo != TipoLetra.Espaco)
             .Select(e => e.ValorCabalistico).ToArray();
         var resultado = CalculoPiramide.Calcular(valoresLetras);
-        return Results.Ok(new PiramideResponse(resultado.Triangulo, resultado.ArcanoMomento));
+        return Results.Ok(new PiramideResponse(resultado.Triangulo, resultado.ArcanoMomento, resultado.Arcanos));
     }).RequireAuthorization().RequireRateLimiting("api-geral");
 
 app.MapDelete("/api/consulentes/{consulenteId:int}/mapas/{mapaId:int}",
@@ -581,4 +581,4 @@ record MapaDetalheResponse(
     int[] HarmoniaProfundamenteOpostoA, int[] HarmoniaEPassivoEm,
     string[] CoresFavoraveis);
 
-record PiramideResponse(int[][] Triangulo, int ArcanoMomento);
+record PiramideResponse(int[][] Triangulo, int ArcanoMomento, int[] Arcanos);

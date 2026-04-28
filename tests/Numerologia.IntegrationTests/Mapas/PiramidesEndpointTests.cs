@@ -78,6 +78,8 @@ public class PiramidesEndpointTests : IClassFixture<NumerologiaWebFactory>
         // apex é a última linha com 1 elemento
         body.Triangulo[^1].Should().HaveCount(1);
         body.Triangulo[^1][0].Should().Be(body.ArcanoMomento);
+        // arcanos: N letras → N-1 arcanos
+        body.Arcanos.Should().HaveCount(body.Triangulo[0].Length - 1);
     }
 
     [Fact]
@@ -115,5 +117,5 @@ public class PiramidesEndpointTests : IClassFixture<NumerologiaWebFactory>
     private record MapaResumoDto(int Id, string NomeUtilizado, DateOnly DataNascimento,
         int NumeroMotivacao, int NumeroImpressao, int NumeroExpressao, int NumeroDestino, DateTime CriadoEm);
 
-    private record PiramideDto(int[][] Triangulo, int ArcanoMomento);
+    private record PiramideDto(int[][] Triangulo, int ArcanoMomento, int[] Arcanos);
 }
