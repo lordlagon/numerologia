@@ -63,14 +63,16 @@ else if (_mapa is not null && _piramide is not null)
                     {
                         var v   = linha[colIdx];
                         var ci  = colIdx; // capture for lambda
-                        var neg = EhNegativa(ri, ci);
+                        var neg   = EhNegativa(ri, ci);
+                        var seq45 = ri == 0 && EhParteDaSequencia45(_piramide.Triangulo[0], ci);
 
                         var bg    = isApex ? "#7b1fa2"
                                   : neg    ? "#c62828"
+                                  : seq45  ? "#f9a825"
                                   :          "#f3e5f5";
                         var color = (isApex || neg) ? "white" : "inherit";
-                        var fw    = (isApex || neg) ? "bold"  : "normal";
-                        <div title="@(neg ? $"Sequência {new string((char)('0'+v), 3)}" : "")"
+                        var fw    = (isApex || neg || seq45) ? "bold" : "normal";
+                        <div title="@(neg ? $"Sequência {new string((char)('0'+v), 3)}" : seq45 ? "Sequência 45" : "")"
                              style="@($"width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:{bg};color:{color};font-weight:{fw};border:1px solid #ce93d8;border-radius:4px")">
                             @v
                         </div>
@@ -176,4 +178,12 @@ else if (_mapa is not null && _piramide is not null)
             s.Linha == linha &&
             col >= s.PosicaoInicio &&
             col < s.PosicaoInicio + s.Comprimento);
+
+    // Célula faz parte de um par [4, 5] consecutivo na linha base
+    private static bool EhParteDaSequencia45(int[] linha, int col)
+    {
+        if (col < linha.Length - 1 && linha[col] == 4 && linha[col + 1] == 5) return true;
+        if (col > 0 && linha[col - 1] == 4 && linha[col] == 5)               return true;
+        return false;
+    }
 }
