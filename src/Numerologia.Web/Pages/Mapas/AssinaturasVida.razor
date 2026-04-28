@@ -111,7 +111,9 @@
 {
     <MudPaper Elevation="2" Class="mb-4 pa-3">
         <MudText Typo="Typo.subtitle1" Class="mb-3 fw-bold">Assinaturas Salvas</MudText>
-        <MudTable Items="_assinaturas" Dense="true" Hover="true">
+        <MudTable Items="_assinaturas" Dense="true" Hover="true"
+                  OnRowClick="@((TableRowClickEventArgs<AssinaturaDto> e) => CarregarAssinatura(e.Item))"
+                  T="AssinaturaDto">
             <HeaderContent>
                 <MudTh>Assinatura</MudTh>
                 <MudTh>Arcano</MudTh>
@@ -213,6 +215,12 @@
     {
         await AssinaturasService.ExcluirAsync(ConsulenteId, MapaId, id);
         _assinaturas.RemoveAll(a => a.Id == id);
+    }
+
+    private async Task CarregarAssinatura(AssinaturaDto assinatura)
+    {
+        _textoAssinatura = assinatura.Texto;
+        await GerarPreview();
     }
 
     private static bool EhParteDaSequencia45(int[] linha, int col)
